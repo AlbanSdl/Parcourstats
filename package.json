@@ -1,0 +1,53 @@
+{
+  "name": "parcourstats",
+  "version": "0.0.1",
+  "description": "Watches the progress of application queues analyses progression",
+  "main": "./dist/index.js",
+  "private": true,
+  "scripts": {
+    "compile": "tsc && copyfiles -e src/**/*.ts src/**/* dist/",
+    "start": "npm run-script compile && electron ./dist/index.js",
+    "build": "npm run-script compile && electron-builder",
+    "test": "npm run-script compile && node ./dist/tests/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlbanSdl/parcourstats.git"
+  },
+  "author": "AlbanSdl",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/AlbanSdl/parcourstats/issues"
+  },
+  "homepage": "https://github.com/AlbanSdl/parcourstats#readme",
+  "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "electron": "^13.0.1",
+    "electron-builder": "^22.10.5",
+    "typescript": "^4.3.2"
+  },
+  "build": {
+    "productName": "Parcoustats",
+    "appId": "fr.asdl.parcourstats",
+    "mac": {
+      "category": "public.app-category.education"
+    },
+    "copyright": "Copyright © 2021 ${author}",
+    "directories": {
+      "output": "build/"
+    },
+    "files": [
+      {
+        "from": "dist",
+        "to": "",
+        "filter": [
+          "**/*"
+        ]
+      },
+      "package.json"
+    ]
+  },
+  "dependencies": {
+    "sqlite3": "^5.0.2"
+  }
+}
