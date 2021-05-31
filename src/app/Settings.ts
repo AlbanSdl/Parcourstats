@@ -1,14 +1,15 @@
 import { app } from "electron";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 
 export class Settings {
 
+    private readonly dataFolder = join(app.getPath("userData"), "../", "Parcourstats");
     private readonly settingsPath: string;
     private readonly data: object;
 
     constructor() {
-        this.settingsPath = join(app.getPath("userData"), "../", "backyard", "config.json");
+        this.settingsPath = join(this.dataFolder, "config.json");
         this.data = this.parse();
     }
 
@@ -21,6 +22,7 @@ export class Settings {
     }
 
     private save(): void {
+        mkdirSync(this.dataFolder, { recursive: true })
         writeFileSync(this.settingsPath, JSON.stringify(this.data, null, 4));
     }
 

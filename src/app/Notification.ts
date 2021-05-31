@@ -27,5 +27,4 @@ export namespace NotificationIcon {
             this.path = join(__dirname, "..", "resources", path);
         }
     }
-    export const TEST = new Type("icon.png");
 }

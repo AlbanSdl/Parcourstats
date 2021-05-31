@@ -1,7 +1,8 @@
 import { readFile } from "fs";
 import * as path from "path";
+import { IProvider } from "common/provider";
 
-export class i18n {
+export class i18n implements IProvider<string> {
 
     public readonly lang: string;
     protected readonly translation: Map<string, string>;
@@ -20,7 +21,7 @@ export class i18n {
         });
     }
 
-    public getLocaleString(id: string): string {
+    public get(id: string): string {
         const translation = this.translation.get(id);
         return translation == null ? id : translation;
     }

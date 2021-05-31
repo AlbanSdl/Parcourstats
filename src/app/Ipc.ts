@@ -20,7 +20,7 @@ export class IPC {
     }
 
     protected getLocaleString(id: string): string {
-        return this.parcourstats.i18n.getLocaleString(id);
+        return this.parcourstats.i18n.get(id);
     }
 
 }

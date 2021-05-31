@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from "electron";
-import { i18n } from "./src/app/i18n";
-import { IPC } from "./src/app/Ipc";
-import { Settings } from "./src/app/Settings";
+import { i18n } from "./app/i18n";
+import { IPC } from "./app/Ipc";
+import { Settings } from "./app/settings";
 
 app.setAppUserModelId("fr.asdl.parcourstats");
 
@@ -33,7 +33,7 @@ export class Parcourstats {
         else
             this.window.show();
         this.window.menuBarVisible = false;
-        this.window.loadFile('./src/view/index.html');
+        this.window.loadFile('./view/index.html');
         this.window.on("closed", () => {this.window = null});
         new IPC(this);
 
