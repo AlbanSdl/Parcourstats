@@ -1,12 +1,14 @@
 const path = require("path");
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {
     mode: process.env.NODE_ENV ?? "production",
     target: 'electron13.0-renderer',
-    entry: './build/raw/view/webview.js',
+    devtool: 'inline-source-map',
+    entry: './src/renderer/webview.ts',
     output: {
         filename: 'webview.js',
-        path: path.join(__dirname, './build/raw/view'),
+        path: path.join(__dirname, './build/raw/renderer'),
     },
     optimization: {
         minimize: true
@@ -14,20 +16,20 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.(svg|woff2|png)$/,
-                use: {
-                    loader: 'url-loader',
-                },
-            },
-            {
-                test: /\.xml$/,
-                use: {
-                    loader: 'url-loader',
+                test: /\.tsx?$/,
+                use: [{
+                    loader: 'ts-loader',
                     options: {
-                        encoding: 'utf8'
+                        configFile: "./tsconfig.json"
                     }
-                }
+                }],
             }
-        ],
+        ]
+    },
+    resolve: {
+        extensions: ['.tsx', '.ts'],
+        plugins: [new TsconfigPathsPlugin({
+            configFile: "./src/renderer/tsconfig.json"
+        })]
     }
-};
+}

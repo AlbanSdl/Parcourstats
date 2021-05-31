@@ -1,4 +1,4 @@
-import { ipcRenderer } from "electron";
+import { BridgedRequestType } from "../../common/window";
 import { Ascript } from "../ascript";
 import { AppContext } from "../webview";
 
@@ -53,11 +53,11 @@ export class View implements AppContext {
         (<HTMLElement>document.getElementById("appBar").getElementsByClassName("title")[0]).innerText = title;
     }
 
-    public getLocale(string_id: string): string {
-        const cached = this.cachedLocales.get(string_id);
+    public getLocale(stringId: string): string {
+        const cached = this.cachedLocales.get(stringId);
         if (cached == null)
-            this.cachedLocales.set(string_id, ipcRenderer.sendSync("localeString", string_id))
-        return cached ?? this.cachedLocales.get(string_id);
+            this.cachedLocales.set(stringId, window.bridge.sendSync(BridgedRequestType.GET_LOCALE, stringId));
+        return cached ?? this.cachedLocales.get(stringId);
     }
 
 }

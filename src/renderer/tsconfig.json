@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "module": "ESNext",
+        "target": "ESNext",
+        "noImplicitAny": true,
+        "baseUrl": ".",
+        "moduleResolution": "Classic"
+    }, "include": [
+        "**/*.ts", 
+        "../common/**/*.ts"
+    ]
+}

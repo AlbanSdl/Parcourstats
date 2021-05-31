@@ -1,6 +1,6 @@
 import { readFile } from "fs";
 import * as path from "path";
-import { IProvider } from "common/provider";
+import { IProvider } from "../../common/provider";
 
 export class i18n implements IProvider<string> {
 
@@ -13,7 +13,7 @@ export class i18n implements IProvider<string> {
         readFile(path.join(__dirname, `../resources/locales/${lang}`), "utf8", (err, data) => {
             if (!err) {
                 data.split("\n").forEach((str) => {
-                    const sp = str.split(/\s/)
+                    const sp = str.split(/\s/);
                     if (sp.length > 1)
                         this.translation.set(sp[0], sp.slice(1, sp.length).filter((l) => l.length > 0).join(" "));
                 })
@@ -23,7 +23,8 @@ export class i18n implements IProvider<string> {
 
     public get(id: string): string {
         const translation = this.translation.get(id);
-        return translation == null ? id : translation;
+        console.log(translation ?? id);
+        return translation ?? id;
     }
 
 }

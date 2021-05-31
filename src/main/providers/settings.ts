@@ -10,14 +10,10 @@ export class Settings {
 
     constructor() {
         this.settingsPath = join(this.dataFolder, "config.json");
-        this.data = this.parse();
-    }
-
-    private parse(): object {
         try {
-            return JSON.parse(readFileSync(this.settingsPath, 'utf8'));
+            this.data = JSON.parse(readFileSync(this.settingsPath, 'utf8'));
         } catch (error) {
-            return {};
+            this.data = {};
         }
     }
 
@@ -26,17 +22,17 @@ export class Settings {
         writeFileSync(this.settingsPath, JSON.stringify(this.data, null, 4));
     }
 
-    public get(key: string, fallback: string | object | number | boolean = null): string | object | number | boolean {
+    public get<T>(key: string, fallback: T = null): T {
         let val = this.data;
         for (const part of key.split(".")) {
             if (val == null)
                 break;
             val = (<any>val)[part];
         }
-        return val == null ? fallback : val;
+        return (val === null || val === undefined ? fallback : val) as T;
     }
 
-    public set(key: string, val: string | object | number | boolean): void {
+    public set<T>(key: string, val: T): void {
         let temp = this.data;
         const keys = key.split(".");
         const last = keys.pop();
