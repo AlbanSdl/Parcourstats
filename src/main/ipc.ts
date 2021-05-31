@@ -1,5 +1,5 @@
 import { ipcMain } from "electron"
-import { ParcourStats } from "index";
+import { ParcourStats } from "./index";
 import { BridgedRequestType, ProcessBridge } from "../common/window"
 
 export class Ipc implements ProcessBridge {
