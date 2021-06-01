@@ -1,5 +1,6 @@
-import { Ascript } from "ascript";
 import { View } from "app/View";
+import { enableIcons } from "graph/icon";
+import { AppNotification } from "graph/notification";
 import { BridgedRequestType } from "../common/window";
 
 export interface AppContext {
@@ -7,16 +8,17 @@ export interface AppContext {
     createElement(id: string, ...classes: Array<string>): HTMLDivElement;
 }
 
-const view = new View();
-
 window.onload = () => {
-    document.getElementById("loaderText").innerText = view.getLocale("editor.app.loading");
+    enableIcons();
+    const view = new View();
+    new AppNotification("Loaded", -1);
+    document.getElementById("loader-text").innerText = view.getLocale("app.loading");
     window.bridge.on(BridgedRequestType.ERROR, error => 
-        new Ascript.Notification(error/*`${Icon.getIcon(Icon.Type.ERROR, 'ic')} ${error}`*/).setBackground("#f00").send())
-    document.getElementById("windowIconClose").addEventListener('click', () => 
+        new AppNotification(error))
+    document.getElementById("wdicc").addEventListener('click', () => 
         window.bridge.send(BridgedRequestType.APP_LIFECYCLE_EXIT))
-    document.getElementById("windowIconMinimize").addEventListener('click', () => 
+    document.getElementById("wdicmi").addEventListener('click', () => 
         window.bridge.send(BridgedRequestType.APP_LIFECYCLE_MINIMIZE))
-    document.getElementById("windowIconMaximize").addEventListener('click', () => 
+    document.getElementById("wdicma").addEventListener('click', () => 
         window.bridge.send(BridgedRequestType.APP_LIFECYCLE_MAXIMIZE))
 }

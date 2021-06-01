@@ -1,5 +1,6 @@
+import { fadeOutElement } from "graph/fade";
+import { Ripple } from "graph/ripple";
 import { BridgedRequestType } from "../../common/window";
-import { Ascript } from "../ascript";
 import { AppContext } from "../webview";
 
 export class View implements AppContext {
@@ -15,7 +16,7 @@ export class View implements AppContext {
 
     public setLoaded(loaded: boolean): void {
         if (this.isLoading && loaded)
-            Ascript.fadeOutElement(<HTMLElement>document.getElementsByClassName("splash")[0], true);
+            fadeOutElement(<HTMLElement>document.getElementsByClassName("splash")[0], 400, true);
         this.isLoading = !loaded;
     }
 
@@ -43,14 +44,14 @@ export class View implements AppContext {
         details.append(name, contents);
         card.appendChild(details);
         if (onclick != null) {
-            Ascript.addRippleListener(card);
+            Ripple.apply(card);
             card.addEventListener('click', onclick);
         }
         return card;
     }
 
     public setTitle(title: string): void {
-        (<HTMLElement>document.getElementById("appBar").getElementsByClassName("title")[0]).innerText = title;
+        (<HTMLElement>document.getElementById("app-bar").getElementsByClassName("title")[0]).innerText = title;
     }
 
     public getLocale(stringId: string): string {

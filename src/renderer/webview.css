@@ -1,25 +1,300 @@
-body, html{
-    background-color: #222;
+:root {
+    --color-secondary: #222;
+    --color-primary: #fff;
+    --color-accent: #2287fa;
+    --color-disabled: #888;
+    --color-ripple: var(--color-accent);
+    --color-app-bar: #111;
+}
+
+body,
+html {
+    background-color: var(--color-secondary);
     width: 100%;
     height: 100%;
     margin: 0;
-    color: #fff;
-    font-family: 'Source Sans Pro', sans-serif;
+    color: var(--color-primary);
+    font-family: Source Sans Pro, sans-serif;
     font-weight: 300;
     user-select: none;
 }
 
-.notif-content>.ic {
+svg {
+    width: 100%;
+    height: 100%;
+}
+
+.disabled {
+    background: var(--color-disabled);
+}
+
+.center-flexed {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+/*
+ * Notifications
+ */
+#notif-holder {
+    max-width: 300px;
+    width: 80%;
+    position: fixed;
+    display: block;
+    right: 5%;
+    z-index: 1000;
+    top: 50px;
+    height: 100%;
+    pointer-events: none;
+}
+.notification {
+    position: relative;
+    display: flex;
+    text-align: center;
+    font-size: 20px;
+    top: 5px;
+    width: auto;
+    max-width: 300px;
+    padding: 10px;
+    padding-right: 5px;
+    border-radius: 2px;
+    z-index: 10000;
+    margin-top:10px;
+    min-height: 50px;
+    pointer-events: all;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+    user-select: none;
+    background: var(--color-primary);
+    color: var(--color-secondary);
+}
+.modal > .actionbar .close,
+.notification > .close {
+    position: relative;
+    flex-shrink: 0;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: block;
+    cursor: pointer;
+    z-index: 100;
+    margin: 5px;
+    fill: var(--color-secondary);
+}
+.notification > .close > svg {
+    width: unset;
+    height: unset;
+}
+.notification > .content {
+    hyphens: auto;
+    width: 100%;
+}
+.notif-content > .ic {
     vertical-align: sub;
     margin-right: 8px;
 }
 
-.appContainer {
+/*
+ * Ripple
+ */
+.ripple {
+    position: absolute;
+    transform: translateX(-50%) translateY(-50%);
+    border-radius: 50%;
+    width: 0;
+    height: 0;
+    transition: all .5s ease-in-out;
+    background: var(--color-ripple);
+    pointer-events: none;
+}
+
+/*
+ * Inputs
+ */
+input.text-field {
+    background: transparent;
+    z-index: 1;
+    max-width: 300px;
+    margin: 0px auto;
+    width: 90%;
+    padding: 2px 5px;
+    border: medium none;
+    border-bottom: 1px solid;
+    outline: none;
+    font-size: 15px;
+    color: var(--color-primary);
+}
+
+/*
+ * Tooltips
+ */
+.tooltip {
+    position: absolute;
+    padding: 4px 6px;
+    border-radius: 2px;
+    opacity: 0;
+    background: var(--color-secondary);
+    font-size: 15px;
+}
+.tooltip::after {
+    content: " ";
+    position: absolute;
+    margin: -5px;
+    border-width: 5px;
+    border-style: solid;
+}
+.tooltip.left {
+    transform: translateX(-100%) translateY(-50%);
+}
+.tooltip.left::after {
+    top: 50%;
+    left: 0;
+    border-color: transparent var(--color-secondary) transparent transparent;
+}
+.tooltip.right {
+    transform: translateY(-50%);
+}
+.tooltip.right::after {
+    top: 50%;
+    left: 100%;
+    border-color: transparent transparent transparent var(--color-secondary);
+}
+.tooltip.top {
+    transform: translateX(-50%) translateY(-100%);
+}
+.tooltip.top::after {
+    top: 0;
+    left: 50%;
+    border-color: transparent transparent var(--color-secondary) transparent;
+}
+.tooltip.bottom {
+    transform: translateX(-50%);
+}
+.tooltip.bottom::after {
+    top: 100%;
+    left: 50%;
+    border-color: var(--color-secondary) transparent transparent transparent;
+}
+
+/*
+ * Buttons
+ */
+ .button {
+    display: inline-block;
+    cursor: pointer;
+    width: max-content;
+    font-size: 15px;
+    background: var(--color-accent);
+    color: var(--color-faded);
+    padding: 4px 8px;
+    border-radius: 3px;
+    user-select: none;
+}
+.button:not(.disabled) {
+    cursor: pointer;
+    pointer-events: all;
+}
+.button.disabled {
+    cursor: not-allowed;
+}
+.button.flat {
+    color: inherit;
+    background: inherit;
+}
+.button.compact {
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/*
+ * Drawables
+ */
+.drawn-acc-fill {
+    fill: var(--color-accent)
+}
+.drawn-acc-stroke {
+    stroke: var(--color-accent)
+}
+
+/*
+ * Modals
+ */
+.modal {
+    display: none;
+    top: 50%;
+    float: left;
+    left: 50%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transform: translateX(-50%) translateY(-50%);
+    position: fixed;
+    z-index: 99999;
+    box-shadow: 0 0 20px #000;
+    border-radius: 2px;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    background: var(--color-secondary);
+    color: var(--color-primary);
+}
+.modal > .actionbar {
+    width: auto;
+    height: auto;
+    padding: 5px;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: space-around;
+    justify-content: space-between;
+    user-select: none;
+    background: var(--color-primary);
+    color: var(--color-secondary);
+}
+.modal > .actionbar > .writable {
+    font-size: 26px;
+    text-decoration: none;
+    margin: 8px;
+}
+.modal .container {
+    padding: 8px 12px;
+    max-height: 75vh;
+    overflow: auto;
+}
+.modal .actionlist {
+    position: relative;
+    padding: 2px 0 8px 8px;
+    display: flex;
+    justify-content: flex-end;
+}
+.mask {
+    display: none;
+    overflow: hidden;
+    background-color: #000;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.8;
+    z-index: 9999;
+}
+
+/*
+ * LEGACY APP CONTENTS
+ * MAY BE KEPT BUT MAY ALSO BE DISCARDED AT ANY TIME
+ * PROCEED CAREFULLY
+ */
+.app-container {
     display: flex;
     flex-direction: column;
     position: fixed;
-    width: 100vW;
-    height: 100vH;
+    width: 100vw;
+    height: 100vh;
     box-sizing: border-box;
     padding: 24px 0 0 0 !important;
 }
@@ -103,7 +378,7 @@ body, html{
 /*
  * Animations
  */
-.smooth{
+.smooth {
     transition: all .5s ease-in-out;
     -moz-transition: all .5s ease-in-out;
     -webkit-transition: all .5s ease-in-out
@@ -178,63 +453,52 @@ body, html{
 /*
  * AppBar
  */
- .appBar {
-    width: 100vW;
+ .app-bar {
+    width: 100vw;
     height: 24px;
-    background: #111;
+    background: var(--color-app-bar);
     z-index: 10;
     position: fixed;
     -webkit-app-region: drag;
 }
-.appBar>.title {
+.app-bar > .title {
     float: left;
     font-weight: 700;
     padding-left: 5px;
     user-select: none;
 }
-.status {
+.app-bar .status {
     float: right;
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
 }
-.windowIcon {
+.app-bar .status div {
     height: 20px;
     width: 20px;
     margin: 2px;
     border-radius: 50%;
-    background: #555;
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center;
     cursor: pointer;
+    fill: var(--color-primary);
     -webkit-app-region: no-drag;
 }
-.maximize {
-    background-image: url("../resources/icons/fullscreen.svg");
+.app-bar .status .maximize {
     background-color: #2AD500;
 }
-.maximize.maximized {
-    background-image: url("../resources/icons/fullscreen_exit.svg");
-}
-.minimize {
-    background-image: url("../resources/icons/minimize.svg");
+.app-bar .status .minimize {
     background-color: #FA0;
-    background-position-y: -2px;
 }
-.close {
-    background-image: url("../resources/icons/close.svg");
+.app-bar .status .close {
     background-color: #F00;
 }
 
 /*
  * Splash screen
  */
-.splash{
+.splash {
     position: fixed;
-    width: 100vW;
-    height: 100vH;
-    background: #222;
+    width: 100vw;
+    height: 100vh;
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -242,186 +506,57 @@ body, html{
     pointer-events: all;
     z-index: 9;
 }
-.loader{
-    background: url(../resources/icons/load.svg) no-repeat;
+.loader {
+    stroke: var(--color-accent);
     width: 60px;
     height: 60px;
-    margin: auto auto
+    margin: auto auto;
 }
-.splash>.loader{
-    margin: 20px auto
+.splash > .loader {
+    margin: 20px auto;
 }
-.splash>.loaderText{
-    color: #fff;
+.splash > .loader ~ .text {
     text-overflow: ellipsis;
     display: block !important;
-    margin: 0 auto !important
-}
-
-/*
- * Ripple animations
- */
- .rpl-effect{position:absolute;border-radius:50%;width:50px;height:50px;background:#2287fa;animation:rpl-animation 2s}
-@keyframes rpl-animation{
-from{transform:scale(1);opacity:.4}
-to{transform:scale(100);opacity:0}
+    margin: 0 auto !important;
 }
 
 /*
  * Fonts
  */
-@font-face{font-family:'Source Sans Pro';font-weight:300;src:url("../resources/fonts/Open Sans Pro/SourceSansPro-Light.ttf") format('truetype')}
-@font-face{font-family:'Source Sans Pro';font-weight:300;font-style:italic;src:url("../resources/fonts/Open Sans Pro/SourceSansPro-LightItalic.ttf") format('truetype')}
-@font-face{font-family:'Source Sans Pro';font-weight:100 200;src:url("../resources/fonts/Open Sans Pro/SourceSansPro-ExtraLight.ttf") format('truetype')}
-@font-face{font-family:'Source Sans Pro';font-weight:100 200;font-style:italic;src:url("../resources/fonts/Open Sans Pro/SourceSansPro-ExtraLightItalic.ttf") format('truetype')}
-
-/*
- * Media queries
- */
-@media (max-width:1400px){
-footer .copy{font-size:15px}
-.footerimg{width:15px;height:15px;vertical-align:sub}
-.sideLeft{flex:2;max-width:40%}
+@font-face{
+    font-family: Source Sans Pro;
+    font-weight: 300;
+    src: url("../resources/fonts/Open Sans Pro/SourceSansPro-Light.ttf") format('truetype');
 }
-@media (max-width:706px){
-#top{bottom:30px;right:30px}
-.flex{flex-direction:column}
-.actionbar{border-top-left-radius:3px;border-top-right-radius:3px}
-.mainContent .actionbar{border-top-left-radius:0;border-top-right-radius:0}
-.sideLeft{border-right:none;max-height:50%;max-width:100%}
-.hidden .new.hide span{margin-left:24%;margin-top:45%;transform:rotate(-45deg)}
-.hidden .new.hide span:nth-child(2){transform:rotate(45deg);margin-top:-2px;margin-left:44%}
-.mainContent{width:100%}
+@font-face{
+    font-family: Source Sans Pro;
+    font-weight: 300;
+    font-style: italic;
+    src: url("../resources/fonts/Open Sans Pro/SourceSansPro-LightItalic.ttf") format('truetype');
 }
-@media (max-width:700px){
-#notif-holder,.notif{max-width:80%}
+@font-face{
+    font-family: Source Sans Pro;
+    font-weight: 100 200;
+    src: url("../resources/fonts/Open Sans Pro/SourceSansPro-ExtraLight.ttf") format('truetype');
 }
-::selection{background-color:#222;color:#eee}
-@keyframes rotation{
-from{transform:rotate(0)}
-to{transform:rotate(359deg)}
+@font-face{
+    font-family: Source Sans Pro;
+    font-weight: 100 200;
+    font-style: italic;
+    src: url("../resources/fonts/Open Sans Pro/SourceSansPro-ExtraLightItalic.ttf") format('truetype');
 }
 
-/*
- * Network lists
- */
-.networkList {
-    flex: 2 1 auto;
-    max-width: 400px;
-}
-.networkList>.list {
-    font-size: 18px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-}
-.networkList>.list>.ref {
-    font-size: 16px;
-    color: #eee;
-    user-select: none;
-    position: relative;
-    padding: 2px 10px;
-    border-radius: 2px;
-}
-.networkList>.list>div>svg {
-    vertical-align: middle;
-    padding: 4px 10px;
-    transform: translateY(-2px);
-}
-.ref>* {
-    user-select: none;
-}
-.networkList>.list>.ref:nth-child(1) {
-    margin-top: 5px;
-}
-
-/*
- * Graph
- */
-.commit-graph-container {
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex: 4 2 500px;
-}
-.graph-container {
-    display: grid;
-    grid-template-columns: min-content;
-    width: fit-content;
-}
-.commit-graph {
-    display: table;
-    table-layout: auto;
-    min-width: 500px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    grid-column: 3;
-    grid-row: 1;
-}
-.commit-graph>.commit {
-    display: table-row;
-}
-.commit-graph>.commit>*{
-    display: table-cell;
-    padding: 2px 10px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-.commit-graph>.commit>.message {
-    max-width: 50ch;
-}
-.commit-graph>.commit>.date {
-    max-width: 20ch;
-}
-#graphic-graph {
-    position: relative;
-    display: block;
-    height: 100%;
-    grid-column: 2;
-    grid-row: 1;
-    min-width: 20px;
-    overflow: auto;
-    z-index: -1;
-}
-#graphic-graph>path {
-    fill: none;
-}
-.tagContainer>.ref {
-    padding: 0 6px;
-    border-radius: 2px;
-    font-size: 14px;
-    display: inline-flex;
-    margin: 0 2px;
-    user-select: none;
-}
-path.tagLink {
-    stroke-width: 1px;
-    stroke-opacity: .4;
-}
-.tagContainer>.ref:nth-child(1) {
-    margin: 0 2px 0 0 !important;
-}
-.tooltipIcon {
-    width: 14px;
-    height: 14px;
-}
-.commit>.tagContainer {
-    padding-left: 0 !important;
-    overflow: visible;
-    display: flex;
-}
-.tooltipWrapper {
-    vertical-align: bottom;
-    display: inline-grid;
-    width: fit-content;
-    position: relative;
-    padding: 2px 0;
-    margin-right: 4px;
+@media (max-width: 700px) {
+    #notif-holder, .notification {
+        max-width: 80%
+    }
 }
 
 /*
  * General improvements
  */
+::selection{background-color:#222;color:#eee}
 ::-webkit-scrollbar {
     background: #111;
     width: 8px;
@@ -433,34 +568,4 @@ path.tagLink {
 ::-webkit-scrollbar-thumb {
     background: #555;
     border-radius: 10px;
-}
-
-/* Tooltips */
-.tooltip {
-    visibility: hidden;
-    width: max-content;
-    max-width: 200px;
-    background-color: #555;
-    color: #fff;
-    text-align: center;
-    padding: 2px 6px;
-    border-radius: 2px;
-    position: absolute;
-    z-index: 1;
-    top: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    pointer-events: none;
-    font-size: 14px;
-}
-.tooltip::after {
-    content: "";
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent transparent #555 transparent;
-    pointer-events: none;
 }

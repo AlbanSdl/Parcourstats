@@ -4,22 +4,22 @@
     <meta charset="UTF-8">
     <title>Parcourstats</title>
     <link rel="stylesheet" href="./webview.css">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self';object-src 'none'" />
     <script src="./webview.js"></script>
   </head>
   <body>
-    <div class="appBar" id="appBar">
+    <div class="app-bar" id="app-bar">
       <div class="title"></div>
       <div class="status">
-        <div class="windowIcon maximize maximized" id="windowIconMaximize"></div>
-        <div class="windowIcon minimize" id="windowIconMinimize"></div>
-        <div class="windowIcon close" id="windowIconClose"></div>
+        <div class="maximize maximized" id="wdicma" data-icon="fullscreen"></div>
+        <div class="minimize" id="wdicmi" data-icon="minimize"></div>
+        <div class="close" id="wdicc" data-icon="close"></div>
       </div>
     </div>
-    <div class="appContainer" id="appContainer">
+    <div class="app-container" id="app-container">
       <div class="splash">
-        <div class="loader"></div>
-        <div class="loaderText" id="loaderText"></div>
+        <div class="loader" data-icon="load"></div>
+        <div class="text" id="loader-text"></div>
       </div>
     </div>
   </body>
