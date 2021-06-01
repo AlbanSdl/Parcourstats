@@ -1,4 +1,4 @@
-import { Factory, TagType } from "../structure/factory"
+import { createElement } from "structure/element"
 
 export enum AnimationType {
     FILL_LINEAR = 0b001,
@@ -53,7 +53,10 @@ export class Drawable {
         if (animation & AnimationType.FILL_LINEAR) {
             this.element.classList.add('drawn-acc-fill');
             this.element.style.transitionProperty = "fill"
-            const anim = Factory.get("animate").toElement(TagType.SVG)
+            const anim = createElement({
+                tag: "animate",
+                svg: true
+            });
             anim.setAttribute("attributeType", "XML")
             anim.setAttribute("attributeName", "d")
             anim.setAttribute("repeatCount", "1")
@@ -95,21 +98,36 @@ export class Drawable {
                 webKitTransition: `stroke-dashoffset ${duration}ms cubic-bezier(.65,.05,.36,1)`,
                 strokeDashoffset: 0
             })
-            const clipPath = Factory.get("clipPath").setId(`drawable-clip-${id}`).toElement(TagType.SVG)
-            const clipPathContent = Factory.get("path").toElement(TagType.SVG)
-            clipPathContent.setAttribute("d", this.element.getAttribute("d"))
-            clipPathContent.setAttribute("clip-rule", "evenodd")
+            const clipPath = createElement({
+                tag: "clipPath",
+                svg: true,
+                id: `drawable-clip-${id}`
+            });
+            const clipPathContent = createElement({
+                tag: "path",
+                svg: true,
+                d: this.element.getAttribute("d"),
+                "clip-rule": "evenodd"
+            });
             clipPath.appendChild(clipPathContent)
-            const svgGroup = Factory.get("g").toElement(TagType.SVG)
-            svgGroup.setAttribute("clip-path", `url(#drawable-clip-${id})`)
-            const rect = Factory.get("circle").toElement(TagType.SVG)
-            this.element.classList.add('drawn-acc-fill');
-            rect.setAttribute("fill-opacity", "0.6")
-            rect.setAttribute("cx", "50%")
-            rect.setAttribute("cy", "50%")
-            rect.setAttribute("r", "0%")
-            rect.setAttribute("stroke", "none")
-            rect.style.transition = "all .5s ease"
+            const svgGroup = createElement({
+                tag: 'g',
+                svg: true,
+                "clip-path": `url(#drawable-clip-${id})`
+            });
+            const rect = createElement({
+                tag: 'circle',
+                svg: true,
+                classes: ['drawn-acc-fill'],
+                "fill-opacity": "0.6",
+                cx: "50%",
+                cy: "50%",
+                r: "0%",
+                stroke: "none",
+                style: {
+                    transition: "all .5s ease"
+                }
+            });
             svgGroup.appendChild(rect)
             this.element.parentElement.append(clipPath, svgGroup)
             setTimeout(() => rect.setAttribute("r", "50%"), duration)

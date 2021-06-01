@@ -1,4 +1,4 @@
-import { Factory } from "../structure/factory";
+import { createElement } from "structure/element";
 
 export enum Position {
     TOP = 0b001,
@@ -51,7 +51,9 @@ export class Tooltip {
     }
 
     private buildLabel() {
-        const label = Factory.get().addClass((Position[this.position] as string).toLowerCase()).setSmooth().toElement();
+        const label = createElement({
+            classes: [(Position[this.position] as string).toLowerCase(), 'smooth']
+        });
         label.append(this.label);
         this.instance = label as HTMLDivElement;
     }

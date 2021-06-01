@@ -1,7 +1,7 @@
 import { Button, ButtonStyle } from "./button";
-import { Factory } from "../structure/factory";
 import { fadeInElement, fadeOutElement } from "./fade";
-import { Ripple } from "./ripple";
+import { createElement } from "structure/element";
+import { Icon } from "./icon";
 
 interface ModalButton {
     readonly content: string
@@ -97,17 +97,16 @@ export class Modal {
         if (!!this.element)
             return console.error("Modal already displayed.")
         
-        this.element = Factory.get().addClass('modal').toElement()
-
+        this.element = createElement({classes: ['modal']});
         // ActionBar
-        this.actionBar = Factory.get().addClass('actionbar').toElement()
-        this.writableActionBar = Factory.get().addClass('writable').toElement()
+        this.actionBar = createElement({classes: ['actionbar']});
+        this.writableActionBar = createElement({classes: ['writable']});
         this.writableActionBar.innerText = this.title
         this.actionBar.appendChild(this.writableActionBar)
         this.element.appendChild(this.actionBar)
 
         // Content container
-        this.contentContainer = Factory.get().addClass('container').toElement();
+        this.contentContainer = createElement({classes: ['container']});
         this.contentContainer.append(content ?? this.content)
         this.element.appendChild(this.contentContainer)
 
@@ -115,19 +114,19 @@ export class Modal {
         fadeInElement(this.element, 400);
 
         // ActionBar close button
-        const closeButton = Factory.get().addClass('close').toElement()
-        Ripple.apply(closeButton);
+        const closeButton = createElement({classes: ['close', 'center-flexed'], ripple: true});
+        closeButton.addIcon(Icon.CLOSE);
         this.actionBar.appendChild(closeButton);
         closeButton.addEventListener('click', () => {
             this.hide();
         });
 
         // Button list
-        this.buttonList = Factory.get().addClass('actionlist').toElement()
+        this.buttonList = createElement({classes: ['actionlist']});
         this.element.appendChild(this.buttonList)
         
         // Faded background
-        this.fadeElement = Factory.get().addClass('mask').toElement()
+        this.fadeElement = createElement({classes: ['mask']});
         this.fadeElement.addEventListener('click', () => {
             this.hide();
         });

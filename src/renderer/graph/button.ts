@@ -1,4 +1,4 @@
-import { Factory } from "structure/factory";
+import { createElement } from "structure/element";
 import { Component } from "./component";
 import { Ripple } from "./ripple";
 
@@ -9,16 +9,17 @@ export enum ButtonStyle {
 }
 
 export class Button extends Component<HTMLElement> {
-    public readonly element: HTMLElement = Factory.get().addClass('button').toElement()
+    public readonly element: HTMLElement;
 
     constructor(content: string, private onclick: (this: Button, ev: MouseEvent) => any, 
         parent: Element = null, buttonStyle: ButtonStyle = ButtonStyle.RAISED) {
         super()
-        if (buttonStyle & ButtonStyle.FLAT) this.element.classList.add('flat');
-        if (buttonStyle & ButtonStyle.COMPACT) this.element.classList.add('compact');
-        this.element.innerText = content
-        parent?.appendChild(this.element)
-        Ripple.apply(this.element);
+        const classes = ['button'];
+        if (buttonStyle & ButtonStyle.FLAT) classes.push('flat');
+        if (buttonStyle & ButtonStyle.COMPACT) classes.push('compact');
+        this.element = createElement({classes: classes, ripple: true});
+        this.element.innerText = content;
+        parent?.appendChild(this.element);
     }
 
     public get enabled(): boolean {

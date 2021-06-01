@@ -1,6 +1,6 @@
 export namespace Ripple {
     const componentTag = 'has-ripple'
-    function listener(this: HTMLElement, e: MouseEvent) {
+    function listener(this: HTMLElement | SVGElement, e: MouseEvent) {
         this.style.overflow='hidden'
         this.style.position='relative'
         const bcr = this.getBoundingClientRect()
@@ -15,7 +15,7 @@ export namespace Ripple {
         r.style.width=r.style.height=`${rSize}px`
         setTimeout(() => r.remove(), 550)
     }
-    export function apply(target: HTMLElement) {
+    export function apply(target: HTMLElement | SVGElement) {
         if (!target.hasAttribute(componentTag)) {
             target.addEventListener('mousedown', listener)
             target.setAttribute(componentTag, '')
@@ -23,7 +23,7 @@ export namespace Ripple {
         }
         return false
     }
-    export function remove(target: HTMLElement) {
+    export function remove(target: HTMLElement | SVGElement) {
         if (target.hasAttribute(componentTag)) {
             target.removeEventListener('mousedown', listener)
             target.removeAttribute(componentTag)
@@ -33,6 +33,7 @@ export namespace Ripple {
     }
     export function init(className: string = 'button', excludedClasses: string = 'disabled') {
         for (let link of document.getElementsByClassName(className)) 
-            if (link instanceof HTMLElement && !link.className.includes(excludedClasses)) apply(link)
+            if ((link instanceof HTMLElement || link instanceof SVGElement) 
+                && !link.className.includes(excludedClasses)) apply(link)
     }
 }

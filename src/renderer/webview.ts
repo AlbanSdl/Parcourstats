@@ -11,10 +11,9 @@ export interface AppContext {
 window.onload = () => {
     enableIcons();
     const view = new View();
-    new AppNotification("Loaded", -1);
     document.getElementById("loader-text").innerText = view.getLocale("app.loading");
     window.bridge.on(BridgedRequestType.ERROR, error => 
-        new AppNotification(error))
+        new AppNotification(error, 10000, ['error']))
     document.getElementById("wdicc").addEventListener('click', () => 
         window.bridge.send(BridgedRequestType.APP_LIFECYCLE_EXIT))
     document.getElementById("wdicmi").addEventListener('click', () => 

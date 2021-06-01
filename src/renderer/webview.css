@@ -1,10 +1,17 @@
 :root {
     --color-secondary: #222;
+    --color-secondary-alt: #212121;
     --color-primary: #fff;
     --color-accent: #2287fa;
     --color-disabled: #888;
     --color-ripple: var(--color-accent);
+    --color-ripple-alt: var(--color-secondary);
     --color-app-bar: #111;
+    --color-full-dark: #000;
+    --color-green: #28cd00;
+    --color-yellow: #fa0;
+    --color-red: #ff3f25;
+    --color-dark-red: #cd0000;
 }
 
 body,
@@ -70,6 +77,11 @@ svg {
     background: var(--color-primary);
     color: var(--color-secondary);
 }
+.notification.error {
+    background: var(--color-dark-red);
+    color: var(--color-primary);
+    fill: var(--color-primary) !important;
+}
 .modal > .actionbar .close,
 .notification > .close {
     position: relative;
@@ -86,6 +98,9 @@ svg {
 .notification > .close > svg {
     width: unset;
     height: unset;
+}
+.notification > .close .ripple {
+    background: var(--color-secondary-alt);
 }
 .notification > .content {
     hyphens: auto;
@@ -105,6 +120,7 @@ svg {
     border-radius: 50%;
     width: 0;
     height: 0;
+    opacity: .5;
     transition: all .5s ease-in-out;
     background: var(--color-ripple);
     pointer-events: none;
@@ -231,7 +247,7 @@ input.text-field {
     transform: translateX(-50%) translateY(-50%);
     position: fixed;
     z-index: 99999;
-    box-shadow: 0 0 20px #000;
+    box-shadow: 0 0 20px var(--color-full-dark);
     border-radius: 2px;
     width: auto;
     height: auto;
@@ -307,13 +323,13 @@ input.text-field {
     font-weight: 200;
     display: flex;
 }
-.containerHeader>.details {
+.containerHeader > .details {
     padding: 0 20px;
     font-size: 20px;
     text-align: left;
 }
-.details>.repoPath {
-    color: #888;
+.details > .repoPath {
+    color: var(--color-disabled);
     font-style: italic;
     font-size: 16px;
 }
@@ -370,7 +386,7 @@ input.text-field {
     user-select: none;
     pointer-events: all;
 }
-.menuItem>* {
+.menuItem > * {
     margin: auto;
     text-align: center;
 }
@@ -387,36 +403,35 @@ input.text-field {
 /*
  * Cards
  */
-
 .card {
-    border: #fff 1px solid;
+    border: var(--color-primary) 1px solid;
     border-radius: 3px;
     padding: 10px;
     display: flex;
     flex-direction: row;
-    background-color: #222;
+    background-color: var(--color-secondary);
     margin-bottom: 10px;
     cursor: pointer;
     pointer-events: all;
     user-select: none;
     position: relative;
 }
-.card>.icon {
+.card > .icon {
     display: block;
     width: 40px;
     height: 40px;
     margin: 10px;
     flex-shrink: 0;
 }
-.card>.details>.name {
+.card > .details > .name {
     font-size: 18px;
 }
-.card>.details>.description {
+.card > .details > .description {
     font-size: 16px;
     font-style: italic;
-    color: #888;
+    color: var(--color-disabled);
 }
-.card>.details {
+.card > .details {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
@@ -424,15 +439,15 @@ input.text-field {
     margin: 0 10px;
 }
 .card:hover {
-    border-color: #2287fa;
-    background-color: #272727;
-    color: #2287fa;
+    border-color: var(--color-accent);
+    background-color: var(--color-secondary-alt);
+    color: var(--color-accent);
 }
-.card:hover>.details>.description {
-    color: #2287fa;
+.card:hover > .details > .description {
+    color: var(--color-accent);
 }
-.card:hover>.icon>path {
-    stroke: #2287fa;
+.card:hover > .icon > path {
+    stroke: var(--color-accent);
     animation: iconHover .5s ease-in-out forwards;
 }
 @keyframes iconHover {
@@ -483,13 +498,13 @@ input.text-field {
     -webkit-app-region: no-drag;
 }
 .app-bar .status .maximize {
-    background-color: #2AD500;
+    background-color: var(--color-green);
 }
 .app-bar .status .minimize {
-    background-color: #FA0;
+    background-color: var(--color-yellow);
 }
 .app-bar .status .close {
-    background-color: #F00;
+    background-color: var(--color-red);
 }
 
 /*
@@ -556,9 +571,12 @@ input.text-field {
 /*
  * General improvements
  */
-::selection{background-color:#222;color:#eee}
+::selection {
+    background-color: var(--color-secondary);
+    color: var(--color-accent)
+}
 ::-webkit-scrollbar {
-    background: #111;
+    background: var(--color-app-bar);
     width: 8px;
     border-radius: 10px;
 }
@@ -566,6 +584,6 @@ input.text-field {
     display: none;
 }
 ::-webkit-scrollbar-thumb {
-    background: #555;
+    background: var(--color-disabled);
     border-radius: 10px;
 }

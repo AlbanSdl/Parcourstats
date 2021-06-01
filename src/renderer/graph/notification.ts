@@ -1,7 +1,7 @@
 import { fadeInElement, fadeOutElement } from "./fade";
 import { Ripple } from "./ripple";
-import { Factory } from "../structure/factory";
 import { Icon } from "./icon";
+import { createElement } from "structure/element";
 
 const notifQueue = {};
 const notifQueueTimed: Array<number> = [];
@@ -31,11 +31,14 @@ export class AppNotification {
         this.onDismiss = onDismiss;
         
         // Create notification
-        this.element = Factory.get().addClass('notification', ...this.classes).setId(`notification-${this.id}`).toElement()
-        this.elementClose = Factory.get().addClass('close', 'center-flexed').toElement()
+        this.element = createElement({
+            classes: ['notification', ...this.classes],
+            id: `notification-${this.id}`
+        });
+        this.elementClose = createElement({classes: ['close', 'center-flexed']});
         this.elementClose.addIcon(Icon.CLOSE);
         this.element.appendChild(this.elementClose)
-        const notifContent = Factory.get().addClass('content').toElement()
+        const notifContent = createElement({classes: ['content']});
         notifContent.innerText = this.content
         this.element.appendChild(notifContent)
         if (notifQueueTimed.length > 7) notifQueue[notifQueueTimed[0]].hide();
@@ -76,7 +79,7 @@ export class AppNotification {
     private findHolder(): HTMLElement {
         const legacy = document.getElementById('notif-holder')
         if (!!legacy) return legacy
-        const holder = Factory.get().setId('notif-holder').toElement()
+        const holder = createElement({id: 'notif-holder'});
         document.body.appendChild(holder)
         return holder
     }
