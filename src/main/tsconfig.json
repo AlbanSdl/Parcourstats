@@ -1,10 +1,9 @@
 {
+    "extends": "../tsconfig.json",
     "compilerOptions": {
         "module": "CommonJS",
-        "target": "ESNext",
-        "noImplicitAny": true,
-        "outDir": "../../build/raw",
-        "moduleResolution": "Node"
+        "moduleResolution": "Node",
+        "noImplicitAny": true
     }, "include": [
         "**/*.ts",
         "../common/**/*.ts"

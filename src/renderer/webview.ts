@@ -1,23 +1,18 @@
 import { View } from "app/View";
 import { enableIcons } from "components/icon";
 import { AppNotification } from "components/notification";
-import { BridgedRequestType } from "../common/window";
-
-export interface AppContext {
-    getLocale(id: string): string;
-    createElement(id: string, ...classes: Array<string>): HTMLDivElement;
-}
+import { BackendRequest, ClientRequest } from "../common/window";
 
 window.onload = () => {
     enableIcons();
     const view = new View();
     document.getElementById("loader-text").innerText = view.getLocale("app.loading");
-    window.bridge.on(BridgedRequestType.ERROR, error => 
+    window.bridge.on(BackendRequest.ERROR_DISPATCH, error => 
         new AppNotification(error, 10000, ['error']))
     document.getElementById("wdicc").addEventListener('click', () => 
-        window.bridge.send(BridgedRequestType.APP_LIFECYCLE_EXIT))
+        window.bridge.send(ClientRequest.WINDOW_EXIT))
     document.getElementById("wdicmi").addEventListener('click', () => 
-        window.bridge.send(BridgedRequestType.APP_LIFECYCLE_MINIMIZE))
+        window.bridge.send(ClientRequest.WINDOW_MINIMIZE))
     document.getElementById("wdicma").addEventListener('click', () => 
-        window.bridge.send(BridgedRequestType.APP_LIFECYCLE_MAXIMIZE))
+        window.bridge.send(ClientRequest.WINDOW_MAXIMIZE))
 }

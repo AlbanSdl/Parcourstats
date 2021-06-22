@@ -1,33 +1,35 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { BridgedRequestType } from "../common/window";
+import { BackendRequest, ClientRequest, ClientSyncRequest } from "../common/window";
 
 contextBridge.exposeInMainWorld('bridge', {
-    send: (command: BridgedRequestType, ...details: any[]): void => {
+    send: (command: ClientRequest, ...details: any[]): void => {
         switch (command) {
-            case BridgedRequestType.APP_LIFECYCLE_EXIT:
-            case BridgedRequestType.APP_LIFECYCLE_MAXIMIZE:
-            case BridgedRequestType.APP_LIFECYCLE_MINIMIZE:
+            case ClientRequest.WINDOW_EXIT:
+            case ClientRequest.WINDOW_MAXIMIZE:
+            case ClientRequest.WINDOW_MINIMIZE:
                 ipcRenderer.send(command);
                 break;
-            case BridgedRequestType.ERROR:
-                ipcRenderer.send(command, details[0]);
+            case ClientRequest.ERROR_DISPATCH:
+                const allowedData = details[0];
+                ipcRenderer.send(command,
+                    typeof allowedData === "string" ? allowedData : "");
                 break;
             default:
                 throw new Error(`Cannot send invalid event ${command}`);
         }
     },
-    sendSync: (command: BridgedRequestType, ...details: any[]): any => {
+    sendSync: (command: ClientSyncRequest, ...details: any[]): any => {
         switch (command) {
-            case BridgedRequestType.GET_LOCALE:
+            case ClientSyncRequest.LOCALE_GET:
+                if (typeof details[0] !== "string") return details[0];
                 return ipcRenderer.sendSync(command, details[0]);
             default:
                 throw new Error(`Cannot send invalid event ${command}`);
         }
     },
-
-    on: (command: BridgedRequestType, callback: (...details: any[]) => any): void => {
+    on: (command: BackendRequest, callback: (...details: any[]) => any): void => {
         switch (command) {
-            case BridgedRequestType.ERROR:
+            case BackendRequest.ERROR_DISPATCH:
                 ipcRenderer.on(command, callback);
                 break;
             default:

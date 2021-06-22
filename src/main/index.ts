@@ -3,7 +3,7 @@ import { join } from "path";
 import { i18n } from "./providers/i18n";
 import { Ipc } from "./ipc";
 import { Settings } from "./providers/settings";
-import { BridgedRequestType, ProcessBridge } from "../common/window";
+import { BackendRequest, ClientRequest, ClientSyncRequest, ProcessBridge } from "../common/window";
 
 app.setAppUserModelId("fr.asdl.parcourstats");
 
@@ -15,10 +15,10 @@ export class ParcourStats {
     public window: BrowserWindow = null;
 
     constructor() {
-        this.ipc.on(BridgedRequestType.APP_LIFECYCLE_EXIT, () => this.window.close())
-        this.ipc.on(BridgedRequestType.APP_LIFECYCLE_MAXIMIZE, () => this.window.isMaximized() ? this.window.unmaximize() : this.window.maximize())
-        this.ipc.on(BridgedRequestType.APP_LIFECYCLE_MINIMIZE, () => this.window.minimize())
-        this.ipc.on(BridgedRequestType.GET_LOCALE, key => this.i18n.get(key))
+        this.ipc.on(ClientRequest.WINDOW_EXIT, () => this.window.close())
+        this.ipc.on(ClientRequest.WINDOW_MAXIMIZE, () => this.window.isMaximized() ? this.window.unmaximize() : this.window.maximize())
+        this.ipc.on(ClientRequest.WINDOW_MINIMIZE, () => this.window.minimize())
+        this.ipc.on(ClientSyncRequest.LOCALE_GET, key => this.i18n.get(key))
     }
 
     public init(): void {
@@ -41,11 +41,11 @@ export class ParcourStats {
             this.window = null
         })
         this.window.on('maximize', () => {
-            this.window.webContents.send("lifecycle", "maximized");
+            this.ipc.send(BackendRequest.WINDOW_MAXIMIZED, true);
             this.settings.set("client.maximized", true);
         })
         this.window.on('unmaximize', () => {
-            this.window.webContents.send("lifecycle", "unmaximized");
+            this.ipc.send(BackendRequest.WINDOW_MAXIMIZED, false);
             this.settings.set("client.maximized", false);
         })
     }

@@ -5,7 +5,7 @@ declare global {
         /** Inserts an icon as a svg tag IN the current element. 
          *  In order to load icons automatically when the html document is loaded, add
          *  `data-icon` attributes to nodes. */
-        addIcon(this: HTMLElement, icon: Icon): Promise<void>;
+        addIcon(this: HTMLElement, icon: Icon): Promise<SVGSVGElement>;
     }
 }
 
@@ -30,7 +30,9 @@ export enum Icon {
 
 export async function enableIcons() {
     HTMLElement.prototype.addIcon = async function(icon) {
-        this.appendChild(await loadResourceFile(icon));
+        const iconElement = await loadResourceFile(icon);
+        this.appendChild(iconElement);
+        return iconElement;
     }
     const ATTRIBUTE_ICON = "data-icon";
     for (const elem of document.querySelectorAll(`[${ATTRIBUTE_ICON}]`)) {

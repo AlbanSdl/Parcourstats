@@ -1,9 +1,10 @@
 import { fadeOutElement } from "components/fade";
 import { Ripple } from "components/ripple";
-import { BridgedRequestType } from "../../common/window";
-import { AppContext } from "../webview";
+import { ClientSyncRequest } from "../../common/window";
+import { createElement } from "structure/element";
+import { Icon } from "components/icon";
 
-export class View implements AppContext {
+export class View {
 
     private isLoading: boolean;
     private readonly cachedLocales: Map<string, string>;
@@ -20,33 +21,34 @@ export class View implements AppContext {
         this.isLoading = !loaded;
     }
 
-    public createElement(id: string, ...classes: Array<string>): HTMLDivElement {
-        const elem = document.createElement("div");
-        if (id != null)
-            elem.id = id;
-        elem.classList.add(...classes);
-        return elem;
-    }
-
-    public createCard(id: string, /*iconType: Icon.Type,*/ title: string, content: string, onclick: () => any = null) {
-        const card = this.createElement(id, "card", "smooth");
-        /*if (iconType != null) {
-            card.innerHTML = Icon.getIcon(iconType, "icon");
-            for (const path of <any>card.getElementsByTagName("svg")[0].children)
-                if (path instanceof SVGPathElement)
-                    path.style.strokeDasharray = path.style.strokeDashoffset = path.getTotalLength().toString();
-        }*/
-        const details = this.createElement(null, "details");
-        const name = this.createElement(null, "name");
-        name.innerText = title;
-        const contents = this.createElement(null, "description", "smooth");
-        contents.innerHTML = content;
+    public createCard(id: string, icon: Icon, title: string, content: string, onclick: () => any = null) {
+        const card = createElement({
+            classes: ["card", "smooth"],
+            id,
+            ripple: onclick !== null
+        })
+        card.addIcon(icon).then(icon => {
+            for (const path of icon.children) if (path instanceof SVGPathElement) {
+                path.style.strokeDasharray = path.style.strokeDashoffset = path.getTotalLength().toString();
+                path.getBoundingClientRect();
+                path.style.strokeDasharray = path.style.strokeDashoffset = "0";
+            }
+        })
+        const details = createElement({
+            classes: ["details"]
+        })
+        const name = createElement({
+            classes: ["name"]
+        });
+        name.textContent = title;
+        const contents = createElement({
+            classes: ["description", "smooth"]
+        });
+        contents.textContent = content;
         details.append(name, contents);
         card.appendChild(details);
-        if (onclick != null) {
-            Ripple.apply(card);
+        if (onclick != null)
             card.addEventListener('click', onclick);
-        }
         return card;
     }
 
@@ -57,7 +59,7 @@ export class View implements AppContext {
     public getLocale(stringId: string): string {
         const cached = this.cachedLocales.get(stringId);
         if (cached == null)
-            this.cachedLocales.set(stringId, window.bridge.sendSync(BridgedRequestType.GET_LOCALE, stringId));
+            this.cachedLocales.set(stringId, window.bridge.sendSync(ClientSyncRequest.LOCALE_GET, stringId));
         return cached ?? this.cachedLocales.get(stringId);
     }
 

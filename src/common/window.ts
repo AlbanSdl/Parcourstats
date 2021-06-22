@@ -5,28 +5,47 @@ declare global {
 }
 
 export declare interface ProcessBridge {
-    send(command: BridgedRequestType.ERROR, details: string): void;
-    on(command: BridgedRequestType.APP_LIFECYCLE_EXIT
-        | BridgedRequestType.APP_LIFECYCLE_MAXIMIZE
-        | BridgedRequestType.APP_LIFECYCLE_MINIMIZE,
-        callback: () => void): void;
-    on(command: BridgedRequestType.ERROR, callback: (details: string) => void): void;
-    on(command: BridgedRequestType.GET_LOCALE, callback: (key: string) => string): void;
+    send<K extends BackendRequest>(command: K, ...args: RequestArgs<K>): void;
+    on<K extends ClientRequest | ClientSyncRequest>(command: K, callback: (...data: RequestArgs<K>) => ResponseArgs<K>): void;
 }
 
 export declare interface ClientBridge {
-    send(command: BridgedRequestType.APP_LIFECYCLE_EXIT 
-        | BridgedRequestType.APP_LIFECYCLE_MAXIMIZE 
-        | BridgedRequestType.APP_LIFECYCLE_MINIMIZE): void;
-    send(command: BridgedRequestType.ERROR, details: string): void;
-    sendSync(command: BridgedRequestType.GET_LOCALE, key: string): string;
-    on(command: BridgedRequestType.ERROR, callback: (data: string) => any): void;
+    send<K extends ClientRequest>(command: K, ...args: RequestArgs<K>): void
+    sendSync<K extends ClientSyncRequest>(command: K, ...args: RequestArgs<K>): ResponseArgs<K>
+    on<K extends BackendRequest>(command: K, callback: (...data: RequestArgs<K>) => ResponseArgs<K>): void;
 }
 
-export enum BridgedRequestType {
-    GET_LOCALE = "locale",
-    ERROR = "error",
-    APP_LIFECYCLE_EXIT = "exitapp",
-    APP_LIFECYCLE_MINIMIZE = "minimizeapp",
-    APP_LIFECYCLE_MAXIMIZE = "maximizeapp",
+export enum BackendRequest {
+    ERROR_DISPATCH = "error",
+    WINDOW_MAXIMIZED = "maximized"
+}
+
+export enum ClientRequest {
+    ERROR_DISPATCH = "error",
+    WINDOW_EXIT = "exitapp",
+    WINDOW_MINIMIZE = "minimizeapp",
+    WINDOW_MAXIMIZE = "maximizeapp"
+}
+
+export enum ClientSyncRequest {
+    LOCALE_GET = "locale",
+}
+
+type Request = BackendRequest | ClientRequest | ClientSyncRequest;
+type RequestArgs<T extends Request> = T extends keyof BridgeRequestArgs ? 
+    BridgeRequestArgs[T] extends { args: infer R } ? R : void[] : void[];
+type ResponseArgs<T extends Request> = T extends keyof BridgeRequestArgs ?
+    BridgeRequestArgs[T] extends { return: infer R } ? R : void : void;
+
+interface BridgeRequestArgs {
+    "locale": {
+        args: [key: string],
+        return: string
+    },
+    "error": {
+        args: [message: string]
+    },
+    "maximized": {
+        args: [isMaximized: boolean]
+    }
 }
