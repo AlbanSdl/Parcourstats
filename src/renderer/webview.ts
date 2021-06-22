@@ -1,6 +1,6 @@
 import { View } from "app/View";
-import { enableIcons } from "graph/icon";
-import { AppNotification } from "graph/notification";
+import { enableIcons } from "components/icon";
+import { AppNotification } from "components/notification";
 import { BridgedRequestType } from "../common/window";
 
 export interface AppContext {

@@ -8,12 +8,11 @@ export enum ButtonStyle {
     COMPACT = 0b10,
 }
 
-export class Button extends Component<HTMLElement> {
+export class Button implements Component<HTMLElement> {
     public readonly element: HTMLElement;
 
     constructor(content: string, private onclick: (this: Button, ev: MouseEvent) => any, 
         parent: Element = null, buttonStyle: ButtonStyle = ButtonStyle.RAISED) {
-        super()
         const classes = ['button'];
         if (buttonStyle & ButtonStyle.FLAT) classes.push('flat');
         if (buttonStyle & ButtonStyle.COMPACT) classes.push('compact');

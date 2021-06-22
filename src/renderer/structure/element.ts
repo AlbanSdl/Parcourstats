@@ -1,6 +1,7 @@
-import { Ripple } from "graph/ripple";
+import { Ripple } from "components/ripple";
+import { Link } from "components/link";
 
-export class ElementProperties {
+export interface ElementProperties {
     /** The tag name of the element to create. Default is `div` */
     tag?: string;
     /** Whether the element to create is a svg element. Default is `false` */
@@ -29,6 +30,14 @@ export function createElement(options: ElementProperties = {}): Element {
     element.classList.add(...(options?.classes ?? []));
     if (options?.ripple) Ripple.apply(element);
     if (!!options?.link && element instanceof HTMLElement) Link.bind(element);
-    for (const key in options) if (!(key in ElementProperties)) element.setAttribute(key, options[key]);
+    for (const key in options) {
+        if (["tag", "svg", "id", "classes", "ripple", "link"].includes(key)) continue;
+        if (key === 'style') {
+            Object.assign(element.style, options[key])
+            continue;
+        }
+        element.setAttribute(key, typeof options[key] === "string" ? 
+            options[key].replaceAll(/\s+/g, " ") : options[key]);
+    }
     return element;
 }

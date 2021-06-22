@@ -1,3 +1,5 @@
+import { createElement } from "structure/element";
+
 declare global {
     interface HTMLElement {
         /** Inserts an icon as a svg tag IN the current element. 
@@ -13,7 +15,7 @@ async function loadResourceFile(icon: string) {
         request.open('GET', `../resources/icons/${icon.replaceAll(/[^0-9a-z_\-]/gumi, '')}.svg`, true);
         request.setRequestHeader('Content-Type', 'image/svg+xml; charset=utf-8');
         request.onload = function() { res(new DOMParser().parseFromString(this.responseText, 'image/svg+xml').firstElementChild as SVGSVGElement) }
-        request.onerror = request.onabort = () => res(document.createElementNS('http://www.w3.org/2000/svg', 'svg'));
+        request.onerror = request.onabort = () => res(createElement({tag: 'svg', svg: true}));
         request.send();
     });
 }

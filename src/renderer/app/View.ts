@@ -1,5 +1,5 @@
-import { fadeOutElement } from "graph/fade";
-import { Ripple } from "graph/ripple";
+import { fadeOutElement } from "components/fade";
+import { Ripple } from "components/ripple";
 import { BridgedRequestType } from "../../common/window";
 import { AppContext } from "../webview";
 

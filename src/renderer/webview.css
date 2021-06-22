@@ -225,6 +225,77 @@ input.text-field {
 }
 
 /*
+ * Graph
+ */
+.graph.container {
+    display: flex;
+    flex-flow: column nowrap;
+}
+.graph.container > .graph > .axis {
+    stroke: var(--color-primary);
+    fill: var(--color-primary);
+}
+.graph.container > .graph > path.graph-data {
+    fill: none;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    stroke: var(--color-disabled);
+}
+.graph.container > .graph > text.marker {
+    fill: var(--color-primary);
+    font-size: 3px;
+}
+.graph.container > .graph > path.marker {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke: var(--color-disabled);
+    stroke-width: .5px;
+    stroke-dasharray: .1px 1px;
+    stroke-dashoffset: 2px;
+}
+.graph.container > .graph + .caption {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 5%;
+}
+.graph.container > .graph + .caption > * {
+    padding: 5px !important;
+    margin-inline: 5px;
+    font-size: 18px !important;
+    height: 18px !important;
+    text-overflow: clip;
+    overflow: hidden;
+    border-radius: 14px !important;
+    display: flex !important;
+    align-items: center;
+    cursor: pointer;
+}
+.graph.container > .graph + .caption > * > *:first-child {
+    height: 14px;
+    aspect-ratio: 1;
+    margin-right: 5px;
+    border-radius: 50%;
+    background-color: var(--color-disabled);
+}
+.graph.container > .graph[has-selection] > path.graph-data:not([selected]) {
+    stroke-opacity: .3;
+}
+.graph.container > .graph + .caption[has-selection] > [selected] {
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+}
+.graph.container > .graph + .caption[has-selection] > :not([selected]) {
+    opacity: .6
+}
+.graph.container > .graph > *,
+.graph.container > .graph + .caption > * {
+    transition: all .2s ease-in-out;
+}
+
+/*
  * Drawables
  */
 .drawn-acc-fill {

@@ -1,4 +1,6 @@
-namespace Link {
+import { createElement } from "structure/element"
+
+export namespace Link {
     const linkClickedAttribute: string = 'data-being-clicked'
     const linkAttachementAttribute: string = 'data-link'
     export function bind(link: HTMLElement) {
@@ -13,7 +15,7 @@ namespace Link {
             e.stopImmediatePropagation()
             const location = this.getAttribute(linkAttachementAttribute)
             if (!!location) {
-                const helper = document.createElement('a')
+                const helper = createElement({tag: 'a'});
                 helper.href = location
                 helper.target = e.button === 1 && e.which === 2 ? '_blank' : ''
                 helper.click()

@@ -1,13 +1,18 @@
+import { createElement } from "structure/element"
+
 export namespace Ripple {
     const componentTag = 'has-ripple'
     function listener(this: HTMLElement | SVGElement, e: MouseEvent) {
         this.style.overflow='hidden'
         this.style.position='relative'
         const bcr = this.getBoundingClientRect()
-        const r = document.createElement("div")
-        r.classList.add('ripple');
-        r.style.left = `${e.x - bcr.x - window.scrollX}px`;
-        r.style.top = `${e.y - bcr.y - window.scrollY}px`;
+        const r = createElement({
+            classes: ['ripple'],
+            style: {
+                left: `${e.x - bcr.x - window.scrollX}px`,
+                top: `${e.y - bcr.y - window.scrollY}px`
+            }
+        })
         this.append(r)
         r.getBoundingClientRect()
         const rSize = Math.max(bcr.height, bcr.width, 600)
