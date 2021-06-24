@@ -25,7 +25,9 @@ export enum Icon {
     LOADING = 'load',
     PSUP = 'ic-parcoursup',
     PSUP_FULL = 'ic-parcoursup-full',
-    PSTATS = 'ic-parcourstats'
+    PSTATS = 'ic-parcourstats',
+    WINDOW_EXFS = 'fullscreen_exit',
+    WINDOW_ENFS = 'fullscreen'
 }
 
 export async function enableIcons() {

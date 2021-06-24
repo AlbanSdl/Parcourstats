@@ -3,8 +3,7 @@ import { createElement } from "structure/element"
 export namespace Ripple {
     const componentTag = 'has-ripple'
     function listener(this: HTMLElement | SVGElement, e: MouseEvent) {
-        this.style.overflow='hidden'
-        this.style.position='relative'
+        this.classList.toggle("ripple-container", true);
         const bcr = this.getBoundingClientRect()
         const r = createElement({
             classes: ['ripple'],

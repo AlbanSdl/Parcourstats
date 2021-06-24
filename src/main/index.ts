@@ -4,6 +4,7 @@ import { i18n } from "./providers/i18n";
 import { Ipc } from "./ipc";
 import { Settings } from "./providers/settings";
 import { BackendRequest, ClientRequest, ClientSyncRequest, ProcessBridge } from "../common/window";
+import { DataProvider } from "./providers/data";
 
 app.setAppUserModelId("fr.asdl.parcourstats");
 
@@ -13,15 +14,18 @@ export class ParcourStats {
     private readonly settings = new Settings();
     private readonly i18n = new i18n(<string> this.settings.get("client.lang", "en"));
     public window: BrowserWindow = null;
+    private database: DataProvider;
 
     constructor() {
         this.ipc.on(ClientRequest.WINDOW_EXIT, () => this.window.close())
         this.ipc.on(ClientRequest.WINDOW_MAXIMIZE, () => this.window.isMaximized() ? this.window.unmaximize() : this.window.maximize())
         this.ipc.on(ClientRequest.WINDOW_MINIMIZE, () => this.window.minimize())
-        this.ipc.on(ClientSyncRequest.LOCALE_GET, key => this.i18n.get(key))
+        this.ipc.on(ClientSyncRequest.LOCALE_GET, c => this.i18n.get(c.args[0]))
     }
 
-    public init(): void {
+    public async init() {
+        this.database = new DataProvider(this.ipc);
+        await this.database.createTables();
         this.window = new BrowserWindow({
             width: 800,
             height: 600,
@@ -50,11 +54,17 @@ export class ParcourStats {
         })
     }
 
+    public async onClose() {
+        await this.database?.close();
+        delete this.database;
+    }
+
 }
 
 const parcourstats = new ParcourStats();
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+    await parcourstats.onClose();
     if (process.platform !== 'darwin') app.quit();
 })
 app.on('activate', () => {

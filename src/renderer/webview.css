@@ -125,6 +125,10 @@ svg {
     background: var(--color-ripple);
     pointer-events: none;
 }
+.ripple-container {
+    overflow: hidden;
+    position: relative;
+}
 
 /*
  * Inputs
@@ -372,9 +376,26 @@ input.text-field {
 }
 
 /*
- * LEGACY APP CONTENTS
- * MAY BE KEPT BUT MAY ALSO BE DISCARDED AT ANY TIME
- * PROCEED CAREFULLY
+ * Activity
+ */
+.activity {
+    width: 100vw;
+    height: 100vh;
+    background: var(--color-secondary);
+}
+.activity[slide="in"] {
+    transform: translateX(-100vw);
+}
+.activity[slide="out"] {
+    transform: translateX(100vw);
+}
+.activity[fade="in"],
+.activity[fade="out"] {
+    opacity: 0;
+}
+
+/*
+ * Base
  */
 .app-container {
     display: flex;
@@ -385,81 +406,68 @@ input.text-field {
     box-sizing: border-box;
     padding: 24px 0 0 0 !important;
 }
-.containerHeader {
-    font-size: 40px;
-    padding: 20px;
-    text-align: center;
-    width: 100vw;
-    flex: 0 0 auto;
-    font-weight: 200;
+
+/*
+ * Loaders
+ */
+.loadable > svg.loader {
+    position: absolute;
+    display: block;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    stroke: var(--color-accent);
+    width: 50px;
+    height: 50px;
+}
+
+/*
+ * Home activity
+ */
+.activity.home {
     display: flex;
+    flex-flow: row nowrap;
 }
-.containerHeader > .details {
-    padding: 0 20px;
-    font-size: 20px;
-    text-align: left;
+.activity.home > * {
+    height: 100%;
 }
-.details > .repoPath {
-    color: var(--color-disabled);
-    font-style: italic;
-    font-size: 16px;
-}
-.overlay {
-    border-bottom: #fff 1px solid;
-}
-.containerContents {
-    flex: 4 2 auto;
-    padding: 20px;
+.activity.home > .side {
+    flex: 1 0 200px;
     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    overflow: auto;
+    flex-flow: column nowrap;
+    background: var(--color-full-dark);
+    gap: 10px;
+    overflow-y: auto;
+    align-items: center;
+    position: relative;
 }
-.quickStartList {
-    flex: 2 0 auto;
-    max-width: 400px;
-}
-.verticalList {
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    flex: 2 0 auto;
-    padding: 10px 10px 0 10px;
-}
-.recentRepoList {
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    flex: 4 2 auto;
-}
-.listHeader, .listMessage {
-    font-size: 20px;
-    padding: 10px 10px 10px 0;
-}
-.listMessage {
-    font-style: italic;
-}
-.menuBar {
+.activity.home > .side > .headers {
     font-size: 16px;
     display: flex;
-    flex-direction: row;
+    flex-flow: row wrap;
     justify-content: center;
-    width: 100%;
-    position: relative;
 }
-.menuItem {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    padding: 0 10px;
-    position: relative;
+.activity.home > .side > .headers > .header {
+    padding: 10px;
     cursor: pointer;
-    user-select: none;
-    pointer-events: all;
 }
-.menuItem > * {
-    margin: auto;
-    text-align: center;
+.activity.home > .side > .headers > .header[selected] {
+    border-bottom: 1px solid var(--color-accent);
+}
+.activity.home > .side > .headers > :not(.header) {
+    display: none;
+}
+.activity.home > .side > .wish {
+    display: block;
+    border-radius: 40px;
+    background: var(--color-secondary);
+    width: 95%;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+.activity.home > .overview {
+    flex: 3 1 400px;
 }
 
 /*
@@ -576,35 +584,6 @@ input.text-field {
 }
 .app-bar .status .close {
     background-color: var(--color-red);
-}
-
-/*
- * Splash screen
- */
-.splash {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    user-select: none;
-    pointer-events: all;
-    z-index: 9;
-}
-.loader {
-    stroke: var(--color-accent);
-    width: 60px;
-    height: 60px;
-    margin: auto auto;
-}
-.splash > .loader {
-    margin: 20px auto;
-}
-.splash > .loader ~ .text {
-    text-overflow: ellipsis;
-    display: block !important;
-    margin: 0 auto !important;
 }
 
 /*

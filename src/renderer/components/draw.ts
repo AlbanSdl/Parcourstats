@@ -2,15 +2,16 @@ import { createElement } from "structure/element"
 
 export enum AnimationType {
     FILL_LINEAR = 0b001,
-    DRAW_STROKE = 0b010
+    DRAW_STROKE = 0b110,
+    ONLY_STROKE = 0b100
 }
 /**
  * SVG Path animator
  */
 export class Drawable {
 
-    private element: SVGPathElement
-    public readonly path: ReadonlyArray<Path>
+    private readonly element!: SVGPathElement
+    public readonly path!: ReadonlyArray<Path>
 
     /**
      * Instantiates the Drawable and parses its path (d attribute).
@@ -21,15 +22,15 @@ export class Drawable {
     constructor(pathElement : SVGPathElement) {
         if (pathElement instanceof SVGPathElement)
             this.element = pathElement
-        if (!this.element) throw new DrawableError("Cannot instantiate Drawable on non path reference.")
+        else throw new DrawableError("Cannot instantiate Drawable on non path reference.")
         const attr = this.element.getAttribute("d")
         this.element.removeAttribute("d")
         const path = []
-        const regex = /[A-Z][^A-Z]*/gumi
+        const regex = /[a-z][^a-z]*/gi
         var current: string | null
         while ((current = (regex.exec(attr))?.[0]) != null) {
             const type = new PathType(current.charAt(0))
-            const points = current.split(/[A-Z]?[,\s]/gumi).filter((e: string) => !!e)
+            const points = current.slice(1).split(/[a-z]?[,\s]/gumi).filter((e: string) => !!e)
             for (var i = 0; (i + 1) * type.length <= points.length; i++)
                 path.push(new Path(type, points.slice(i * type.length, (i + 1) * type.length), this))
         }
@@ -74,7 +75,20 @@ export class Drawable {
             }, 2 * duration / this.path.length, 0)                    
         }
 
-        if (animation & AnimationType.DRAW_STROKE) {
+        if (animation & AnimationType.ONLY_STROKE) {
+            this.element.setAttribute("d", getPathFromIndex(this.path.length, false))
+            const length = this.element.getTotalLength()
+            Object.assign(this.element.style, {
+                strokeDasharray: `${length} ${length}`,
+                strokeDashoffset: length
+            })
+            this.element.getBoundingClientRect();
+            this.element.style.strokeDashoffset = "0";
+            if (!window.getComputedStyle(this.element).transition)
+                this.element.style.transition = `stroke-dashoffset ${duration}ms cubic-bezier(.65,.05,.36,1)`;
+        }
+
+        if ((animation & AnimationType.DRAW_STROKE) === AnimationType.DRAW_STROKE) {
             this.element.classList.add('drawn-acc-stroke');
             let temp: string
             while (true) {
@@ -83,21 +97,7 @@ export class Drawable {
             }
             const id = temp
             temp = undefined
-            this.element.setAttribute("d", getPathFromIndex(this.path.length, false))
             this.element.setAttribute("stroke-width", "6px")
-            const length = this.element.getTotalLength()
-            Object.assign(this.element.style, {
-                transition: 'none',
-                webKitTransition: 'none',
-                strokeDasharray: `${length} ${length}`,
-                strokeDashoffset: length
-            })
-            this.element.getBoundingClientRect();
-            Object.assign(this.element.style, {
-                transition: `stroke-dashoffset ${duration}ms cubic-bezier(.65,.05,.36,1)`,
-                webKitTransition: `stroke-dashoffset ${duration}ms cubic-bezier(.65,.05,.36,1)`,
-                strokeDashoffset: 0
-            })
             const clipPath = createElement({
                 tag: "clipPath",
                 svg: true,
@@ -146,9 +146,9 @@ export class Drawable {
 
 class Path {
 
-    private readonly type: PathType
-    private readonly values: Array<number>
-    public readonly drawable: Drawable
+    private readonly values!: Array<number>
+    public readonly type!: PathType
+    public readonly drawable!: Drawable
 
     constructor(type: PathType, points: Array<string>, drawable: Drawable) {
         if (!drawable) throw new DrawableError("Drawable Path must be attached to its parent.")

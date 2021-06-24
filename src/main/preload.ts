@@ -14,6 +14,9 @@ contextBridge.exposeInMainWorld('bridge', {
                 ipcRenderer.send(command,
                     typeof allowedData === "string" ? allowedData : "");
                 break;
+            case ClientRequest.DATA_REQUEST:
+                ipcRenderer.send(command, ...details);
+                break;
             default:
                 throw new Error(`Cannot send invalid event ${command}`);
         }
@@ -29,8 +32,10 @@ contextBridge.exposeInMainWorld('bridge', {
     },
     on: (command: BackendRequest, callback: (...details: any[]) => any): void => {
         switch (command) {
+            case BackendRequest.DATA_RESPONSE:
             case BackendRequest.ERROR_DISPATCH:
-                ipcRenderer.on(command, callback);
+            case BackendRequest.WINDOW_MAXIMIZED:
+                ipcRenderer.on(command, (...args) => callback(...args.slice(1)));
                 break;
             default:
                 throw new Error(`Cannot listen for invalid event ${command}`);

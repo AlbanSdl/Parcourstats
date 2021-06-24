@@ -1,4 +1,6 @@
 import { createElement } from "structure/element";
+import { AnimationType, Drawable } from "./draw";
+import { selectionAttribute, selectionPresentAttribute, Selector } from "./selector";
 
 interface PointData<T> {
     readonly x: T,
@@ -161,10 +163,10 @@ abstract class GraphEntry {
             }
         });
         this.reference?.updateScale(this.values);
-        this.updateDisplay(GraphEntryUpdate.COLOR | GraphEntryUpdate.NAME | GraphEntryUpdate.VALUES);
+        this.updateDisplay(GraphEntryUpdate.COLOR | GraphEntryUpdate.NAME | GraphEntryUpdate.VALUES, true);
     }
 
-    protected updateDisplay(code: GraphEntryUpdate) {
+    protected updateDisplay(code: GraphEntryUpdate, animate = false) {
         if (!this.reference) return;
         const element = this.reference!!.element
         if (!element) return;
@@ -185,6 +187,7 @@ abstract class GraphEntry {
                 path += `${!path?'M':'L'}${absCoords.x} ${absCoords.y}`;
             }
             element.setAttribute("d", path);
+            if (animate) new Drawable(element).animate(AnimationType.ONLY_STROKE, 400)
         }
     }
 }
@@ -255,7 +258,7 @@ export class Graph {
     public readonly yRatio!: number;
     private readonly entries: EntryReference[] = [];
     private readonly graph!: SVGSVGElement;
-    private readonly caption!: HTMLDivElement;
+    private readonly caption!: Selector<string>;
     private readonly wrapper!: HTMLDivElement;
     private readonly displayMarkers!: boolean;
     private readonly getAbscissaName: (value: number) => string;
@@ -270,8 +273,12 @@ export class Graph {
         this.yRatio = options?.yRatio ?? 100;
         this.padding = options?.paddingRatio ?? .1;
         this.displayMarkers = options?.displayLines === true;
-        this.getAbscissaName = options?.getAbscissaName ?? (v => v.toString())
-        this.getOrdinateName = options?.getOrdinateName ?? (v => v.toString())
+        this.getAbscissaName = options?.getAbscissaName ?? (v => v.toLocaleString(undefined, {
+            maximumFractionDigits: 2
+        }))
+        this.getOrdinateName = options?.getOrdinateName ?? (v => v.toLocaleString(undefined, {
+            maximumFractionDigits: 2
+        }))
         this.wrapper = createElement({
             classes: ["container", "graph"]
         });
@@ -288,11 +295,21 @@ export class Graph {
                 d: this.computeAxisPath()
             })
         )
-        this.caption = createElement({
+        const caption = createElement({
             classes: ["caption"]
-        })
-        this.setupLiveCaptionUpdate();
-        this.wrapper.append(this.graph, this.caption);
+        });
+        this.caption = new Selector({
+            container: caption,
+            extractor: e => e?.id?.match?.(/(?<=^caption-).+$/si)?.[0],
+            isUnique: true,
+            listener: entry => {
+                for (const caption of this.caption.children)
+                    this.graph.getElementById(`path-${caption}`)
+                        ?.toggleAttribute(selectionAttribute, caption === entry)
+                this.graph.toggleAttribute(selectionPresentAttribute, !!entry)
+            }
+        });
+        this.wrapper.append(this.graph, caption);
         options?.entries?.forEach(this.addEntry, this)
     }
 
@@ -343,45 +360,6 @@ export class Graph {
         });
     }
 
-    private setupLiveCaptionUpdate() {
-        const selectionAttribute = "selected"
-        const selectionPresentAttribute = "has-selection"
-        const mutationOptions: MutationObserverInit = {
-            attributeFilter: [selectionAttribute, selectionPresentAttribute],
-            childList: true,
-            subtree: true
-        };
-        const updateSelection = (obs: MutationObserver, entry?: Element) => {
-            obs.disconnect();
-            for (const caption of this.caption.children) {
-                caption.toggleAttribute(selectionAttribute, caption === entry);
-                this.graph.getElementById(caption?.id?.replaceAll(/^caption(?=-\w+$)/gui, "path"))
-                    ?.toggleAttribute(selectionAttribute, caption === entry)
-            }
-            this.caption.toggleAttribute(selectionPresentAttribute, !!entry)
-            this.graph.toggleAttribute(selectionPresentAttribute, !!entry)
-            obs.observe(this.caption, mutationOptions);
-        }
-        new MutationObserver((entries, obs) => {
-            for (const entry of entries) {
-                if (entry.type === "attributes" && entry.target instanceof Element) {
-                    const target = entry.target;
-                    if (entry.attributeName === selectionPresentAttribute && entry.target === this.caption 
-                        && !entry.target.hasAttribute(selectionPresentAttribute)) updateSelection(obs)
-                    else if (entry.attributeName === selectionAttribute && entry.target !== this.caption)
-                        updateSelection(obs, target.hasAttribute(entry.attributeName) ? target : undefined);
-                } else if (entry.type === "childList") {
-                    for (const added of entry.addedNodes)
-                        if (added instanceof Element && added.hasAttribute(selectionAttribute))
-                            updateSelection(obs, added);
-                    for (const deleted of entry.removedNodes)
-                        if (deleted instanceof Element && deleted.hasAttribute(selectionAttribute))
-                            updateSelection(obs, undefined);
-                }
-            }
-        }).observe(this.caption, mutationOptions)
-    }
-
     private updateScale(changes: {[key: number]: number}) {
         if (this.#boundingBox.expand(...Object.keys(changes).map(key => [parseInt(key), changes[key]] as [number, number]))) {
             this.entries.forEach(e => e.updateBounds());
@@ -394,8 +372,8 @@ export class Graph {
     }
 
     private updateAxisSteps() {
-        for (const marker of this.graph.getElementsByClassName("marker"))
-                marker.remove();
+        const elements = this.graph.getElementsByClassName("marker");
+        while (elements.length > 0) elements.item(0).remove();
         const min = this.#boundingBox.min, max = this.#boundingBox.max;
         this.generateAxisSteps(min, max, true);
         this.generateAxisSteps(min, max, false);
@@ -448,7 +426,7 @@ export class Graph {
 
     private getEntryCaption(id: string) {
         let current: HTMLDivElement;
-        for (const child of this.caption.children)
+        for (const child of this.caption.childrenElements)
             if (child.id === `caption-${id}`)
                 current = child as HTMLDivElement;
         if (!!current) return current;
@@ -462,9 +440,6 @@ export class Graph {
             classes: ["content"]
         }))
         this.caption.append(created);
-        created.addEventListener('click', function () {
-            this.toggleAttribute("selected");
-        })
         return created;
     }
 
