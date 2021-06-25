@@ -36,12 +36,14 @@ export class DataProvider {
                                 operator: ">=",
                                 value: sTargetedYear
                             })
+                            break;
                         case "user":
                             sPromise = this.rankUserTable.select("*", {
                                 field: "year",
                                 operator: ">=",
                                 value: sTargetedYear
                             })
+                            break;
                         default:
                             sPromise = Promise.resolve("Unknown table")
                     }
@@ -57,9 +59,11 @@ export class DataProvider {
                             promise = this.studyTable.insert(value as Study)
                             break;
                         case "global":
-                            promise = this.rankGlobalTable.insert(value as GlobalRankRecord)
+                            promise = this.rankGlobalTable.insert(value as GlobalRankRecord);
+                            break;
                         case "user":
-                            promise = this.rankUserTable.insert(value as UserRankRecord)
+                            promise = this.rankUserTable.insert(value as UserRankRecord);
+                            break;
                         default:
                             return reply(BackendRequest.DATA_RESPONSE,
                                 id, "Unknown table")

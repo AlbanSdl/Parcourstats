@@ -16,6 +16,7 @@ export declare interface ClientBridge {
     send<K extends ClientRequest>(command: K, ...args: RequestArgs<K>): void
     sendSync<K extends ClientSyncRequest>(command: K, ...args: RequestArgs<K>): ResponseArgs<K>
     on<K extends BackendRequest>(command: K, callback: (...data: RequestArgs<K>) => ResponseArgs<K>): void;
+    unregister(command: BackendRequest): void;
 }
 
 export enum BackendRequest {

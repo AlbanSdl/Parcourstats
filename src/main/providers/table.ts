@@ -126,11 +126,13 @@ class TableImpl<Entry> implements Table<Entry> {
                 rFields = fields;
             }
             const statementParts = [`SELECT ${rFields} FROM ${this.name}`];
-            const filters: Partial<Entry> = {};
+            const filters: {
+                [key in keyof Entry as `$${string & key}`]?: Entry[keyof Entry]
+            } = {};
             if (!!where) {
                 statementParts.push("WHERE");
                 statementParts.push(`${where.field} ${where.operator} $${where.field}`);
-                filters[where.field] = where.value
+                filters[`$${where.field}` as `$${string & keyof Entry}`] = where.value
             }
             this.db.all(statementParts.join(" "), filters, (err, row) => {
                 if (!!err) rej(err)
@@ -147,7 +149,9 @@ class TableImpl<Entry> implements Table<Entry> {
                 `(${entries.map(f => `"${f}"`).join()})`,
                 `VALUES (${entries.map(f => `$${f}`)})`
             ];
-            this.db.run(statementParts.join(" "), entry, err => {
+            this.db.run(statementParts.join(" "), {
+                ...Object.entries(entry).map(e => [`$${e[0]}`, e[1]])
+            }, err => {
                 if (!!err) rej(err)
                 else res();
             })
@@ -173,7 +177,7 @@ class TableImpl<Entry> implements Table<Entry> {
                 filters[`w${where.field}` as `w${string & keyof Entry}`] = where.value
             }
             this.db.run(statementParts.join(" "), {
-                ...updates,
+                ...Object.entries(updates).map(e => [`$${e[0]}`, e[1]]),
                 ...filters
             }, err => {
                 if (!!err) rej(err)

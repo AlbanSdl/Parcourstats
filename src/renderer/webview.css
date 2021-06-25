@@ -2,10 +2,12 @@
     --color-secondary: #222;
     --color-secondary-alt: #212121;
     --color-primary: #fff;
+    --color-primary-detail: #cdcdcd;
     --color-accent: #2287fa;
     --color-disabled: #888;
     --color-ripple: var(--color-accent);
     --color-ripple-alt: var(--color-secondary);
+    --color-secondary-detail: #454545;
     --color-app-bar: #111;
     --color-full-dark: #000;
     --color-green: #28cd00;
@@ -197,6 +199,9 @@ input.text-field {
     left: 50%;
     border-color: var(--color-secondary) transparent transparent transparent;
 }
+.smooth {
+    transition: all .5s ease-in-out;
+}
 
 /*
  * Buttons
@@ -365,7 +370,7 @@ input.text-field {
 .mask {
     display: none;
     overflow: hidden;
-    background-color: #000;
+    background-color: var(--color-full-dark);
     position: fixed;
     left: 0;
     top: 0;
@@ -380,7 +385,7 @@ input.text-field {
  */
 .activity {
     width: 100vw;
-    height: 100vh;
+    height: 100%;
     background: var(--color-secondary);
 }
 .activity[slide="in"] {
@@ -436,8 +441,7 @@ input.text-field {
     display: flex;
     flex-flow: column nowrap;
     background: var(--color-full-dark);
-    gap: 10px;
-    overflow-y: auto;
+    overflow: hidden;
     align-items: center;
     position: relative;
 }
@@ -446,6 +450,8 @@ input.text-field {
     display: flex;
     flex-flow: row wrap;
     justify-content: center;
+    order: 0;
+    flex: 0 0 auto;
 }
 .activity.home > .side > .headers > .header {
     padding: 10px;
@@ -457,91 +463,57 @@ input.text-field {
 .activity.home > .side > .headers > :not(.header) {
     display: none;
 }
-.activity.home > .side > .wish {
+.activity.home > .side > .list {
+    display: flex;
+    overflow-y: auto;
+    flex-flow: column nowrap;
+    width: 100%;
+}
+.activity.home > .side > .list > .wish {
+    position: relative;
     display: block;
-    border-radius: 40px;
     background: var(--color-secondary);
-    width: 95%;
-    padding: 10px 20px;
-    box-sizing: border-box;
+    width: 100%;
+    padding: 10px;
     cursor: pointer;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    transition: all .4s ease-in-out;
+}
+.activity.home > .side > .list > .wish[selected] {
+    background: var(--color-accent);
+}
+.activity.home > .side > .list > .wish::before {
+    content: attr(name);
+}
+.activity.home > .side > .list > .wish > .session {
+    font-style: italic;
+    font-size: 14px;
+    color: var(--color-disabled);
+    display: block;
+    width: 100%;
+    transition: all .4s ease-in-out;
+}
+.activity.home > .side > .list > .wish[selected] > .session {
+    color: var(--color-primary-detail);
+}
+.activity.home > .side > .list > .wish + .wish::after {
+    border-top: 1px solid var(--color-secondary-detail);
+    content: " ";
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+}
+.activity.home > .side > .list > .empty {
+    font-size: 18px;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
 }
 .activity.home > .overview {
-    flex: 3 1 400px;
-}
-
-/*
- * Animations
- */
-.smooth {
-    transition: all .5s ease-in-out;
-    -moz-transition: all .5s ease-in-out;
-    -webkit-transition: all .5s ease-in-out
-}
-
-/*
- * Cards
- */
-.card {
-    border: var(--color-primary) 1px solid;
-    border-radius: 3px;
-    padding: 10px;
-    display: flex;
-    flex-direction: row;
-    background-color: var(--color-secondary);
-    margin-bottom: 10px;
-    cursor: pointer;
-    pointer-events: all;
-    user-select: none;
+    flex: 5 1 auto;
     position: relative;
-}
-.card > .icon {
-    display: block;
-    width: 40px;
-    height: 40px;
-    margin: 10px;
-    flex-shrink: 0;
-}
-.card > .details > .name {
-    font-size: 18px;
-}
-.card > .details > .description {
-    font-size: 16px;
-    font-style: italic;
-    color: var(--color-disabled);
-}
-.card > .details {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    flex: 4 2 auto;
-    margin: 0 10px;
-}
-.card:hover {
-    border-color: var(--color-accent);
-    background-color: var(--color-secondary-alt);
-    color: var(--color-accent);
-}
-.card:hover > .details > .description {
-    color: var(--color-accent);
-}
-.card:hover > .icon > path {
-    stroke: var(--color-accent);
-    animation: iconHover .5s ease-in-out forwards;
-}
-@keyframes iconHover {
-    0% {
-        stroke-width: 1;
-    }
-    80% {
-        stroke-width: .5;
-        fill: transparent;
-    }
-    100% {
-        stroke-dashoffset: 0;
-        stroke-width: .5;
-        fill: transparent;
-    }
 }
 
 /*
@@ -627,13 +599,12 @@ input.text-field {
 }
 ::-webkit-scrollbar {
     background: var(--color-app-bar);
-    width: 8px;
-    border-radius: 10px;
+    width: 2px;
 }
 ::-webkit-scrollbar-button {
     display: none;
 }
 ::-webkit-scrollbar-thumb {
     background: var(--color-disabled);
-    border-radius: 10px;
+    border-radius: 8px;
 }
