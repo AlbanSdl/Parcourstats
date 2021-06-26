@@ -269,16 +269,15 @@ input.text-field {
     align-items: center;
     justify-content: center;
     padding-inline: 5%;
+    gap: 5px;
 }
 .graph.container > .graph + .caption > * {
-    padding: 5px !important;
-    margin-inline: 5px;
-    font-size: 18px !important;
-    height: 18px !important;
+    padding: 5px;
+    font-size: 18px;
     text-overflow: clip;
     overflow: hidden;
-    border-radius: 14px !important;
-    display: flex !important;
+    border-radius: 50px;
+    display: flex;
     align-items: center;
     cursor: pointer;
 }
@@ -511,9 +510,84 @@ input.text-field {
     padding: 20px;
     text-align: center;
 }
-.activity.home > .overview {
+.activity.home > .container {
     flex: 5 1 auto;
     position: relative;
+}
+.activity.home > .container > .fragment {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+.activity.home > .container > .fragment > .container {
+    display: block;
+    position: relative;
+    overflow-y: auto;
+}
+.activity.home > .container > .fragment.overview > .container {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+}
+.activity.home > .container > .fragment.overview > .container > .abstract {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    margin: 30px;
+    font-size: 16px;
+    gap: 15px;
+    background-color: var(--color-app-bar);
+    padding: 10px;
+    padding-top: 2px;
+    border-radius: 10px;
+}
+.activity.home > .container > .fragment.overview > .container > .abstract > .entry {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    max-width: 200px;
+}
+.activity.home > .container > .fragment.overview > .container > .abstract > .entry > .value {
+    display: block;
+    font-size: 30px;
+    font-weight: bold;
+}
+.activity.home > .container > .fragment.overview > .container > .abstract > .entry.accepted > .value {
+    color: var(--color-green)
+}
+.activity.home > .container > .fragment.overview > .container > .abstract > .entry.refused > .value {
+    color: var(--color-red)
+}
+.activity.home > .container > .fragment.overview > .container > .abstract > .entry.pending > .value {
+    color: var(--color-yellow)
+}
+.activity.home > .container > .fragment.overview > .container > .title:first-child {
+    font-size: 40px;
+    margin-block: 10px;
+}
+.activity.home > .container > .fragment.overview > .container > .title {
+    font-size: 24px;
+    display: block;
+    text-align: center;
+    font-weight: bold;
+}
+.activity.home > .container > .fragment.overview > .container > .title > .item {
+    font-size: 18px;
+    display: block;
+    text-align: justify;
+    font-weight: normal;
+    width: 100%;
+    padding: 10px 30px;
+    box-sizing: border-box;
 }
 
 /*

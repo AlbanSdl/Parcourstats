@@ -9,7 +9,7 @@ interface GlobalRankRecord {
     readonly year?: number;
     readonly application_last?: number
     readonly application_all?: number
-    readonly record_time?: number
+    readonly record_time?: string
 }
 
 interface UserRankRecord {
@@ -17,5 +17,5 @@ interface UserRankRecord {
     readonly year?: number;
     readonly application_queued?: number
     readonly application_absolute?: number
-    readonly record_time?: number
+    readonly record_time?: string
 }

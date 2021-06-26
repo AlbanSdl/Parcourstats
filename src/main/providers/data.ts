@@ -119,7 +119,7 @@ export class DataProvider {
                 default: "0"
             },
             record_time: {
-                type: "INTEGER",
+                type: "INTEGER" as any,
                 required: true,
                 default: "CURRENT_TIMESTAMP",
                 primaryKey: true
@@ -147,7 +147,7 @@ export class DataProvider {
                 default: "0"
             },
             record_time: {
-                type: "INTEGER",
+                type: "INTEGER" as any,
                 required: true,
                 default: "CURRENT_TIMESTAMP",
                 primaryKey: true

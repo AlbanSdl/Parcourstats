@@ -12,7 +12,7 @@ interface GraphReference {
     readonly element: SVGPathElement | null,
     readonly caption: HTMLDivElement,
     computeAbsCoordinates(x: number, y: number): PointData<number>,
-    updateScale(changes: {[key: number]: number}): void,
+    updateScale(changes: Map<number, number>): void,
     detach(): void,
     attachReady(ref: EntryReference): void
 }
@@ -23,7 +23,7 @@ interface EntryReference {
 }
 
 interface EntryDependency {
-    readonly values: {[key: number]: number},
+    readonly values: Map<number, number>,
     readonly id: string
 }
 
@@ -113,7 +113,7 @@ class BoundingBox {
 
 abstract class GraphEntry {
     public readonly id!: string;
-    protected abstract readonly values: { [abscissa: number]: number };
+    protected abstract readonly values: Map<number, number>;
     protected readonly dependantEntries: string[] = [];
     protected reference?: GraphReference;
     #name!: string;
@@ -172,18 +172,18 @@ abstract class GraphEntry {
         if (!element) return;
         if ((code & GraphEntryUpdate.COLOR) !== 0) {
             element.style.stroke = this.#color ?? 'var(--color-disabled)';
-            const marker = (this.reference!!.caption.getElementsByClassName('marker')[0] as HTMLDivElement);
+            const marker = (this.reference!!.caption.querySelector('.marker') as HTMLDivElement);
             if (!!marker) marker.style.backgroundColor = this.#color
         }
         if ((code & GraphEntryUpdate.NAME) !== 0) {
-            const content = (this.reference!!.caption.getElementsByClassName('content')[0] as HTMLDivElement);
+            const content = (this.reference!!.caption.querySelector('.content') as HTMLDivElement);
             if (!!content) content.textContent = this.#name;
         }
         if ((code & GraphEntryUpdate.VALUES) !== 0) {
             const values = this.values;
             let path: string = "";
-            for (const abscissa of Object.keys(values).map(a => parseInt(a)).sort()) {
-                const absCoords = this.reference.computeAbsCoordinates(abscissa, values[abscissa]);
+            for (const abscissa of [...values.keys()].sort()) {
+                const absCoords = this.reference.computeAbsCoordinates(abscissa, values.get(abscissa));
                 path += `${!path?'M':'L'}${absCoords.x} ${absCoords.y}`;
             }
             element.setAttribute("d", path);
@@ -193,22 +193,23 @@ abstract class GraphEntry {
 }
 
 export class DatasetGraphEntry extends GraphEntry {
-    protected values: { [abscissa: number]: number; } = {};
+    protected values: Map<number, number> = new Map();
 
-    public add(values: { [abscissa: number]: number }) {
+    public add(values: Map<number, number>) {
         this.reference?.updateScale(values);
-        Object.assign(this.values, values);
+        for(const entry of values.entries())
+            this.values.set(entry[0], entry[1]);
         this.updateDisplay(GraphEntryUpdate.VALUES)
     }
 
     public remove(...abscissas: number[]) {
         for (const abscissa of abscissas)
-            delete this.values[abscissa]
+            this.values.delete(abscissa)
         this.updateDisplay(GraphEntryUpdate.VALUES)
     }
 
     public clear() {
-        this.values = {};
+        this.values.clear();
         this.updateDisplay(GraphEntryUpdate.VALUES);
     }
 }
@@ -230,12 +231,9 @@ export class ComputedGraphEntry<T extends number> extends GraphEntry {
     }
     protected get values() {
         const sources = this.#dependencies.map(s => s.values);
-        const commonKeys = sources.map(Object.keys)
+        const commonKeys = sources.map(m => [...m.keys()])
             .reduce((from, next) => from.filter(value => next.includes(value)));
-        const values = {};
-        for (const key of commonKeys)
-            values[key] = this.#operator(parseInt(key), ...sources.map(s => s[key]) as any) || 0;
-        return values;
+        return new Map(commonKeys.map(k => [k, this.#operator(k, ...sources.map(s => s[k]) as any) || 0]))
     }
 }
 
@@ -341,7 +339,7 @@ export class Graph {
                 chart = undefined;
                 attached = false;
             },
-            updateScale: (changes: {[key: number]: number}) => {
+            updateScale: (changes: Map<number, number>) => {
                 assertAttached();
                 this.updateScale(changes)
             },
@@ -360,8 +358,8 @@ export class Graph {
         });
     }
 
-    private updateScale(changes: {[key: number]: number}) {
-        if (this.#boundingBox.expand(...Object.keys(changes).map(key => [parseInt(key), changes[key]] as [number, number]))) {
+    private updateScale(changes: Map<number, number>) {
+        if (this.#boundingBox.expand(...changes.entries())) {
             this.entries.forEach(e => e.updateBounds());
             if (!!this.wrapper.parentElement) this.updateAxisSteps();
         }
@@ -461,9 +459,11 @@ export class Graph {
     }
 
     private *stepBetween(min: number, max: number) {
-        const lmin = Math.log10(min) | 0, lmax = Math.log10(max) | 0, stepDiff = Math.pow(10, 
-            Math.floor(lmax)) / (lmax === lmin ? 1 : Math.trunc(Math.max(1, 4 - lmax + lmin)));
-        for (let mutating = Math.pow(10, Math.floor(lmin)) & ~1; mutating <= max; mutating += stepDiff)
+        if (min === max || !isFinite(min) || !isFinite(max)) return;
+        const logdiff = Math.log10(max - min || 1), step = Math.pow(10, Math.floor(logdiff)),
+            stepDiff = step / Math.max(1, Math.trunc(step / (max - min) * 5)),
+            round = Math.pow(10, Math.log10(min || 1) - logdiff);
+        for (let mutating = min / round * round; mutating <= max; mutating += stepDiff)
             if (mutating >= min) yield mutating;
     }
 }

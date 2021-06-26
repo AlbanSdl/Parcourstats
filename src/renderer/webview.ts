@@ -1,6 +1,6 @@
 import { enableIcons, Icon } from "components/icon";
 import { AppNotification } from "components/notification";
-import { Home } from "structure/home";
+import { Home } from "app";
 import { BackendRequest, ClientRequest } from "../common/window";
 
 const savedFsIcon = {

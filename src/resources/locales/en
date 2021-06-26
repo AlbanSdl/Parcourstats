@@ -6,3 +6,9 @@ wishes.list.empty You haven't saved any wish yet
 wishes.list.error An error occurred while loading your wishes
 wish.session.singular Session
 wish.session.plural Sessions
+wishes.overview.abstract.title Overview
+wishes.overview.abstract.accepted of your wishes have been accepted
+wishes.overview.abstract.pending of your wishes may be accepted soon
+wishes.overview.abstract.refused of your wishes have been rejected
+wishes.overview.title Wish progression
+wishes.overview.title.warn The graph below is displayed for convenience only. For further interpretations, navigate to a wish detail page (click a wish on the left). This graph is not relevant for precise calculus or interpretations as it only displays your rank in the queue and doesn't take into account people leaving the queue before your rank (these ranks should not weight as the latest accepted rank progress), the number of students the formation can accept, etc...
