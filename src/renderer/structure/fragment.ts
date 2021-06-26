@@ -17,6 +17,6 @@ export abstract class Fragment extends Layout {
         if (!this.container || !this.context) throw new Error("Cannot replace a non attached Fragment");
         by.container = this.container!!;
         by.context = this.context!!;
-        this.createContext(by, transition, invertTransition)
+        by.createContext(this, transition, invertTransition)
     }
 }

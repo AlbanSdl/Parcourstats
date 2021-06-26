@@ -1,0 +1,22 @@
+app.name Parcourstats
+app.op.abort.destroyed Impossible de charger les données: la source n'existe plus
+app.op.error.wrong Arguments de chargement de données invalides
+wishes.list Voeux
+wishes.list.empty Tu n'as pas (encore) enregistré de voeux
+wishes.list.error Une erreur est survenue lors du chargement de tes voeux
+wish.session.singular Session
+wish.session.plural Sessions
+wishes.overview.abstract.title Vue d'ensemble
+wishes.overview.abstract.accepted voeux acceptés
+wishes.overview.abstract.pending voeux en attente
+wishes.overview.abstract.refused voeux refusés
+wishes.overview.title Progression des voeux
+wish.update.last Dernière mise à jour:
+wish.rank.initial Ton rang absolu:
+wish.rank.user Ton rang dans la file d'attente
+wish.rank.all Personnes en file d'attente
+wish.rank.last Rang de la dernière proposition
+wish.rank.unknown Inconnu
+wish.rank.unknown.accepted Tu as été accepté dès le début de la session
+wish.rank.unknown.refused Ta candidature n'a pas été retenue par la formation
+wish.graph.people.after Personnes après toi dans la file d'attente

@@ -233,7 +233,7 @@ export class ComputedGraphEntry<T extends number> extends GraphEntry {
         const sources = this.#dependencies.map(s => s.values);
         const commonKeys = sources.map(m => [...m.keys()])
             .reduce((from, next) => from.filter(value => next.includes(value)));
-        return new Map(commonKeys.map(k => [k, this.#operator(k, ...sources.map(s => s[k]) as any) || 0]))
+        return new Map(commonKeys.map(k => [k, this.#operator(k, ...sources.map(s => s.get(k)) as any) || 0]))
     }
 }
 

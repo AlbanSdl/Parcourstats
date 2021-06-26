@@ -3,7 +3,8 @@ import { Icon } from "components/icon";
 import { Activity } from "./structure/activity";
 import { Selector } from "components/selector";
 import { Fragment } from "./structure/fragment";
-import { DatasetGraphEntry, Graph } from "components/graph";
+import { ComputedGraphEntry, DatasetGraphEntry, Graph } from "components/graph";
+import { Transition } from "structure/layout";
 
 interface Data {
     [name: string]: {
@@ -24,7 +25,7 @@ export class Home extends Activity {
     private sideHeader: Selector<string>;
     private sideList: Selector<string>;
     private readonly data: Data = {};
-    private fragment: Overview;
+    private fragment: Overview | WishFragment;
     private loadingState = 0;
     private providers: WeakRef<(d: Data) => void>[] = []
 
@@ -51,13 +52,18 @@ export class Home extends Activity {
             listener: console.log
         })
         const sideList = createElement({
-            classes: ["list", "loadable"]
+            classes: ["list", "loadable"],
+            loading: true
         })
         this.sideList = new Selector({
             container: sideList,
             extractor: e => e?.getAttribute?.("name"),
             isUnique: true,
-            listener: console.log
+            listener: name => {
+                const frag = !!name ? new WishFragment(name) : new Overview;
+                this.fragment.replace(frag);
+                this.fragment = frag;
+            }
         })
         this.side.append(sideHeaders, sideList);
         sideList.addIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
@@ -66,7 +72,7 @@ export class Home extends Activity {
         });
         root.append(this.side, container);
         const fragProvider = () => new Promise<Data>(res => {
-            if (this.loadingState >= 8) res(this.data);
+            if (this.loadingState >= 7) res(this.data);
             else this.providers.push(new WeakRef(res));
         });
         this.fragment = new Overview(this, container, fragProvider, key => this.getLocale(key));
@@ -78,6 +84,7 @@ export class Home extends Activity {
                 return this.getLocale("wishes.list.error");
             })
             .then(values => {
+                this.side.lastElementChild.toggleAttribute("loading", false)
                 while (!!this.sideList.childrenElements.length) 
                     this.sideList.childrenElements.item(0).remove();
                 const updateResult = this.update(values, "sessions");
@@ -185,8 +192,8 @@ export class Home extends Activity {
 }
 
 class Overview extends Fragment {
-    private data: () => Promise<Data>;
-    private locale: (key: string) => string;
+    data: () => Promise<Data>;
+    locale: (key: string) => string;
     private readonly timeFormat = new Intl.DateTimeFormat(undefined, {
         month: "long",
         day: "numeric"
@@ -206,9 +213,14 @@ class Overview extends Fragment {
         this.locale = locale;
     }
 
-    protected onCreate(from?: Fragment): HTMLDivElement {
+    protected onCreate(from?: Overview | WishFragment): HTMLDivElement {
         const root = super.onCreate(from);
+        if (!!from) {
+            this.data = from.data;
+            this.locale = from.locale;
+        }
         root.classList.add("overview", "loadable");
+        root.toggleAttribute("loading", true)
         root.addIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
         const wrapper = createElement({
             classes: ["container"]
@@ -249,11 +261,6 @@ class Overview extends Fragment {
             classes: ["title"]
         })
         graphTitle.textContent = this.locale("wishes.overview.title")
-        const graphTitleWarn = createElement({
-            classes: ["item"]
-        })
-        graphTitleWarn.textContent = this.locale("wishes.overview.title.warn")
-        graphTitle.append(graphTitleWarn);
         wrapper.append(graphTitle);
         this.graph = new Graph({
             displayLines: true,
@@ -287,7 +294,7 @@ class Overview extends Fragment {
                 })`;
                 this.graph?.addEntry(graphEntry);
             }
-            this.root.querySelector(".loader")?.remove();
+            this.root.toggleAttribute("loading", false)
         }).catch(console.error)
     }
     protected onDestroy(): void {
@@ -302,5 +309,120 @@ class Overview extends Fragment {
 
     private displayValue(on: "accepted" | "pending" | "refused", value: string) {
         this.root!!.querySelector(`.${on} .value`).textContent = value;
+    }
+    public replace(fragment: Overview | WishFragment) {
+        super.replace(fragment, Transition.SLIDE)
+    }
+}
+
+class WishFragment extends Fragment {
+    data: () => Promise<Data>;
+    locale: (key: string) => string;
+    readonly wishName!: string;
+    private graph?: Graph;
+    private readonly timeFormat = new Intl.DateTimeFormat(undefined, {
+        month: "long",
+        day: "numeric"
+    })
+
+    constructor(wishName: string) {
+        super();
+        this.wishName = wishName;
+    }
+
+    protected onCreate(from: Overview | WishFragment): HTMLDivElement {
+        const root = super.onCreate();
+        this.data = from.data;
+        this.locale = from.locale;
+        root.classList.add("wish", "loadable");
+        root.toggleAttribute("loading", true)
+        root.addIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
+        const wrapper = createElement({
+            classes: ["container"]
+        });
+        root.prepend(wrapper);
+        const title = createElement({
+            classes: ["title"]
+        })
+        title.textContent = this.wishName;
+        const complement = createElement({
+            classes: ["complement", "update"]
+        })
+        complement.textContent = this.locale("wish.update.last")
+        const cpValue = createElement({
+            classes: ["value"]
+        })
+        complement.append(cpValue);
+        title.append(complement);
+        const initRank = createElement({
+            classes: ["complement", "initial"]
+        })
+        initRank.textContent = this.locale("wish.rank.initial")
+        const initRankValue = createElement({
+            classes: ["value"]
+        })
+        initRank.append(initRankValue);
+        title.append(initRank);
+        wrapper.append(title)
+        this.graph = new Graph({
+            displayLines: true,
+            getAbscissaName: time => this.timeFormat.format(time * 864e5)
+        })
+        this.graph.attach(wrapper);
+        return root;
+    }
+    protected onCreated(): void {
+        this.data().then(data => {
+            const wish = data[this.wishName];
+            const updates = (wish.global?.map(g => g.record_time) ?? [])
+                .concat(wish.user?.map(u => u.record_time) ?? [])
+                .map(rec => new Date(rec)).sort().slice(-1);
+            this.root.querySelector(".container .title .complement.update .value").textContent = updates?.[0].toLocaleDateString(undefined, {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+                hour: "numeric",
+                minute: "numeric"
+            });
+            const initialRank = wish.user?.[0]?.application_absolute;
+            this.root.querySelector(".container .title .complement.initial .value").textContent = 
+                (typeof initialRank !== "number" ? this.locale("wish.rank.unknown") : initialRank > 0 ? initialRank.toString() :
+                this.locale(initialRank === 0 ? "wish.rank.unknown.accepted" : "wish.rank.unknown.refused"));
+            if ((initialRank ?? 0) < 1) this.root.toggleAttribute("no-data", true);
+            const userRank = new DatasetGraphEntry(this.locale("wish.rank.user"), "user-rank");
+            userRank.add(new Map(wish.user?.map(entry => [
+                Math.trunc(Date.parse(entry.record_time) / 864e5),
+                entry.application_queued
+            ])));
+            userRank.color = "var(--color-yellow)";
+            const allApplications = new DatasetGraphEntry(this.locale("wish.rank.all"), "app-all");
+            allApplications.add(new Map(wish.global?.filter(entry => entry.year === new Date().getFullYear())?.map(entry => [
+                Math.trunc(Date.parse(entry.record_time) / 864e5),
+                entry.application_all
+            ])));
+            allApplications.color = "var(--color-red)";
+            const lastAcceptedRank = new DatasetGraphEntry(this.locale("wish.rank.last"), "app-last");
+            lastAcceptedRank.add(new Map(wish.global?.filter(entry => entry.year === new Date().getFullYear()).map(entry => [
+                Math.trunc(Date.parse(entry.record_time) / 864e5),
+                entry.application_last
+            ])));
+            lastAcceptedRank.color = "var(--color-green)";
+            const renouncingPeopleBehindUser = new ComputedGraphEntry(this.locale("wish.graph.people.after"), "ren-after", 
+                (_, all, user) => all - user, allApplications, userRank)
+            renouncingPeopleBehindUser.color = "var(--color-dark-red)";
+            this.graph.addEntry(userRank);
+            this.graph.addEntry(allApplications);
+            this.graph.addEntry(lastAcceptedRank);
+            this.graph.addEntry(renouncingPeopleBehindUser);
+            this.root.toggleAttribute("loading", false)
+        })
+    }
+    protected onDestroy(): void {
+    }
+    protected onDestroyed(): void {
+        delete this.graph;
+    }
+    public replace(fragment: Overview | WishFragment) {
+        super.replace(fragment, Transition.SLIDE, fragment instanceof Overview)
     }
 }

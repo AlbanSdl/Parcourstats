@@ -74,10 +74,10 @@ export abstract class Layout {
         this.root = this.onCreate(using);
         if (!!using) {
             using.onDestroy();
-            applyTransitionStyles(this.root!!, transition, false, invertTransition).then(() => {
-                document.body.removeChild(this.root!!)
-                delete this.root;
-                this.onDestroyed();
+            applyTransitionStyles(using.root!!, transition, false, invertTransition).then(() => {
+                using.root!!.remove();
+                delete using.root;
+                using.onDestroyed();
             });
         }
         this.container.appendChild(this.root);
@@ -95,13 +95,13 @@ function applyTransitionStyles(root: HTMLDivElement, transition: Transition, isO
     applied.forEach(attr => root.setAttribute(attr, direction))
     if (isOpening) {
         root.getBoundingClientRect();
-        applied.forEach(root.removeAttribute)
+        applied.forEach(attr => root.removeAttribute(attr))
     } else if (applied.length > 0) {
         return new Promise(res => {
             setTimeout(() => {
                 applied.forEach(attr => root.getAttribute(attr) === direction ? root.removeAttribute(attr) : 0)
                 res();
-            }, 500);
+            }, 260);
         })
     } else {
         applied.forEach(attr => root.getAttribute(attr) === direction ? root.removeAttribute(attr) : 0)

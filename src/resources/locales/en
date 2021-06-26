@@ -11,4 +11,12 @@ wishes.overview.abstract.accepted of your wishes have been accepted
 wishes.overview.abstract.pending of your wishes may be accepted soon
 wishes.overview.abstract.refused of your wishes have been rejected
 wishes.overview.title Wish progression
-wishes.overview.title.warn The graph below is displayed for convenience only. For further interpretations, navigate to a wish detail page (click a wish on the left). This graph is not relevant for precise calculus or interpretations as it only displays your rank in the queue and doesn't take into account people leaving the queue before your rank (these ranks should not weight as the latest accepted rank progress), the number of students the formation can accept, etc...
+wish.update.last Last update:
+wish.rank.initial Your absolute rank:
+wish.rank.user Your queued rank
+wish.rank.all All applications
+wish.rank.last Number of proposals sent by the formation
+wish.rank.unknown Unknown
+wish.rank.unknown.accepted You're part of the firsts who have been accepted here
+wish.rank.unknown.refused Your application has not been selected by this formation
+wish.graph.people.after People waiting after you in queue
