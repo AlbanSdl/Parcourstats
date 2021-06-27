@@ -550,7 +550,7 @@ svg {
 .activity.home > .side > .wrapper > [current] {
     transform: unset;
 }
-.activity.home > .side > .wrapper > [current] + * {
+.activity.home > .side > .wrapper > [current] ~ * {
     transform: translateX(100%)
 }
 .activity.home > .side > .wrapper > .list > .wish {
@@ -595,14 +595,16 @@ svg {
     padding: 20px;
     text-align: center;
 }
-.activity.home > .side > .wrapper > .add {
+.activity.home > .side > .wrapper > .add,
+.activity.home > .side > .wrapper > .settings {
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
     padding: 20px 10px 0;
     box-sizing: border-box;
 }
-.activity.home > .side > .wrapper > .add > .header {
+.activity.home > .side > .wrapper > .add > .header,
+.activity.home > .side > .wrapper > .settings > .header {
     font-style: italic;
     font-size: 16px;
     text-align: justify;
@@ -684,6 +686,42 @@ svg {
 }
 .activity.home > .container > .fragment.overview > .container > .abstract > .entry.pending > .value {
     color: var(--color-yellow)
+}
+.activity.home > .container > .fragment.overview > .container > .today {
+    margin: 0;
+    font-size: 18px;
+    background-color: var(--color-dark-red);
+    padding: 0 10px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    text-align: justify;
+    display: block;
+    position: relative;
+    max-width: 600px;
+    flex-basis: 0;
+    transition: all .35s ease-in-out;
+    overflow: hidden;
+}
+.activity.home > .container > .fragment.overview > .container > .today[present] {
+    margin: 0 30px 30px;
+    padding: 10px;
+    flex-basis: auto;
+    overflow: visible;
+}
+.activity.home > .container > .fragment.overview > .container > .today[present] > .go {
+    padding: 5px 10px;
+    border-radius: 26px;
+    font-size: 16px;
+    display: inline-block;
+    position: relative;
+    background-color: var(--color-primary);
+    color: var(--color-dark-red);
+    cursor: pointer;
+    margin: 5px 0px -5px;
+    overflow: hidden;
+}
+.activity.home > .container > .fragment.overview > .container > .today[present] > .go > .ripple {
+    background-color: var(--color-dark-red);
 }
 .activity.home > .container > .fragment.overview > .container > .title:first-child {
     font-size: 50px;

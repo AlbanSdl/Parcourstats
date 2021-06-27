@@ -143,6 +143,15 @@ export class Home extends Activity {
             button.enabled = !!name?.checkValidity() && !!session?.checkValidity() && !!available?.checkValidity();
         }
         wrapper.append(sideAdd);
+        const sideSettings = createElement({
+            classes: ["settings"]
+        })
+        const sideSettingsHeader = createElement({
+            classes: ["header"]
+        })
+        sideSettingsHeader.textContent = this.getLocale("wishes.settings.header");
+        sideSettings.append(sideSettingsHeader);
+        wrapper.append(sideSettings);
         const container = createElement({
             classes: ["container"]
         });
@@ -208,6 +217,13 @@ export class Home extends Activity {
         });
         wishAddHeader.textContent = this.getLocale("wishes.add");
         this.sideHeader.append(wishAddHeader);
+        const settingsHeader = createElement({
+            classes: ["header"],
+            ripple: true,
+            action: "stat-settings"
+        });
+        settingsHeader.textContent = this.getLocale("wishes.settings");
+        this.sideHeader.append(settingsHeader);
         super.onCreated();
     }
 
@@ -349,7 +365,17 @@ class Overview extends Fragment {
             classes: ["value"]
         }))
         abs.append(accepted, pending, refused)
-        wrapper.append(abs);
+        const today = createElement({
+            classes: ["today"]
+        })
+        today.textContent = this.locale("wishes.overview.today.tip");
+        const todayGo = createElement({
+            classes: ["go"],
+            ripple: true
+        })
+        todayGo.textContent = this.locale("wishes.overview.today.letsgo");
+        today.append(todayGo);
+        wrapper.append(abs, today);
         const graphTitle = createElement({
             classes: ["title"]
         })
@@ -389,6 +415,18 @@ class Overview extends Fragment {
                 this.graph?.addEntry(graphEntry);
             }
             this.root.toggleAttribute("loading", false)
+            const lastUpdate = new Date(Object.values(d)
+                .map(entry => [...entry.global, ...entry.user])
+                .reduce((a, b) => [...a, ...b])
+                .filter(record => !!record)
+                .sort((a, b) => Date.parse(b.record_time) - Date.parse(a.record_time))[0]?.record_time),
+                currentDate = new Date();
+            if (lastUpdate.getFullYear() === currentDate.getFullYear() && 
+                (lastUpdate.getMonth() !== currentDate.getMonth() || lastUpdate.getDate() !== currentDate.getDate())) {
+                    this.root!!.querySelector(".container > .today")?.toggleAttribute("present", true);
+                    this.root!!.querySelector(".container > .today > .go")?.addEventListener("click", () => 
+                        new AppNotification("Coming soon"))
+                }
         }).catch(console.error)
     }
     protected onDestroy(): void {

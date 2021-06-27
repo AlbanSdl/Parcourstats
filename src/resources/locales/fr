@@ -11,6 +11,8 @@ wishes.add.session Session (année)
 wishes.add.available Places disponibles
 wishes.add.op Enregistrer
 wishes.add.error Impossible d'enregistrer la formation
+wishes.settings Paramètres
+wishes.settings.header Quelques paramètres seront bientôt accessibles dont la langue de l'application.
 wish.session.singular Session
 wish.session.plural Sessions
 wishes.overview.abstract.title Vue d'ensemble
@@ -18,6 +20,8 @@ wishes.overview.abstract.accepted vœux acceptés
 wishes.overview.abstract.pending vœux en attente
 wishes.overview.abstract.refused vœux refusés
 wishes.overview.title Progression des vœux
+wishes.overview.today.tip Tu n'as pas encore enregistré tes rangs aujourd'hui. Pour que les statistiques soient les plus fiables possibles, il est recommandé de le faire une fois par jour.
+wishes.overview.today.letsgo Allons-y !
 wish.update.last Dernière mise à jour:
 wish.rank.initial Ton rang absolu:
 wish.rank.user Ton rang dans la file d'attente

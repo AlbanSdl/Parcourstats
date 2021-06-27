@@ -11,6 +11,8 @@ wishes.add.session Session (year)
 wishes.add.available Student count
 wishes.add.op Save
 wishes.add.error The formation could not be saved
+wishes.settings Settings
+wishes.settings.header A few settings will be available soon, including the app language.
 wish.session.singular Session
 wish.session.plural Sessions
 wishes.overview.abstract.title Overview
@@ -18,6 +20,8 @@ wishes.overview.abstract.accepted of your wishes have been accepted
 wishes.overview.abstract.pending of your wishes may be accepted soon
 wishes.overview.abstract.refused of your wishes have been rejected
 wishes.overview.title Wish progression
+wishes.overview.today.tip You haven't saved your ranks yet. It is strongly advised to record your ranks every day in order to visualize the most accurate stats.
+wishes.overview.today.letsgo Let's go !
 wish.update.last Last update:
 wish.rank.initial Your absolute rank:
 wish.rank.user Your queued rank
