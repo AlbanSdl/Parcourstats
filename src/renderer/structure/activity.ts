@@ -45,12 +45,11 @@ export abstract class Activity extends Layout {
         window.bridge.unregister(BackendRequest.DATA_RESPONSE);
     }
 
-    private handleDataStream(opId: string, content: string | Study[] | GlobalRankRecord[] | UserRankRecord[]) {
+    private handleDataStream(opId: string, content: Error | Study[] | GlobalRankRecord[] | UserRankRecord[]) {
         if (opId in this.pendingDataRequests) {
             const breakpoint = this.pendingDataRequests[opId];
             delete this.pendingDataRequests[opId];
-            if (typeof content === "string") breakpoint.rej(content)
-            else if (!Object.keys(content).length) breakpoint.rej(`${content}`);
+            if ("name" in content) breakpoint.rej(`${content}`);
             else breakpoint.res(content)
         }
     }

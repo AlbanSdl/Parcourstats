@@ -21,7 +21,7 @@ export class DataProvider {
             switch (op) {
                 case "select":
                     const sTargetedYear = <number>value ?? 0;
-                    let sPromise: Promise<Study[] | GlobalRankRecord[] | UserRankRecord[] | string>;
+                    let sPromise: Promise<Study[] | GlobalRankRecord[] | UserRankRecord[]>;
                     switch (tableName) {
                         case "study":
                             sPromise = this.studyTable.select("*", {
@@ -45,7 +45,7 @@ export class DataProvider {
                             })
                             break;
                         default:
-                            sPromise = Promise.resolve("Unknown table")
+                            sPromise = Promise.reject(new Error("Unknown table"))
                     }
                     sPromise.then(values => reply(BackendRequest.DATA_RESPONSE, id, values))
                         .catch(err => reply(BackendRequest.DATA_RESPONSE, id, err))
@@ -53,7 +53,7 @@ export class DataProvider {
                 case "insert":
                     let promise: Promise<void>;
                     if (!value) return reply(BackendRequest.DATA_RESPONSE,
-                        id, "Cannot insert null entry");
+                        id, new Error("Cannot insert null entry"));
                     switch (tableName) {
                         case "study":
                             promise = this.studyTable.insert(value as Study)
@@ -66,14 +66,14 @@ export class DataProvider {
                             break;
                         default:
                             return reply(BackendRequest.DATA_RESPONSE,
-                                id, "Unknown table")
+                                id, new Error("Unknown table"))
                     }
                     promise.then(() => reply(BackendRequest.DATA_RESPONSE, id, []))
                         .catch(err => reply(BackendRequest.DATA_RESPONSE, id, err))
                     break;
                 default:
                     reply(BackendRequest.DATA_RESPONSE, id, 
-                        `Cannot handle unknown operation ${op}`);
+                        new Error(`Cannot handle unknown operation ${op}`));
             }
         })
     }

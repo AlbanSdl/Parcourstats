@@ -4,8 +4,7 @@
         "module": "CommonJS",
         "moduleResolution": "Node",
         "noImplicitAny": true
-    }, "include": [
-        "**/*.ts",
-        "../common/**/*.ts"
+    }, "exclude": [
+        "../renderer/**/*.ts"
     ]
 }

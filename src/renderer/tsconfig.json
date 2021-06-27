@@ -4,8 +4,7 @@
         "module": "ESNext",
         "moduleResolution": "Classic",
         "baseUrl": "."
-    }, "include": [
-        "**/*.ts", 
-        "../common/**/*.ts"
+    }, "exclude": [
+        "../main/**/*.ts"
     ]
 }

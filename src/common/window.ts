@@ -58,7 +58,7 @@ interface BridgeRequestMap {
         args: [isMaximized: boolean]
     },
     [BackendRequest.DATA_RESPONSE]: {
-        args: [opId: string, content: Study[] | GlobalRankRecord[] | UserRankRecord[] | string]
+        args: [opId: string, content: Study[] | GlobalRankRecord[] | UserRankRecord[] | Error]
     },
     [ClientRequest.DATA_REQUEST]: {
         args: [op: "select", opId: string, table: "study" | "global" | "user", year?: number]

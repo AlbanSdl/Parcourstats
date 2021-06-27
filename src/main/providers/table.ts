@@ -149,12 +149,11 @@ class TableImpl<Entry> implements Table<Entry> {
                 `(${entries.map(f => `"${f}"`).join()})`,
                 `VALUES (${entries.map(f => `$${f}`)})`
             ];
-            this.db.run(statementParts.join(" "), {
-                ...Object.entries(entry).map(e => [`$${e[0]}`, e[1]])
-            }, err => {
-                if (!!err) rej(err)
-                else res();
-            })
+            this.db.run(
+                statementParts.join(" "),
+                Object.fromEntries(Object.entries(entry).map(e => [`$${e[0]}`, e[1]])),
+                err => !!err ? rej(err) : res()
+            )
         });
     }
 
@@ -177,7 +176,7 @@ class TableImpl<Entry> implements Table<Entry> {
                 filters[`w${where.field}` as `w${string & keyof Entry}`] = where.value
             }
             this.db.run(statementParts.join(" "), {
-                ...Object.entries(updates).map(e => [`$${e[0]}`, e[1]]),
+                ...Object.fromEntries(Object.entries(updates).map(e => [`$${e[0]}`, e[1]])),
                 ...filters
             }, err => {
                 if (!!err) rej(err)
@@ -199,9 +198,7 @@ class TableImpl<Entry> implements Table<Entry> {
                 statementParts.push(`"${where.field}" ${where.operator} $w${where.field}`);
                 filters[`w${where.field}` as `w${F & string}`] = where.value
             }
-            this.db.run(statementParts.join(" "), {
-                ...filters
-            }, err => {
+            this.db.run(statementParts.join(" "), filters, err => {
                 if (!!err) rej(err)
                 else res();
             })

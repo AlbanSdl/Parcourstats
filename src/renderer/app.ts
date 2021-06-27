@@ -1,10 +1,13 @@
 import { createElement } from "structure/element";
 import { Icon } from "components/icon";
 import { Activity } from "./structure/activity";
-import { Selector } from "components/selector";
+import { selectionAttribute, Selector } from "components/selector";
 import { Fragment } from "./structure/fragment";
 import { ComputedGraphEntry, DatasetGraphEntry, Graph } from "components/graph";
 import { Transition } from "structure/layout";
+import { TextField } from "components/textfield";
+import { Button, ButtonStyle } from "components/button";
+import { AppNotification } from "components/notification";
 
 interface Data {
     [name: string]: {
@@ -49,8 +52,11 @@ export class Home extends Activity {
             extractor: e => e?.getAttribute?.("action"),
             isUnique: true,
             neverEmpty: true,
-            listener: console.log
+            listener: action => this.updateMenu(action)
         })
+        const wrapper = createElement({
+            classes: ["wrapper"]
+        });
         const sideList = createElement({
             classes: ["list", "loadable"],
             loading: true
@@ -65,8 +71,78 @@ export class Home extends Activity {
                 this.fragment = frag;
             }
         })
-        this.side.append(sideHeaders, sideList);
+        wrapper.append(sideList)
+        this.side.append(sideHeaders, wrapper);
         sideList.addIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
+        const sideAdd = createElement({
+            classes: ["add"]
+        })
+        const sideAddHeader = createElement({
+            classes: ["header"]
+        })
+        sideAddHeader.textContent = this.getLocale("wishes.add.header");
+        sideAdd.append(sideAddHeader);
+        new TextField({
+            placeholder: this.getLocale("wishes.add.name"),
+            oninput: () => activateButton(),
+            parent: sideAdd,
+            required: true,
+            id: "wish-add-name"
+        });
+        const numeric = createElement({
+            classes: ["numeric"]
+        });
+        new TextField({
+            placeholder: this.getLocale("wishes.add.session"),
+            oninput: () => activateButton(),
+            parent: numeric,
+            required: true,
+            prefilled: new Date().getFullYear().toString(),
+            regex: /\d*/,
+            id: "wish-add-session"
+        });
+        new TextField({
+            placeholder: this.getLocale("wishes.add.available"),
+            oninput: () => activateButton(),
+            parent: numeric,
+            required: true,
+            regex: /\d*/,
+            id: "wish-add-available"
+        });
+        sideAdd.append(numeric);
+        const getWishAddFields = () => ({
+            name: (root.querySelector('* #wish-add-name') as HTMLInputElement),
+            year: (root.querySelector('* #wish-add-session') as HTMLInputElement),
+            available: (root.querySelector('* #wish-add-available') as HTMLInputElement)
+        })
+        const button = new Button(this.getLocale("wishes.add.op"), () => {
+            button.enabled = false;
+            const stdy = <Study><unknown>Object.fromEntries(Object.entries(getWishAddFields())
+                .map(e => [e[0], e[0] === "name" ? e[1].value : parseInt(e[1].value)]));
+            this.requestData("insert", "study", stdy)
+            .then(res => this.updateStudies(!!res.length ? res : [stdy]))
+            .then(() => {
+                for (const entry of Object.entries(getWishAddFields()))
+                    entry[1].value = entry[0] === "year" ? new Date().getFullYear().toString() : "";
+                if (this.fragment instanceof Overview)
+                    this.fragment.replace(this.fragment = new Overview(), Transition.NONE);
+                this.side.querySelector("[action=wish-list]").toggleAttribute(selectionAttribute, true);
+            })
+            .catch(err => {
+                new AppNotification(this.getLocale("wishes.add.error"), 15000, ["error"]);
+                console.error(err);
+                button.enabled = true;
+                return true;
+            })
+        }, sideAdd, ButtonStyle.RAISED | ButtonStyle.COMPACT);
+        button.enabled = false;
+        const activateButton = () => {
+            const name = root.querySelector('* #wish-add-name') as HTMLInputElement;
+            const session = root.querySelector('* #wish-add-session') as HTMLInputElement;
+            const available = root.querySelector('* #wish-add-available') as HTMLInputElement;
+            button.enabled = !!name?.checkValidity() && !!session?.checkValidity() && !!available?.checkValidity();
+        }
+        wrapper.append(sideAdd);
         const container = createElement({
             classes: ["container"]
         });
@@ -83,43 +159,13 @@ export class Home extends Activity {
                 console.error(err);
                 return this.getLocale("wishes.list.error");
             })
-            .then(values => {
-                this.side.lastElementChild.toggleAttribute("loading", false)
-                while (!!this.sideList.childrenElements.length) 
-                    this.sideList.childrenElements.item(0).remove();
-                const updateResult = this.update(values, "sessions");
-                if (updateResult.added === 0) {
-                    const emptyPlaceholder = createElement({
-                        classes: ["empty"]
-                    });
-                    emptyPlaceholder.textContent = updateResult.error ?? this.getLocale("wishes.list.empty");
-                    this.side.lastElementChild.append(emptyPlaceholder)
-                } else {
-                    for (const wish in this.data) {
-                        if (!this.data[wish].sessions) continue;
-                        const wishContainer = createElement({
-                            classes: ["wish"],
-                            ripple: true,
-                            name: wish
-                        });
-                        const wishSession = createElement({
-                            classes: ["session"]
-                        });
-                        wishSession.textContent = `${this.getLocale(`wish.session.${
-                            this.data[wish].sessions.length > 1 ? 'plural' : 'singular'}`)}: ${
-                            this.data[wish].sessions.map(s => s.year).sort().join(", ")}`;
-                        wishContainer.append(wishSession);
-                        this.sideList.append(wishContainer)
-                    }
-                }
-                this.runProviders(LoadingMask.STUDY);
-            })
+            .then(values => this.updateStudies(values))
             .catch(err => {
                 const errorPlaceholder = createElement({
                     classes: ["empty"]
                 });
                 errorPlaceholder.textContent = this.getLocale("wishes.list.error");
-                this.side.lastElementChild.append(errorPlaceholder)
+                this.side.querySelector('.list')?.append(errorPlaceholder)
                 console.error(err);
             })
         this.requestData("select", "global")
@@ -148,13 +194,20 @@ export class Home extends Activity {
 
     protected onCreated(): void {
         (this.fragment as Overview).create();
-        const wishHeader = createElement({
+        const wishListHeader = createElement({
             classes: ["header"],
             ripple: true,
             action: "wish-list"
         });
-        wishHeader.textContent = this.getLocale("wishes.list");
-        this.sideHeader.append(wishHeader);
+        wishListHeader.textContent = this.getLocale("wishes.list");
+        this.sideHeader.append(wishListHeader);
+        const wishAddHeader = createElement({
+            classes: ["header"],
+            ripple: true,
+            action: "wish-add"
+        });
+        wishAddHeader.textContent = this.getLocale("wishes.add");
+        this.sideHeader.append(wishAddHeader);
         super.onCreated();
     }
 
@@ -187,6 +240,46 @@ export class Home extends Activity {
         return {
             added: typeof values === "string" ? 0 : values.length,
             error: typeof values === "string" ? values : undefined
+        }
+    }
+
+    private updateStudies(additions: string | Study[]) {
+        this.side.querySelector('.list')?.toggleAttribute("loading", false)
+        while (!!this.sideList.childrenElements.length) 
+            this.sideList.childrenElements.item(0).remove();
+        const updateResult = this.update(additions, "sessions");
+        if (updateResult.added === 0) {
+            const emptyPlaceholder = createElement({
+                classes: ["empty"]
+            });
+            emptyPlaceholder.textContent = updateResult.error ?? this.getLocale("wishes.list.empty");
+            this.side.querySelector('.list')?.append(emptyPlaceholder)
+        } else {
+            for (const wish in this.data) {
+                if (!this.data[wish].sessions) continue;
+                const wishContainer = createElement({
+                    classes: ["wish"],
+                    ripple: true,
+                    name: wish
+                });
+                const wishSession = createElement({
+                    classes: ["session"]
+                });
+                wishSession.textContent = `${this.getLocale(`wish.session.${
+                    this.data[wish].sessions.length > 1 ? 'plural' : 'singular'}`)}: ${
+                    this.data[wish].sessions.map(s => s.year).sort().join(", ")}`;
+                wishContainer.append(wishSession);
+                this.sideList.append(wishContainer)
+            }
+        }
+        this.runProviders(LoadingMask.STUDY);
+    }
+
+    private updateMenu(action: string) {
+        const items = this.side.querySelectorAll(".wrapper > *");
+        for (let i = 0; i < items.length; i++) {
+            const item = items.item(i);
+            item.toggleAttribute("current", item.classList.contains(action.slice(5)));
         }
     }
 }
@@ -274,12 +367,13 @@ class Overview extends Fragment {
         this.displayValue("pending", "-");
         this.displayValue("refused", "-");
         this.data().then(d => {
-            const states = Object.values(d).map(e => e.user?.[e.user!.length - 1])
+            const states = Object.values(d).filter(e => (e.user?.length ?? 0) > 0).map(e => e.user!![e.user!.length - 1])
             this.displayValue("accepted", states.filter(rec => rec.application_queued === 0).length.toString())
             this.displayValue("pending", states.filter(rec => rec.application_queued > 0).length.toString())
             this.displayValue("refused", states.filter(rec => rec.application_queued < 0).length.toString())
             let colorVariation = 0;
             for (const study in d) {
+                if (!d[study].user) continue;
                 const graphEntry = new DatasetGraphEntry(study, `overview-${colorVariation}`)
                 const values = new Map(d[study].user.map(rec => [Date.parse(rec.record_time), rec.application_queued]));
                 if ([...values.values()].reduce((p, c) => p + c, 0) <= 0) continue;
@@ -310,8 +404,8 @@ class Overview extends Fragment {
     private displayValue(on: "accepted" | "pending" | "refused", value: string) {
         this.root!!.querySelector(`.${on} .value`).textContent = value;
     }
-    public replace(fragment: Overview | WishFragment) {
-        super.replace(fragment, Transition.SLIDE)
+    public replace(fragment: Overview | WishFragment, transition = Transition.SLIDE) {
+        super.replace(fragment, transition)
     }
 }
 
@@ -374,10 +468,11 @@ class WishFragment extends Fragment {
     protected onCreated(): void {
         this.data().then(data => {
             const wish = data[this.wishName];
-            const updates = (wish.global?.map(g => g.record_time) ?? [])
+            const update = (wish.global?.map(g => g.record_time) ?? [])
                 .concat(wish.user?.map(u => u.record_time) ?? [])
-                .map(rec => new Date(rec)).sort().slice(-1);
-            this.root.querySelector(".container .title .complement.update .value").textContent = updates?.[0].toLocaleDateString(undefined, {
+                .map(Date.parse).sort().slice(-1)[0];
+            this.root.querySelector(".container .title .complement.update .value").textContent = update === undefined ? 
+            this.locale("wish.rank.unknown") : new Date(update).toLocaleDateString(undefined, {
                 day: "numeric",
                 month: "long",
                 year: "numeric",

@@ -4,6 +4,13 @@ app.op.error.wrong Invalid arguments used when querying data
 wishes.list Wishes
 wishes.list.empty You haven't saved any wish yet
 wishes.list.error An error occurred while loading your wishes
+wishes.add New
+wishes.add.header Add a new formation to start save your wishes and their progress. The amount of students of each formation is available on Parcoursup (formation details). This number will scale the speed of rank advancement for all your wishes.
+wishes.add.name Formation name
+wishes.add.session Session (year)
+wishes.add.available Student count
+wishes.add.op Save
+wishes.add.error The formation could not be saved
 wish.session.singular Session
 wish.session.plural Sessions
 wishes.overview.abstract.title Overview
