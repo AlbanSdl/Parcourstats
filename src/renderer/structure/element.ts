@@ -14,6 +14,8 @@ export interface ElementProperties {
     ripple?: boolean;
     /** A link that should be bound on the element. Default is `null` */
     link?: string;
+    /** Inserts text in the current node. The text is not parsed */
+    text?: string;
 }
 
 export function createElement<T extends ElementProperties, K extends keyof SVGElementTagNameMap>(options: T & {svg: true, tag: K}): SVGElementTagNameMap[K];
@@ -32,11 +34,11 @@ export function createElement(options: ElementProperties = {}): Element {
     if (!!options?.link && element instanceof HTMLElement) Link.bind(element);
     for (const key in options) {
         if (["tag", "svg", "id", "classes", "ripple", "link"].includes(key)) continue;
-        if (key === 'style') {
+        if (key === 'text')
+            element.textContent = options.text;
+        else if (key === 'style')
             Object.assign(element.style, options[key])
-            continue;
-        }
-        element.setAttribute(key, typeof options[key] === "string" ? 
+        else element.setAttribute(key, typeof options[key] === "string" ? 
             options[key].replaceAll(/\s+/g, " ") : options[key]);
     }
     return element;

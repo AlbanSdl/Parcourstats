@@ -13,10 +13,12 @@ export class Button implements Component<HTMLElement> {
 
     constructor(content: string, private onclick: (this: Button, ev: MouseEvent) => any, 
         parent: Element = null, buttonStyle: ButtonStyle = ButtonStyle.RAISED) {
-        const classes = ['button'];
+        const classes = ['button', 'disabled'];
         if (buttonStyle & ButtonStyle.FLAT) classes.push('flat');
         if (buttonStyle & ButtonStyle.COMPACT) classes.push('compact');
-        this.element = createElement({classes: classes, ripple: true});
+        this.element = createElement({
+            classes
+        });
         this.element.innerText = content;
         parent?.appendChild(this.element);
     }

@@ -1,3 +1,4 @@
+import "expansions";
 import { enableIcons, Icon } from "components/icon";
 import { AppNotification } from "components/notification";
 import { Home } from "app";

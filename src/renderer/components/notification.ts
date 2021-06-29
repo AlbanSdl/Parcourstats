@@ -13,6 +13,7 @@ export class AppNotification {
     private readonly id: number
     private readonly classes: Array<string>
     private onDismiss: () => void
+    private onClick?: () => boolean
     private readonly element: HTMLElement
     private readonly elementClose: HTMLElement
     private readonly notificationTimer: number
@@ -21,7 +22,7 @@ export class AppNotification {
      * Initializes a notification
      * @param {string} content the text to display in the notification
      */
-    constructor(content: string, duration = 2000, extraClasses: Array<string> = [], onDismiss = () => {}) {
+    constructor(content: string, duration = 2000, extraClasses: Array<string> = [], onDismiss = () => {}, onClick?: () => boolean) {
         this.content = content;
         this.duration = duration;
         while (!this.id || Object.keys(notifQueue).includes(this.id.toString()))
@@ -29,6 +30,7 @@ export class AppNotification {
         notifQueue[this.id] = this
         this.classes = extraClasses;
         this.onDismiss = onDismiss;
+        this.onClick = onClick;
         
         // Create notification
         this.element = createElement({
@@ -49,6 +51,9 @@ export class AppNotification {
         Ripple.apply(this.elementClose);
         if (this.duration > 0)
             this.notificationTimer = window.setTimeout(() => this.hide(), this.duration);
+        if (!!this.onClick) this.element.addEventListener('click', () => {
+            if (this.onClick()) this.hide();
+        })
         this.elementClose.addEventListener('click', () => {
             this.hide();
             clearTimeout(this.notificationTimer);

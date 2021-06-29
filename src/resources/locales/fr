@@ -22,6 +22,25 @@ wishes.overview.abstract.refused vœux refusés
 wishes.overview.title Progression des vœux
 wishes.overview.today.tip Tu n'as pas encore enregistré tes rangs aujourd'hui. Pour que les statistiques soient les plus fiables possibles, il est recommandé de le faire une fois par jour.
 wishes.overview.today.letsgo Allons-y !
+wishes.today.header Enregistrement des rangs
+wishes.today.subtitle Enregistre les rangs de chacun de tes vœux afin de suivre leur évolution
+wishes.today.user.rank Ton rang
+wishes.today.global.all Taille de la file d'attente
+wishes.today.global.last Rang de la dernière proposition
+wishes.today.user.abs Ton classement absolu dans la file d'attente
+wishes.today.invalid Valeur invalide
+wishes.today.next Confirmer
+wishes.today.discarded J'ai renoncé à ce vœu
+wishes.today.refused La candidature n'a pas été retenue
+wishes.today.accepted Le vœu a été accepté
+wishes.today.summary.header.name Formation
+wishes.today.summary.header.status Changements
+wishes.today.summary.discarded Tu as renoncé à ce vœu
+wishes.today.summary.refused Le vœu n'a pas été retenu par l'établissement
+wishes.today.summary.accepted Le vœu a été accepté
+wishes.today.summary.save Enregistrer
+wishes.today.summary.save.error Impossible d'enregistrer
+wishes.today.summary.save.error.retry Clique pour rouvrir la page
 wish.update.last Dernière mise à jour:
 wish.rank.initial Ton rang absolu:
 wish.rank.user Ton rang dans la file d'attente
