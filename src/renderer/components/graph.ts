@@ -243,6 +243,7 @@ interface GraphOptions {
     getAbscissaName?: (value: number) => string;
     getOrdinateName?: (value: number) => string;
     displayLines?: boolean;
+    displayYZero?: boolean;
 }
 
 interface GraphAdvancedOptions extends GraphOptions {
@@ -259,6 +260,7 @@ export class Graph {
     private readonly caption!: Selector<string>;
     private readonly wrapper!: HTMLDivElement;
     private readonly displayMarkers!: boolean;
+    private readonly displayYZero!: boolean;
     private readonly getAbscissaName: (value: number) => string;
     private readonly getOrdinateName: (value: number) => string;
     readonly #boundingBox: BoundingBox;
@@ -271,6 +273,7 @@ export class Graph {
         this.yRatio = options?.yRatio ?? 100;
         this.padding = options?.paddingRatio ?? .1;
         this.displayMarkers = options?.displayLines === true;
+        this.displayYZero = options?.displayYZero === true;
         this.getAbscissaName = options?.getAbscissaName ?? (v => v.toLocaleString(undefined, {
             maximumFractionDigits: 2
         }))
@@ -359,7 +362,10 @@ export class Graph {
     }
 
     private updateScale(changes: Map<number, number>) {
-        if (this.#boundingBox.expand(...changes.entries())) {
+        if (changes.size > 0 && this.#boundingBox.expand(
+            ...changes.entries(),
+            ...(this.displayYZero ? [[changes.keys().next().value!!, 0] as [number, number]] : [])
+        )) {
             this.entries.forEach(e => e.updateBounds());
             if (!!this.wrapper.parentElement) this.updateAxisSteps();
         }

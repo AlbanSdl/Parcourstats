@@ -398,6 +398,7 @@ class Overview extends Fragment {
         wrapper.append(graphTitle);
         this.graph = new Graph({
             displayLines: true,
+            displayYZero: true,
             getAbscissaName: time => this.timeFormat.format(time)
         })
         this.graph.attach(wrapper);
@@ -417,7 +418,7 @@ class Overview extends Fragment {
                 if (!d[study].user) continue;
                 const graphEntry = new DatasetGraphEntry(study, `overview-${colorVariation}`)
                 const values = new Map(d[study].user
-                    .until(record => record.application_queued <= 0)
+                    .until(record => record.application_queued < 0)
                     .map(rec => [Date.parse(rec.record_time), rec.application_queued]));
                 if ([...values.values()].reduce((p, c) => p + c, 0) <= 0) continue;
                 graphEntry.add(values);
@@ -516,6 +517,7 @@ class WishFragment extends Fragment {
         wrapper.append(title)
         this.graph = new Graph({
             displayLines: true,
+            displayYZero: true,
             getAbscissaName: time => this.timeFormat.format(time * 864e5)
         })
         this.graph.attach(wrapper);
@@ -542,7 +544,7 @@ class WishFragment extends Fragment {
             if ((initialRank ?? 0) < 1) this.root.toggleAttribute("no-data", true);
             const userRank = new DatasetGraphEntry(this.locale("wish.rank.user"), "user-rank");
             userRank.add(new Map(wish.user?.
-                until(record => record.application_queued <= 0)?.
+                until(record => record.application_queued < 0)?.
                 map(entry => [
                     Math.trunc(Date.parse(entry.record_time) / 864e5),
                     entry.application_queued
