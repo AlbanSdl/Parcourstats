@@ -50,3 +50,8 @@ wish.rank.unknown Inconnu
 wish.rank.unknown.accepted Tu as été accepté dès le début de la session
 wish.rank.unknown.refused Ta candidature n'a pas été retenue par la formation
 wish.graph.people.after Personnes après toi dans la file d'attente
+wish.graph.speed.header Évolution des données
+wish.graph.speed.attachment Les différentes vitesses sont affichées en fonction du nombre de places disponibles dans la formation. Il est donc possible de comparer ces courbes avec celles des autres formations. Les données ci-dessous ne prennent pas en compte le "surbooking" initial des formations.
+wish.graph.speed.user Vitesse d'évolution de ton rang
+wish.graph.speed.last Vitesse de remplissage de la formation
+wish.graph.speed.all Vitesse de diminution de la file d'attente

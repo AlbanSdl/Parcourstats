@@ -1,8 +1,8 @@
 {
   "name": "parcourstats",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A Parcoursup watcher",
-  "main": "src/main/index.js",
+  "main": "main/index.js",
   "private": true,
   "scripts": {
     "clean": "node -e \"require('fs').rmSync('./build', {force:true,recursive:true})\"",

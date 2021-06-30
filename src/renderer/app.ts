@@ -3,7 +3,7 @@ import { Icon } from "components/icon";
 import { Activity } from "./structure/activity";
 import { selectionAttribute, Selector } from "components/selector";
 import { Fragment } from "./structure/fragment";
-import { ComputedGraphEntry, DatasetGraphEntry, Graph } from "components/graph";
+import { ComputedGraphEntry, DatasetGraphEntry, Graph, PreviousBasedComputedGraphEntry } from "components/graph";
 import { Transition } from "structure/layout";
 import { TextField } from "components/textfield";
 import { Button, ButtonStyle } from "components/button";
@@ -471,6 +471,7 @@ class WishFragment extends Fragment {
     locale: (key: string) => string;
     readonly wishName!: string;
     private graph?: Graph;
+    private speedGraph?: Graph;
     private readonly timeFormat = new Intl.DateTimeFormat(undefined, {
         month: "long",
         day: "numeric"
@@ -520,7 +521,22 @@ class WishFragment extends Fragment {
             displayYZero: true,
             getAbscissaName: time => this.timeFormat.format(time * 864e5)
         })
+        this.speedGraph = new Graph({
+            displayLines: true,
+            displayYZero: true,
+            getAbscissaName: time => this.timeFormat.format(time * 864e5)
+        })
         this.graph.attach(wrapper);
+        const speedHeader = createElement({
+            classes: ["header", "speed"],
+            text: this.locale("wish.graph.speed.header")
+        })
+        speedHeader.append(createElement({
+            classes: ["attachment"],
+            text: this.locale("wish.graph.speed.attachment")
+        }))
+        wrapper.append(speedHeader)
+        this.speedGraph.attach(wrapper);
         return root;
     }
     protected onCreated(): void {
@@ -570,6 +586,20 @@ class WishFragment extends Fragment {
             this.graph.addEntry(allApplications);
             this.graph.addEntry(lastAcceptedRank);
             this.graph.addEntry(renouncingPeopleBehindUser);
+
+            const session = wish.sessions?.sort((a, b) => b.year - a.year)?.[0];
+            const userRankAdvancementSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.user"), "app-uspd", 
+                (_, pre, current) => pre === undefined ? pre : (pre - current) / (session?.available || 1), userRank)
+            userRankAdvancementSpeed.color = "var(--color-yellow)";
+            const formationAdvancementSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.last"), "app-lspd", 
+                (_, pre, current) => pre === undefined ? 0 : ((current - pre) / (session?.available || 1)), lastAcceptedRank)
+            formationAdvancementSpeed.color = "var(--color-green)";
+            const queueShrinkSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.all"), "app-aspd", 
+                (_, pre, current) => pre === undefined ? 0 : ((pre - current) / (session?.available || 1)), allApplications)
+            queueShrinkSpeed.color = "var(--color-red)";
+            this.speedGraph.addEntry(userRankAdvancementSpeed);
+            this.speedGraph.addEntry(formationAdvancementSpeed);
+            this.speedGraph.addEntry(queueShrinkSpeed);
             this.root.toggleAttribute("loading", false)
         })
     }

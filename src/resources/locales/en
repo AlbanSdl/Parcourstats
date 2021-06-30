@@ -50,3 +50,8 @@ wish.rank.unknown Unknown
 wish.rank.unknown.accepted You're part of the firsts who have been accepted here
 wish.rank.unknown.refused Your application has not been selected by this formation
 wish.graph.people.after People waiting after you in queue
+wish.graph.speed.header Data evolution
+wish.graph.speed.attachment All speeds are divided by the amount of students this formation accepts so that it is relevant to compare the curves below with the ones of all your other wishes. The data below is not affected by the initial "surbooking" of the formation.
+wish.graph.speed.user Rank progression speed
+wish.graph.speed.last Formation fulfilment speed
+wish.graph.speed.all Queue shrink speed

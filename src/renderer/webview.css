@@ -752,6 +752,10 @@ svg {
     padding: 10px 30px;
     box-sizing: border-box;
 }
+.activity.home > .container > .fragment.wish > .container {
+    height: 100%;
+    box-sizing: border-box;
+}
 .activity.home > .container > .fragment.wish > .container > .title {
     font-size: 50px;
     font-weight: lighter;
@@ -760,6 +764,21 @@ svg {
 }
 .activity.home > .container > .fragment.wish > .container > .title > .complement:first-of-type {
     margin-top: 10px;
+}
+.activity.home > .container > .fragment.wish > .container > .header {
+    padding: 30px 20px 10px;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    flex-flow: column nowrap;
+    font-weight: lighter;
+    gap: 10px;
+}
+.activity.home > .container > .fragment.wish > .container > .header > .attachment {
+    font-size: 18px;
+    font-weight: normal;
+    font-style: italic;
+    text-align: justify;
 }
 .activity.home > .container > .fragment.wish > .container > .title > .complement {
     font-size: 18px;

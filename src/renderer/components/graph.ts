@@ -219,7 +219,7 @@ export class ComputedGraphEntry<T extends number> extends GraphEntry {
     #operator: (abscissa: number, ...sources: number[] & { length: T; }) => number;
     constructor(name: string, id: string, 
         operation: (abscissa: number, ...sources: number[] & { length: T; }) => number,
-        ...sources: GraphEntry[] & { length: T; }
+        ...sources: readonly GraphEntry[] & { length: T; }
     ) {
         super(name, id);
         this.#dependencies = sources.map(entry => {
@@ -233,7 +233,38 @@ export class ComputedGraphEntry<T extends number> extends GraphEntry {
         const sources = this.#dependencies.map(s => s.values);
         const commonKeys = sources.map(m => [...m.keys()])
             .reduce((from, next) => from.filter(value => next.includes(value)));
-        return new Map(commonKeys.map(k => [k, this.#operator(k, ...sources.map(s => s.get(k)) as any) || 0]))
+        let oK: number | undefined;
+        return new Map(commonKeys
+            .map(k => [k, this.computeValue(this.#operator, sources, oK, oK = k)])
+            .filter(e => e[1] !== undefined) as [number, number][]
+        )
+    }
+    protected computeValue(
+        op: (abscissa: number, ...sources: number[] & { length: T; }) => number,
+        sources: Map<number, number>[],
+        _previousAbscissa: number,
+        abscissa: number
+    ) {
+        return op(abscissa, ...sources.map(s => s.get(abscissa)) as any) || 0;
+    }
+}
+
+export class PreviousBasedComputedGraphEntry<T extends number> extends ComputedGraphEntry<T> {
+    constructor(name: string, id: string, operation: (abscissa: number, ...sources: [
+        ...previous: number[] & { length: T; },
+        ...target: number[] & { length: T; }
+    ]) => number, ...sources: readonly GraphEntry[] & { length: T; }) {
+        super(name, id, operation as () => number, ...sources as any);
+    }
+
+    protected computeValue(
+        op: (abscissa: number, ...sources: number[] & { length: T; }) => number,
+        sources: Map<number, number>[],
+        previousAbscissa: number,
+        abscissa: number
+    ) {
+        return op(abscissa, ...sources.map(s => s.get(previousAbscissa))
+            .concat(sources.map(s => s.get(abscissa))) as any) || 0;
     }
 }
 
