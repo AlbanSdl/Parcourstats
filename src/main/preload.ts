@@ -10,11 +10,14 @@ contextBridge.exposeInMainWorld('bridge', {
                 ipcRenderer.send(command);
                 break;
             case ClientRequest.ERROR_DISPATCH:
+            case ClientRequest.OPEN_EXTERNAL:
                 const allowedData = details[0];
                 ipcRenderer.send(command,
                     typeof allowedData === "string" ? allowedData : "");
                 break;
             case ClientRequest.DATA_REQUEST:
+            case ClientRequest.SETTINGS_GET:
+            case ClientRequest.SETTINGS_SET:
                 ipcRenderer.send(command, ...details);
                 break;
             default:
@@ -35,6 +38,8 @@ contextBridge.exposeInMainWorld('bridge', {
             case BackendRequest.DATA_RESPONSE:
             case BackendRequest.ERROR_DISPATCH:
             case BackendRequest.WINDOW_MAXIMIZED:
+            case BackendRequest.SETTINGS_GET:
+            case BackendRequest.SETTINGS_SET:
                 ipcRenderer.on(command, (...args) => callback(...args.slice(1)));
                 break;
             default:

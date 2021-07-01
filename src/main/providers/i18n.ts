@@ -2,15 +2,29 @@ import { readFile } from "fs";
 import * as path from "path";
 import { IProvider } from "../../common/provider";
 
+type Locale = "en" | "fr";
 export class i18n implements IProvider<string> {
 
-    public readonly lang: string;
+    private _lang: Locale;
     protected readonly translation: Map<string, string>;
 
-    constructor(lang: string) {
-        this.lang = lang;
+    constructor(lang: Locale) {
         this.translation = new Map();
-        readFile(path.join(__dirname, `../../resources/locales/${lang}`), "utf8", (err, data) => {
+        this.lang = lang;
+    }
+
+    public get lang() {
+        return this._lang;
+    }
+
+    public set lang(value) {
+        this._lang = value;
+        this.load();
+    }
+
+    private load() {
+        this.translation.clear();
+        readFile(path.join(__dirname, `../../resources/locales/${this._lang}`), "utf8", (err, data) => {
             if (!err) {
                 data.split("\n").forEach(str => {
                     const sp = str.split(/\s/);

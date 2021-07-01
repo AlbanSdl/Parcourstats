@@ -196,6 +196,72 @@ svg {
     width: 100%;
     left: 0;
 }
+.wrapper.switch {
+    display: flex;
+    flex-flow: row-reverse nowrap;
+    align-items: center;
+    position: relative;
+    gap: 30px;
+    justify-content: space-between;
+    width: 100%;
+}
+.wrapper.switch > label {
+    flex-shrink: 0;
+}
+.wrapper.switch > label > input.switch {
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 0;
+}
+.wrapper.switch > label > input.switch + .track-wrapper {
+    background-color: var(--color-primary-detail);
+    width: 30px;
+    height: 10px;
+    border-radius: 5px;
+    transition: all .35s ease-in-out;
+    cursor: pointer;
+    z-index: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.wrapper.switch > label > input.switch:disabled + .track-wrapper {
+    cursor: not-allowed;
+    filter: grayscale(1) brightness(.6);
+}
+.wrapper.switch > label > input.switch + .track-wrapper > .track {
+    position: absolute;
+    height: calc(200% - 2px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background-color: var(--color-primary-detail);
+    box-shadow: 0 0 3px #222;
+    transition: all .35s ease-in-out;
+    right: calc(50% - 3px);
+}
+.wrapper.switch > label > input.switch + .track-wrapper > .track::before {
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    border-radius: 50%;
+    background-color: var(--color-accent);
+    transition: all .35s cubic-bezier(.25, 1, .5, 1);
+    opacity: .5;
+    z-index: -1;
+    pointer-events: none;
+}
+.wrapper.switch > label > input.switch:checked + .track-wrapper,
+.wrapper.switch > label > input.switch:checked + .track-wrapper > .track {
+    background-color: var(--color-accent);
+}
+.wrapper.switch > label > input.switch:checked + .track-wrapper > .track {
+    right: 0;
+}
+.wrapper.switch > label > input.switch:focus-visible + .track-wrapper > .track::before {
+    transform: scale(2);
+}
 
 /*
  * Tooltips

@@ -17,6 +17,16 @@ export abstract class Activity extends Layout {
             rej: (msg: string) => void
         }
     } = {};
+    private readonly pendingSettingsRequests: {
+        [opId: string]: {
+            res: (settings: {
+                lang?: "fr" | "en",
+                filter?: boolean,
+                session_bounds?: [Date, Date]
+            }) => void,
+            rej: (msg: Error) => void
+        }
+    } = {};
     protected root?: HTMLDivElement;
     protected get container() {
         return document.getElementById("app-container");
@@ -25,6 +35,11 @@ export abstract class Activity extends Layout {
     protected onCreate(_?: Activity): HTMLDivElement {
         window.bridge.on(BackendRequest.DATA_RESPONSE, 
             (...args) => this.handleDataStream(...args))
+        window.bridge.on(BackendRequest.SETTINGS_GET, (opId, settings) => {
+            if ("name" in settings) this.pendingSettingsRequests[opId]?.rej(settings as Error);
+            else this.pendingSettingsRequests[opId]?.res(settings);
+            delete this.pendingSettingsRequests[opId];
+        })
         return createElement({
             classes: ["activity"]
         })
@@ -59,6 +74,16 @@ export abstract class Activity extends Layout {
             if (this.creationLock.created) res(value);
             else this.creationLock.locks.push(() => res(value));
         });
+    }
+
+    protected get settings(): Promise<{lang?: "fr" | "en", filter?: boolean, session_bounds?: [Date, Date]}> {
+        return new Promise((res, rej) => {
+            let id: string;
+            while (!id || id in this.pendingSettingsRequests)
+                id = Math.trunc(Math.random() * 1000).toString();
+            this.pendingSettingsRequests[id] = {res, rej};
+            window.bridge.send(ClientRequest.SETTINGS_GET, id);
+        })
     }
 
     protected async requestData(operation: "select", type: "study", year?: number): Promise<Study[]>

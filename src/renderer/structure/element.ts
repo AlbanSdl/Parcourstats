@@ -29,7 +29,7 @@ export function createElement(options: ElementProperties = {}): Element {
         document.createElementNS('http://www.w3.org/2000/svg', options?.tag ?? 'svg') 
         : document.createElement(options?.tag ?? 'div');
     if (!!options?.id) element.id = options.id;
-    element.classList.add(...(options?.classes ?? []));
+    if (!!options?.classes?.length) element.classList.add(...(options.classes!!));
     if (options?.ripple) Ripple.apply(element);
     if (!!options?.link && element instanceof HTMLElement) Link.bind(element);
     for (const key in options) {
