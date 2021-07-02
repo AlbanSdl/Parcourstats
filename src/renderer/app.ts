@@ -5,7 +5,7 @@ import { selectionAttribute, Selector } from "components/selector";
 import { Fragment } from "./structure/fragment";
 import { ComputedGraphEntry, DatasetGraphEntry, Graph, PreviousBasedComputedGraphEntry } from "components/graph";
 import { Transition } from "structure/layout";
-import { TextField } from "components/textfield";
+import { TextField } from "components/forms/textfield";
 import { Button, ButtonStyle } from "components/button";
 import { AppNotification } from "components/notification";
 

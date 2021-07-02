@@ -1,10 +1,10 @@
 import { createElement } from "structure/element";
-import { Component } from "./component";
+import { Component } from "../component";
 
 interface SwitchOptions {
     disabled?: boolean,
     id?: string,
-    oninput: (this: HTMLInputElement, ev: Event) => any,
+    oninput: (this: HTMLInputElement, ev: Event) => void,
     parent?: Element,
     label: string,
     value?: boolean,

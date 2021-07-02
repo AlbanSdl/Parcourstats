@@ -15,6 +15,7 @@
     --color-red: #ff3f25;
     --color-dark-red: #cd0000;
     --in-out-circular: cubic-bezier(.79, .14, .15, .86);
+    --accessibility-transition: all .35s cubic-bezier(.25, 1, .5, 1);
 }
 
 body,
@@ -247,7 +248,7 @@ svg {
     width: 100%;
     border-radius: 50%;
     background-color: var(--color-accent);
-    transition: all .35s cubic-bezier(.25, 1, .5, 1);
+    transition: var(--accessibility-transition);
     opacity: .5;
     z-index: -1;
     pointer-events: none;
@@ -261,6 +262,115 @@ svg {
 }
 .wrapper.switch > label > input.switch:focus-visible + .track-wrapper > .track::before {
     transform: scale(2);
+}
+.wrapper.dropdown {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    position: relative;
+    gap: 30px;
+    justify-content: space-between;
+    width: 100%;
+    z-index: 0;
+}
+.wrapper.dropdown > .list.wrapper {
+    flex: auto;
+    height: 30px;
+    position: relative;
+}
+.wrapper.dropdown > .list.wrapper:focus-visible {
+    outline: none;
+}
+.wrapper.dropdown > .list.wrapper::after {
+    position: absolute;
+    content: "";
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-accent);
+    border-radius: 6px;
+    z-index: -1;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    opacity: .6;
+    transition: var(--accessibility-transition);
+}
+.wrapper.dropdown > .list.wrapper:focus-visible::after {
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+}
+.wrapper.dropdown > .list.wrapper > .list {
+    position: absolute;
+    width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    background: var(--color-secondary-alt);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all .35s ease-in-out;
+    display: flex;
+    flex-flow: column nowrap;
+    scroll-snap-type: y mandatory;
+}
+
+.wrapper.dropdown > .list.wrapper > .list[expanded] {
+    max-height: 400%;
+    transform: translateY(-25%);
+    overflow: auto;
+    scroll-snap-type: none;
+}
+.wrapper.dropdown > .list.wrapper > .list > .value[of][selected]::after {
+    content: "";
+    position: absolute;
+    right: 15px;
+    top: calc(50% - 5px);
+    pointer-events: none;
+    transition: all .3s ease-in-out;
+    width: 10px;
+    height: 10px;
+    background: var(--color-primary);
+    clip-path: path("M5 7.5L0 2.5L0 2.5L5 2.5L10 2.5L10 2.5Z");
+}
+.wrapper.dropdown > .list.wrapper > .list[expanded] > .value[of][selected]::after {
+    clip-path: path("M3 9L0 6L1 5L3 7L9 1L10 2Z");
+}
+.wrapper.dropdown > .list.wrapper > .list:not([has-selection]),
+.wrapper.dropdown > .list.wrapper > .list[disabled] {
+    cursor: not-allowed;
+    background-color: var(--color-disabled);
+    user-select: none;
+}
+.wrapper.dropdown > .list.wrapper > .list > .value[of] {
+    max-height: 30px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    flex: 0 0 100%;
+    transition: all .35s ease-in-out;
+    position: relative;
+}
+.wrapper.dropdown > .list.wrapper:focus-visible > .list > .value[of][a11y-focus] {
+    background: var(--color-accent) !important;
+}
+.wrapper.dropdown > .list.wrapper > .list[disabled] > .value[of] {
+    pointer-events: none;
+}
+.wrapper.dropdown > .list.wrapper > .list > .value[of][selected] {
+    scroll-snap-align: start;
+    padding-right: 30px;
+}
+.wrapper.dropdown > .list.wrapper > .list[expanded] > .value[of][selected] {
+    background-color: var(--color-secondary-detail);
+}
+.wrapper.dropdown > .list.wrapper > .list > .value[of]::before {
+    content: attr(of);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+}
+.wrapper.dropdown > .list.wrapper > .list > .value[of] > .ripple {
+    background-color: var(--color-primary);
+    opacity: .1;
 }
 
 /*
@@ -622,7 +732,8 @@ svg {
 .activity.home > .side > .wrapper > [current] ~ * {
     transform: translateX(100%)
 }
-.activity.home > .side > .wrapper > :not([current]) input {
+.activity.home > .side > .wrapper > :not([current]) input,
+.activity.home > .side > .wrapper > :not([current]) [tabindex] {
     display: none !important; /* removes from tab navigation */
 }
 .activity.home > .side > .wrapper > .list > .wish {

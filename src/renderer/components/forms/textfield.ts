@@ -1,9 +1,9 @@
 import { createElement } from "structure/element";
-import { Component } from "./component";
+import { Component } from "../component";
 
 interface TextFieldOptions {
     id?: string,
-    oninput: (this: HTMLInputElement, ev: Event) => any,
+    oninput: (this: HTMLInputElement, ev: Event) => void,
     parent?: Element,
     placeholder: string,
     prefilled?: string,
