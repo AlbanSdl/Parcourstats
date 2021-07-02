@@ -8,6 +8,8 @@ import { Transition } from "structure/layout";
 import { TextField } from "components/forms/textfield";
 import { Button, ButtonStyle } from "components/button";
 import { AppNotification } from "components/notification";
+import { Switch } from "components/forms/switch";
+import { Dropdown } from "components/forms/dropdown";
 
 interface Data {
     [name: string]: {
@@ -151,6 +153,41 @@ export class Home extends Activity {
         })
         sideSettingsHeader.textContent = this.getLocale("wishes.settings.header");
         sideSettings.append(sideSettingsHeader);
+        new Switch({
+            label: this.getLocale("app.settings.theme"),
+            oninput: e => {
+                // send to main process and save
+                document.documentElement.setAttribute("theme", e.target.checked ? "dark" : "light");
+            },
+            parent: sideSettings
+        })
+        new Dropdown({
+            label: this.getLocale("app.settings.lang"),
+            onSelect: console.log,
+            values: {
+                ["Français"]: "fr",
+                ["English"]: "en"
+            },
+            parent: sideSettings
+        })
+        new Switch({
+            label: this.getLocale("app.settings.filter"),
+            oninput: e => console.log((e.target as HTMLInputElement).checked),
+            parent: sideSettings
+        })
+        const sessionDates = createElement({
+            classes: ["custom-settings", "bounds"]
+        })
+        sessionDates.textContent = this.getLocale("app.settings.bounds");
+        const recordOption = createElement({
+            classes: ["custom-settings", "record"]
+        })
+        recordOption.textContent = this.getLocale("app.settings.record");
+        const aboutProperty = createElement({
+            classes: ["custom-settings", "about"]
+        })
+        aboutProperty.textContent = this.getLocale("app.settings.about");
+        sideSettings.append(sessionDates, recordOption, aboutProperty);
         wrapper.append(sideSettings);
         const container = createElement({
             classes: ["container"]
@@ -413,23 +450,16 @@ class Overview extends Fragment {
             this.displayValue("accepted", states.filter(rec => rec.application_queued === 0).length.toString())
             this.displayValue("pending", states.filter(rec => rec.application_queued > 0).length.toString())
             this.displayValue("refused", states.filter(rec => rec.application_queued < 0).length.toString())
-            let colorVariation = 0;
+            let index = 0;
             for (const study in d) {
                 if (!d[study].user) continue;
-                const graphEntry = new DatasetGraphEntry(study, `overview-${colorVariation}`)
+                const graphEntry = new DatasetGraphEntry(study, `overview-${index}`)
                 const values = new Map(d[study].user
                     .until(record => record.application_queued < 0)
                     .map(rec => [Date.parse(rec.record_time), rec.application_queued]));
                 if ([...values.values()].reduce((p, c) => p + c, 0) <= 0) continue;
+                index++;
                 graphEntry.add(values);
-                const chosenColor = colorVariation++ % 5;
-                graphEntry.color = `var(--color-${
-                    chosenColor == 0 ? "accent" :
-                    chosenColor == 1 ? "red" :
-                    chosenColor == 2 ? "yellow" :
-                    chosenColor == 3 ? "green" :
-                    "dark-red"
-                })`;
                 this.graph?.addEntry(graphEntry);
             }
             this.root.toggleAttribute("loading", false)
@@ -566,37 +596,30 @@ class WishFragment extends Fragment {
                     entry.application_queued
                 ])
             ));
-            userRank.color = "var(--color-yellow)";
             const allApplications = new DatasetGraphEntry(this.locale("wish.rank.all"), "app-all");
             allApplications.add(new Map(wish.global?.filter(entry => entry.year === new Date().getFullYear())?.map(entry => [
                 Math.trunc(Date.parse(entry.record_time) / 864e5),
                 entry.application_all
             ])));
-            allApplications.color = "var(--color-red)";
             const lastAcceptedRank = new DatasetGraphEntry(this.locale("wish.rank.last"), "app-last");
             lastAcceptedRank.add(new Map(wish.global?.filter(entry => entry.year === new Date().getFullYear()).map(entry => [
                 Math.trunc(Date.parse(entry.record_time) / 864e5),
                 entry.application_last
             ])));
-            lastAcceptedRank.color = "var(--color-green)";
-            const renouncingPeopleBehindUser = new ComputedGraphEntry(this.locale("wish.graph.people.after"), "ren-after", 
+            const renouncingPeopleBehindUser = new ComputedGraphEntry(this.locale("wish.graph.people.after"), "user-after", 
                 (_, all, user) => all - user, allApplications, userRank)
-            renouncingPeopleBehindUser.color = "var(--color-dark-red)";
             this.graph.addEntry(userRank);
             this.graph.addEntry(allApplications);
             this.graph.addEntry(lastAcceptedRank);
             this.graph.addEntry(renouncingPeopleBehindUser);
 
             const session = wish.sessions?.sort((a, b) => b.year - a.year)?.[0];
-            const userRankAdvancementSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.user"), "app-uspd", 
+            const userRankAdvancementSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.user"), "speed-user-rank", 
                 (_, pre, current) => pre === undefined ? pre : (pre - current) / (session?.available || 1), userRank)
-            userRankAdvancementSpeed.color = "var(--color-yellow)";
-            const formationAdvancementSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.last"), "app-lspd", 
+            const formationAdvancementSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.last"), "speed-app-last", 
                 (_, pre, current) => pre === undefined ? 0 : ((current - pre) / (session?.available || 1)), lastAcceptedRank)
-            formationAdvancementSpeed.color = "var(--color-green)";
-            const queueShrinkSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.all"), "app-aspd", 
+            const queueShrinkSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.all"), "speed-app-all", 
                 (_, pre, current) => pre === undefined ? 0 : ((pre - current) / (session?.available || 1)), allApplications)
-            queueShrinkSpeed.color = "var(--color-red)";
             this.speedGraph.addEntry(userRankAdvancementSpeed);
             this.speedGraph.addEntry(formationAdvancementSpeed);
             this.speedGraph.addEntry(queueShrinkSpeed);

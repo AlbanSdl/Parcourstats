@@ -1,21 +1,46 @@
-:root {
+:root,
+:root[theme=dark] {
+    /* Themable */
+    --color-secondary-strong: #000;
     --color-secondary: #222;
     --color-secondary-alt: #212121;
-    --color-primary: #fff;
-    --color-primary-detail: #cdcdcd;
-    --color-accent: #2287fa;
+    --color-secondary-detail: #454545;
     --color-disabled: #888;
+    --color-primary-detail: #cdcdcd;
+    --color-primary: #fff;
+    --color-accent: #2287fa;
+    --color-app-bar: #111;
+    --color-green: var(--color-green-light);
+    --color-green-invert: var(--color-green-dark);
+    --color-red: var(--color-red-light);
+    --color-red-invert: var(--color-red-dark);
+    /* App Constants */
+    --color-green-light: #28cd00;
+    --color-green-dark: #208a05;
+    --color-orange: #fa0;
+    --color-red-light: #f55;
+    --color-red-dark: #c00;
+    --color-black: #000;
+    --color-white: #fff;
     --color-ripple: var(--color-accent);
     --color-ripple-alt: var(--color-secondary);
-    --color-secondary-detail: #454545;
-    --color-app-bar: #111;
-    --color-full-dark: #000;
-    --color-green: #28cd00;
-    --color-yellow: #fa0;
-    --color-red: #ff3f25;
-    --color-dark-red: #cd0000;
     --in-out-circular: cubic-bezier(.79, .14, .15, .86);
     --accessibility-transition: all .35s cubic-bezier(.25, 1, .5, 1);
+}
+:root[theme=light] {
+    --color-secondary-strong: #fff;
+    --color-secondary: #efefef;
+    --color-secondary-alt: #dfdfdf;
+    --color-secondary-detail: #bcbcbc;
+    --color-disabled: #aaa;
+    --color-primary-detail: #787878;
+    --color-primary: #002;
+    --color-accent: #22c8fa;
+    --color-app-bar: #fcfcfc;
+    --color-green: var(--color-green-dark);
+    --color-green-invert: var(--color-green-light);
+    --color-red: var(--color-red-dark);
+    --color-red-invert: var(--color-red-light);
 }
 
 body,
@@ -82,7 +107,7 @@ svg {
     color: var(--color-secondary);
 }
 .notification.error {
-    background: var(--color-dark-red);
+    background: var(--color-red-invert);
     color: var(--color-primary);
     fill: var(--color-primary) !important;
 }
@@ -174,7 +199,7 @@ svg {
     overflow-x: clip;
 }
 .wrapper.text-field > input.field:not(:placeholder-shown):invalid + span.helper {
-    border-bottom-color: var(--color-dark-red) !important;
+    border-bottom-color: var(--color-red-invert) !important;
 }
 .wrapper.text-field > input.field + span.helper::after {
     position: absolute;
@@ -237,7 +262,7 @@ svg {
     aspect-ratio: 1;
     border-radius: 50%;
     background-color: var(--color-primary-detail);
-    box-shadow: 0 0 3px #222;
+    box-shadow: 0 0 1px var(--color-black);
     transition: all .35s ease-in-out;
     right: calc(50% - 3px);
 }
@@ -259,6 +284,7 @@ svg {
 }
 .wrapper.switch > label > input.switch:checked + .track-wrapper > .track {
     right: 0;
+    box-shadow: 0 0 3px var(--color-black);
 }
 .wrapper.switch > label > input.switch:focus-visible + .track-wrapper > .track::before {
     transform: scale(2);
@@ -507,7 +533,7 @@ svg {
     align-items: center;
     cursor: pointer;
 }
-.graph.container > .graph + .caption > * > *:first-child {
+.graph.container > .graph + .caption > * > :first-child {
     height: 14px;
     aspect-ratio: 1;
     margin-right: 5px;
@@ -552,7 +578,7 @@ svg {
     transform: translateX(-50%) translateY(-50%);
     position: fixed;
     z-index: 99999;
-    box-shadow: 0 0 20px var(--color-full-dark);
+    box-shadow: 0 0 20px var(--color-black);
     border-radius: 2px;
     width: auto;
     height: auto;
@@ -595,7 +621,7 @@ svg {
 .mask {
     display: none;
     overflow: hidden;
-    background-color: var(--color-full-dark);
+    background-color: var(--color-black);
     position: fixed;
     left: 0;
     top: 0;
@@ -675,7 +701,7 @@ svg {
     flex: 1 0 200px;
     display: flex;
     flex-flow: column nowrap;
-    background: var(--color-full-dark);
+    background: var(--color-secondary-strong);
     overflow: hidden;
     align-items: center;
     position: relative;
@@ -813,6 +839,15 @@ svg {
 .activity.home > .side > .wrapper > .add > .button > .ripple {
     background-color: var(--color-primary);
 }
+.activity.home > .side > .wrapper > .settings {
+    gap: 15px;
+}
+.activity.home > .side > .wrapper > .settings > .custom-settings {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 10px;
+    width: 100%;
+}
 .activity.home > .container {
     flex: 5 1 auto;
     position: relative;
@@ -871,12 +906,12 @@ svg {
     color: var(--color-red)
 }
 .activity.home > .container > .fragment.overview > .container > .abstract > .entry.pending > .value {
-    color: var(--color-yellow)
+    color: var(--color-orange)
 }
 .activity.home > .container > .fragment.overview > .container > .today {
     margin: 0;
     font-size: 18px;
-    background-color: var(--color-dark-red);
+    background-color: var(--color-red-invert);
     padding: 0 10px;
     border-radius: 10px;
     box-sizing: border-box;
@@ -901,14 +936,14 @@ svg {
     display: block;
     position: relative;
     background-color: var(--color-primary);
-    color: var(--color-dark-red);
+    color: var(--color-red-invert);
     cursor: pointer;
     margin-top: 5px;
     overflow: hidden;
     width: fit-content;
 }
 .activity.home > .container > .fragment.overview > .container > .today[present] > .go > .ripple {
-    background-color: var(--color-dark-red);
+    background-color: var(--color-red-invert);
 }
 .activity.home > .container > .fragment.overview > .container > .title:first-child {
     font-size: 50px;
@@ -928,6 +963,58 @@ svg {
     width: 100%;
     padding: 10px 30px;
     box-sizing: border-box;
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="1"] > :first-child,
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="7"] > :first-child {
+    background-color: var(--color-red);
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="2"] > :first-child,
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="8"] > :first-child,
+.activity.home > .container > .fragment.wish > .container > .graph.container > .graph + .caption > [id$="user-rank"] > :first-child {
+    background-color: var(--color-accent);
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="3"] > :first-child,
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="9"] > :first-child,
+.activity.home > .container > .fragment.wish > .container > .graph.container > .graph + .caption > [id$="user-after"] > :first-child {
+    background-color: var(--color-orange);
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="4"] > :first-child {
+    background-color: var(--color-green);
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="5"] > :first-child,
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="0"] > :first-child,
+.activity.home > .container > .fragment.wish > .container > .graph.container > .graph + .caption > [id$="app-all"] > :first-child {
+    background-color: var(--color-red-invert);
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="6"] > :first-child,
+.activity.home > .container > .fragment.wish > .container > .graph.container > .graph + .caption > [id$="app-last"] > :first-child {
+    background-color: var(--color-green-invert);
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="1"],
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="7"] {
+    stroke: var(--color-red);
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="2"],
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="8"],
+.activity.home > .container > .fragment.wish > .container > .graph.container > .graph > path.graph-data[id$="user-rank"] {
+    stroke: var(--color-accent);
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="3"],
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="9"],
+.activity.home > .container > .fragment.wish > .container > .graph.container > .graph > path.graph-data[id$="user-after"] {
+    stroke: var(--color-orange);
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="4"] {
+    stroke: var(--color-green);
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="5"],
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="0"],
+.activity.home > .container > .fragment.wish > .container > .graph.container > .graph > path.graph-data[id$="app-all"] {
+    stroke: var(--color-red-invert);
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="6"],
+.activity.home > .container > .fragment.wish > .container > .graph.container > .graph > path.graph-data[id$="app-last"] {
+    stroke: var(--color-green-invert);
 }
 .activity.home > .container > .fragment.wish > .container {
     height: 100%;
@@ -1025,14 +1112,14 @@ svg {
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .form > ::after {
     position: absolute;
     content: attr(trend);
-    color: var(--color-dark-red);
+    color: var(--color-red-invert);
     right: 0;
     top: 50%;
     transform: translateY(-25%);
     transition: color .35s ease-in-out;
 }
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .form > [trend="0"]::after {
-    color: var(--color-yellow);
+    color: var(--color-orange);
 }
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .form > [trend^="-"]:not(:last-child):after,
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .form > [trend^="+"]:last-child::after {
@@ -1106,7 +1193,7 @@ svg {
 }
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .summary > :nth-child(4n + 1)::before,
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .summary > :nth-child(4n + 2)::before {
-    background-color: var(--color-full-dark);
+    background-color: var(--color-secondary-strong);
 }
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .summary > .head {
     background-color: var(--color-accent);
@@ -1137,7 +1224,7 @@ svg {
     content: attr(from);
     text-decoration: line-through;
     text-decoration-thickness: from-font;
-    color: var(--color-dark-red);
+    color: var(--color-red-invert);
 }
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .button:last-child {
     flex-shrink: 0;
@@ -1155,7 +1242,7 @@ svg {
     background-color: var(--color-green);
 }
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .summary > [save=error]:not(.head)::before {
-    background-color: var(--color-dark-red);
+    background-color: var(--color-red-invert);
 }
 
 /*
@@ -1187,14 +1274,14 @@ svg {
     margin: 2px;
     border-radius: 50%;
     cursor: pointer;
-    fill: var(--color-primary);
+    fill: var(--color-white);
     -webkit-app-region: no-drag;
 }
 .app-bar .status .maximize {
     background-color: var(--color-green);
 }
 .app-bar .status .minimize {
-    background-color: var(--color-yellow);
+    background-color: var(--color-orange);
 }
 .app-bar .status .close {
     background-color: var(--color-red);

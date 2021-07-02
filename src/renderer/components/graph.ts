@@ -28,9 +28,8 @@ interface EntryDependency {
 }
 
 enum GraphEntryUpdate {
-    COLOR  = 0b001,
-    NAME   = 0b010,
-    VALUES = 0b100
+    NAME   = 0b01,
+    VALUES = 0b10
 }
 
 class BoundingBox {
@@ -135,15 +134,6 @@ abstract class GraphEntry {
         }
     }
 
-    public set color(value: string) {
-        this.#color = value;
-        this.updateDisplay(GraphEntryUpdate.COLOR);
-    }
-
-    public get color() {
-        return this.#color;
-    }
-
     public set name(value: string) {
         this.#name = value;
         this.updateDisplay(GraphEntryUpdate.NAME)
@@ -163,18 +153,13 @@ abstract class GraphEntry {
             }
         });
         this.reference?.updateScale(this.values);
-        this.updateDisplay(GraphEntryUpdate.COLOR | GraphEntryUpdate.NAME | GraphEntryUpdate.VALUES, true);
+        this.updateDisplay(GraphEntryUpdate.NAME | GraphEntryUpdate.VALUES, true);
     }
 
     protected updateDisplay(code: GraphEntryUpdate, animate = false) {
         if (!this.reference) return;
         const element = this.reference!!.element
         if (!element) return;
-        if ((code & GraphEntryUpdate.COLOR) !== 0) {
-            element.style.stroke = this.#color ?? 'var(--color-disabled)';
-            const marker = (this.reference!!.caption.querySelector('.marker') as HTMLDivElement);
-            if (!!marker) marker.style.backgroundColor = this.#color
-        }
         if ((code & GraphEntryUpdate.NAME) !== 0) {
             const content = (this.reference!!.caption.querySelector('.content') as HTMLDivElement);
             if (!!content) content.textContent = this.#name;

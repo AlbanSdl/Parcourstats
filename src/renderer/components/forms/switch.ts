@@ -4,7 +4,9 @@ import { Component } from "../component";
 interface SwitchOptions {
     disabled?: boolean,
     id?: string,
-    oninput: (this: HTMLInputElement, ev: Event) => void,
+    oninput: (this: HTMLInputElement, ev: InputEvent & {
+        target: HTMLInputElement;
+    }) => void,
     parent?: Element,
     label: string,
     value?: boolean,
