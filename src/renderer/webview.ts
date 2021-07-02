@@ -1,8 +1,7 @@
 import "expansions";
 import { enableIcons, Icon } from "components/icon";
-import { AppNotification } from "components/notification";
 import { Home } from "app";
-import { BackendRequest, ClientRequest } from "../common/window";
+import { Query } from "../common/window";
 
 const savedFsIcon = {
     "true": null,
@@ -12,9 +11,7 @@ const savedFsIcon = {
 window.onload = () => {
     enableIcons();
     new Home().create();
-    window.bridge.on(BackendRequest.ERROR_DISPATCH, error => 
-        new AppNotification(error, 10000, ['error']))
-    window.bridge.on(BackendRequest.WINDOW_MAXIMIZED, max => {
+    window.messenger.on(Query.WINDOW_MAXIMIZE, async max => {
         const target = document.getElementById("wdicma");
         if (!!target) {
             if (!savedFsIcon[`${max}`]) {
@@ -29,9 +26,9 @@ window.onload = () => {
         }
     })
     document.getElementById("wdicc").addEventListener('click', () => 
-        window.bridge.send(ClientRequest.WINDOW_EXIT))
+        window.messenger.send(Query.WINDOW_EXIT))
     document.getElementById("wdicmi").addEventListener('click', () => 
-        window.bridge.send(ClientRequest.WINDOW_MINIMIZE))
+        window.messenger.send(Query.WINDOW_MINIMIZE))
     document.getElementById("wdicma").addEventListener('click', () => 
-        window.bridge.send(ClientRequest.WINDOW_MAXIMIZE))
+        window.messenger.send(Query.WINDOW_MAXIMIZE))
 }

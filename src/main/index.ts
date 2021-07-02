@@ -3,61 +3,57 @@ import { join } from "path";
 import { i18n } from "./providers/i18n";
 import { Ipc } from "./ipc";
 import { Settings } from "./providers/settings";
-import { BackendRequest, ClientRequest, ClientSyncRequest, ProcessBridge } from "../common/window";
 import { DataProvider } from "./providers/data";
+import { Query, Recipient } from "../common/window";
 
 app.setAppUserModelId("fr.asdl.parcourstats");
 
 export class ParcourStats {
 
-    private readonly ipc: ProcessBridge = new Ipc(this);
+    private readonly ipc: Recipient<"back"> = new Ipc(this);
     private readonly settings = new Settings();
     private readonly i18n = new i18n(this.settings.get<"fr" | "en">("client.lang", "fr"));
     public window: BrowserWindow = null;
     private database: DataProvider;
 
     constructor() {
-        this.ipc.on(ClientRequest.WINDOW_EXIT, () => this.window.close())
-        this.ipc.on(ClientRequest.WINDOW_MAXIMIZE, () => this.window.isMaximized() ? this.window.unmaximize() : this.window.maximize())
-        this.ipc.on(ClientRequest.WINDOW_MINIMIZE, () => this.window.minimize())
-        this.ipc.on(ClientSyncRequest.LOCALE_GET, c => this.i18n.get(c.args[0]))
-        this.ipc.on(ClientRequest.OPEN_EXTERNAL, linkProvider => shell.openExternal(linkProvider?.args?.[0]))
-        this.ipc.on(ClientRequest.SETTINGS_GET, context => {
-            context.reply(
-                BackendRequest.SETTINGS_GET,
-                context.args[0], {
-                    lang: this.settings.get("client.lang", "fr"),
-                    filter: this.settings.get("client.filter", false),
-                    session_bounds: [
-                        new Date(this.settings.get("client.sessions_start", Date.now())),
-                        new Date(this.settings.get("client.sessions_end", Date.now()))
-                    ]
-                }
-            );
+        this.ipc.on(Query.WINDOW_EXIT, async () => this.window.close())
+        this.ipc.on(Query.WINDOW_MAXIMIZE, async () => {
+            if (this.window.isMaximized()) {
+                this.window.unmaximize();
+                return false;
+            }
+            this.window.maximize();
+            return true;
         })
-        this.ipc.on(ClientRequest.SETTINGS_SET, context => {
-            try {
-                switch (context.args[1]) {
-                    case "lang":
-                        const [l_op,, locale] = context.args;
-                        if (locale === "fr" || locale === "en") this.i18n.lang = locale
-                        else return context.reply(BackendRequest.SETTINGS_SET, l_op, "Invalid locale")
-                    case "filter":
-                        const [op, prop, data] = context.args;
-                        this.settings.set(prop, data)
-                        context.reply(BackendRequest.SETTINGS_SET, op);
-                        break;
-                    case "session_bounds":
-                        const [b_op, b_prop, ...dates] = context.args;
-                        this.settings.set(b_prop, dates.map(bound => bound.getTime()))
-                        context.reply(BackendRequest.SETTINGS_SET, b_op);
-                        break;
-                    default:
-                        return context.reply(BackendRequest.SETTINGS_SET, 
-                            context.args[0], "Invalid configuration key")
-                }
-            } catch (err) {
-                context.reply(BackendRequest.SETTINGS_SET, context.args[0], err)
+        this.ipc.on(Query.WINDOW_MINIMIZE, async () => this.window.minimize())
+        this.ipc.on(Query.LOCALIZE, async key => this.i18n.get(key))
+        this.ipc.on(Query.OPEN_EXTERNAL, async link => shell.openExternal(link))
+        this.ipc.on(Query.SETTINGS_GET, async () => {
+            return {
+                lang: this.settings.get<"fr" | "en">("client.lang", "fr"),
+                filter: this.settings.get("client.filter", false),
+                session_bounds: [
+                    new Date(this.settings.get("client.sessions_start", Date.now())),
+                    new Date(this.settings.get("client.sessions_end", Date.now()))
+                ] as [Date, Date]
+            }
+        })
+        this.ipc.on(Query.SETTINGS_SET, async (...update) => {
+            switch (update[0]) {
+                case "lang":
+                    const locale = update[1];
+                    if (locale === "fr" || locale === "en") this.i18n.lang = locale
+                    else throw "Invalid locale"
+                case "filter":
+                    this.settings.set(update[0], update[1])
+                    return;
+                case "session_bounds":
+                    const [bounds,...dates] = update;
+                    this.settings.set(bounds, dates.map(bound => bound.getTime()))
+                    return;
+                default:
+                    throw "Invalid configuration key";
             }
         })
     }
@@ -84,11 +80,11 @@ export class ParcourStats {
             this.window = null
         })
         this.window.on('maximize', () => {
-            this.ipc.send(BackendRequest.WINDOW_MAXIMIZED, true);
+            this.ipc.send(Query.WINDOW_MAXIMIZE, true);
             this.settings.set("client.maximized", true);
         })
         this.window.on('unmaximize', () => {
-            this.ipc.send(BackendRequest.WINDOW_MAXIMIZED, false);
+            this.ipc.send(Query.WINDOW_MAXIMIZE, false);
             this.settings.set("client.maximized", false);
         })
     }

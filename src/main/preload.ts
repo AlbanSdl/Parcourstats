@@ -1,49 +1,53 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { BackendRequest, ClientRequest, ClientSyncRequest } from "../common/window";
+import { Query, Recipient } from "../common/window";
 
-contextBridge.exposeInMainWorld('bridge', {
-    send: (command: ClientRequest, ...details: any[]): void => {
-        switch (command) {
-            case ClientRequest.WINDOW_EXIT:
-            case ClientRequest.WINDOW_MAXIMIZE:
-            case ClientRequest.WINDOW_MINIMIZE:
-                ipcRenderer.send(command);
-                break;
-            case ClientRequest.ERROR_DISPATCH:
-            case ClientRequest.OPEN_EXTERNAL:
-                const allowedData = details[0];
-                ipcRenderer.send(command,
-                    typeof allowedData === "string" ? allowedData : "");
-                break;
-            case ClientRequest.DATA_REQUEST:
-            case ClientRequest.SETTINGS_GET:
-            case ClientRequest.SETTINGS_SET:
-                ipcRenderer.send(command, ...details);
-                break;
+class FrontendIpc extends Recipient<"front"> {
+    protected canSend(query: Query, ...args: unknown[]): query is Query {
+        switch (query) {
+            case Query.WINDOW_EXIT:
+            case Query.WINDOW_MAXIMIZE:
+            case Query.WINDOW_MINIMIZE:
+                return args.length === 0;
+            case Query.OPEN_EXTERNAL:
+                const allowedData = args[0];
+                return typeof allowedData === "string";
+            case Query.DATA:
+            case Query.SETTINGS_GET:
+            case Query.SETTINGS_SET:
+                return true;
+            case Query.LOCALIZE:
+                return typeof args[0] === "string";
             default:
-                throw new Error(`Cannot send invalid event ${command}`);
-        }
-    },
-    sendSync: (command: ClientSyncRequest, ...details: any[]): any => {
-        switch (command) {
-            case ClientSyncRequest.LOCALE_GET:
-                if (typeof details[0] !== "string") return details[0];
-                return ipcRenderer.sendSync(command, details[0]);
-            default:
-                throw new Error(`Cannot send invalid event ${command}`);
-        }
-    },
-    on: (command: BackendRequest, callback: (...details: any[]) => any): void => {
-        switch (command) {
-            case BackendRequest.DATA_RESPONSE:
-            case BackendRequest.ERROR_DISPATCH:
-            case BackendRequest.WINDOW_MAXIMIZED:
-            case BackendRequest.SETTINGS_GET:
-            case BackendRequest.SETTINGS_SET:
-                ipcRenderer.on(command, (...args) => callback(...args.slice(1)));
-                break;
-            default:
-                throw new Error(`Cannot listen for invalid event ${command}`);
+                return false;
         }
     }
+    protected canReceive(query: Query): query is Query.DATA | Query.LOCALIZE | Query.OPEN_EXTERNAL | Query.SETTINGS_GET | Query.SETTINGS_SET | Query.WINDOW_MAXIMIZE {
+        switch (query) {
+            case Query.DATA:
+            case Query.LOCALIZE:
+            case Query.OPEN_EXTERNAL:
+            case Query.WINDOW_MAXIMIZE:
+            case Query.SETTINGS_GET:
+            case Query.SETTINGS_SET:
+                return true;
+        }
+        return false;
+    }
+    protected sendInternal(query: Query, channelId: number, healthy: boolean, ...args: unknown[]): void {
+        ipcRenderer.send(query, channelId, healthy, ...args);
+    }
+    protected registerInternal(query: Query, callback: (reply: (query: Query, channelId: number, healthy: boolean, ...args: unknown[]) => void, channelId: number, healthy: boolean, ...args: unknown[]) => void): void {
+        ipcRenderer.on(query, (_, channelId, healthy, ...args) => callback(
+            (query, id, h, ...args) => this.sendInternal(query, id, h, ...args), channelId, healthy, ...args));
+    }
+    protected unregisterInternal(query: Query): void {
+        ipcRenderer.removeAllListeners(query!!);
+    }
+}
+
+const front = new FrontendIpc();
+contextBridge.exposeInMainWorld('messenger', {
+    send: (query: any, ...args: any[]) => front.send(query, ...args),
+    on: (query: any, action: any) => front.on(query, action),
+    unregister: (query: any) => front.unregister(query)
 })

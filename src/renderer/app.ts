@@ -10,6 +10,7 @@ import { Button, ButtonStyle } from "components/button";
 import { AppNotification } from "components/notification";
 import { Switch } from "components/forms/switch";
 import { Dropdown } from "components/forms/dropdown";
+import { Query } from "../common/window";
 
 interface Data {
     [name: string]: {
@@ -38,10 +39,11 @@ export class Home extends Activity {
         this.createContext();
     }
 
-    protected onCreate(): HTMLDivElement {
-        const root = super.onCreate();
+    protected async onCreate() {
+        const root = await super.onCreate();
         root.classList.add("home");
-        this.title = this.getLocale("app.name")
+        this.getLocale("app.name")
+            .then(name => this.title = name);
         root.classList.add("home");
         this.side = createElement({
             classes: ["side"]
@@ -80,12 +82,12 @@ export class Home extends Activity {
             classes: ["add"]
         })
         const sideAddHeader = createElement({
-            classes: ["header"]
+            classes: ["header"],
+            text: await this.getLocale("wishes.add.header")
         })
-        sideAddHeader.textContent = this.getLocale("wishes.add.header");
         sideAdd.append(sideAddHeader);
         new TextField({
-            placeholder: this.getLocale("wishes.add.name"),
+            placeholder: await this.getLocale("wishes.add.name"),
             oninput: () => activateButton(),
             parent: sideAdd,
             required: true,
@@ -95,7 +97,7 @@ export class Home extends Activity {
             classes: ["numeric"]
         });
         new TextField({
-            placeholder: this.getLocale("wishes.add.session"),
+            placeholder: await this.getLocale("wishes.add.session"),
             oninput: () => activateButton(),
             parent: numeric,
             required: true,
@@ -104,7 +106,7 @@ export class Home extends Activity {
             id: "wish-add-session"
         });
         new TextField({
-            placeholder: this.getLocale("wishes.add.available"),
+            placeholder: await this.getLocale("wishes.add.available"),
             oninput: () => activateButton(),
             parent: numeric,
             required: true,
@@ -117,25 +119,25 @@ export class Home extends Activity {
             year: (root.querySelector('* #wish-add-session') as HTMLInputElement),
             available: (root.querySelector('* #wish-add-available') as HTMLInputElement)
         })
-        const button = new Button(this.getLocale("wishes.add.op"), () => {
+        const button = new Button(await this.getLocale("wishes.add.op"), () => {
             button.enabled = false;
             const stdy = <Study><unknown>Object.fromEntries(Object.entries(getWishAddFields())
                 .map(e => [e[0], e[0] === "name" ? e[1].value : parseInt(e[1].value)]));
-            this.requestData("insert", "study", stdy)
-            .then(res => this.updateStudies(!!res.length ? res : [stdy]))
-            .then(() => {
-                for (const entry of Object.entries(getWishAddFields()))
-                    entry[1].value = entry[0] === "year" ? new Date().getFullYear().toString() : "";
-                if (this.fragment instanceof Overview)
-                    this.fragment.replace(this.fragment = new Overview(), Transition.NONE);
-                this.side.querySelector("[action=wish-list]").toggleAttribute(selectionAttribute, true);
-            })
-            .catch(err => {
-                new AppNotification(this.getLocale("wishes.add.error"), 15000, ["error"]);
-                console.error(err);
-                button.enabled = true;
-                return true;
-            })
+            window.messenger.send(Query.DATA, "insert", "study", stdy)
+                .then((res: Study[]) => this.updateStudies(!!res.length ? res : [stdy]))
+                .then(() => {
+                    for (const entry of Object.entries(getWishAddFields()))
+                        entry[1].value = entry[0] === "year" ? new Date().getFullYear().toString() : "";
+                    if (this.fragment instanceof Overview)
+                        this.fragment.replace(this.fragment = new Overview(), Transition.NONE);
+                    this.side.querySelector("[action=wish-list]").toggleAttribute(selectionAttribute, true);
+                })
+                .catch(async err => {
+                    new AppNotification(await this.getLocale("wishes.add.error"), 15000, ["error"]);
+                    console.error(err);
+                    button.enabled = true;
+                    return true;
+                })
         }, sideAdd, ButtonStyle.RAISED | ButtonStyle.COMPACT);
         button.enabled = false;
         const activateButton = () => {
@@ -149,12 +151,12 @@ export class Home extends Activity {
             classes: ["settings"]
         })
         const sideSettingsHeader = createElement({
-            classes: ["header"]
+            classes: ["header"],
+            text: await this.getLocale("wishes.settings.header")
         })
-        sideSettingsHeader.textContent = this.getLocale("wishes.settings.header");
         sideSettings.append(sideSettingsHeader);
         new Switch({
-            label: this.getLocale("app.settings.theme"),
+            label: await this.getLocale("app.settings.theme"),
             oninput: e => {
                 // send to main process and save
                 document.documentElement.setAttribute("theme", e.target.checked ? "dark" : "light");
@@ -162,7 +164,7 @@ export class Home extends Activity {
             parent: sideSettings
         })
         new Dropdown({
-            label: this.getLocale("app.settings.lang"),
+            label: await this.getLocale("app.settings.lang"),
             onSelect: console.log,
             values: {
                 ["Français"]: "fr",
@@ -171,22 +173,22 @@ export class Home extends Activity {
             parent: sideSettings
         })
         new Switch({
-            label: this.getLocale("app.settings.filter"),
+            label: await this.getLocale("app.settings.filter"),
             oninput: e => console.log((e.target as HTMLInputElement).checked),
             parent: sideSettings
         })
         const sessionDates = createElement({
-            classes: ["custom-settings", "bounds"]
+            classes: ["custom-settings", "bounds"],
+            text: await this.getLocale("app.settings.bounds")
         })
-        sessionDates.textContent = this.getLocale("app.settings.bounds");
         const recordOption = createElement({
-            classes: ["custom-settings", "record"]
+            classes: ["custom-settings", "record"],
+            text: await this.getLocale("app.settings.record")
         })
-        recordOption.textContent = this.getLocale("app.settings.record");
         const aboutProperty = createElement({
-            classes: ["custom-settings", "about"]
+            classes: ["custom-settings", "about"],
+            text: await this.getLocale("app.settings.about")
         })
-        aboutProperty.textContent = this.getLocale("app.settings.about");
         sideSettings.append(sessionDates, recordOption, aboutProperty);
         wrapper.append(sideSettings);
         const container = createElement({
@@ -197,29 +199,29 @@ export class Home extends Activity {
             if (this.loadingState >= 7) res(this.data);
             else this.providers.push(new WeakRef(res));
         });
-        this.fragment = new Overview(this, container, fragProvider, key => this.getLocale(key));
+        this.fragment = new Overview(this, container, fragProvider, async key => this.getLocale(key));
 
-        this.requestData("select", "study")
-            .then(async v => await this.waitCreation(v))
-            .catch(err => {
-                console.error(err);
-                return this.getLocale("wishes.list.error");
-            })
+        window.messenger.send(Query.DATA, "select", "study")
+            .then(async (values: Study[]) => await this.waitCreation(values))
             .then(values => this.updateStudies(values))
-            .catch(err => {
+            .catch(async err => {
+                console.error(err);
+                await this.updateStudies([], await this.getLocale("wishes.list.error"));
+            })
+            .catch(async err => {
                 const errorPlaceholder = createElement({
-                    classes: ["empty"]
+                    classes: ["empty"],
+                    text: await this.getLocale("wishes.list.error")
                 });
-                errorPlaceholder.textContent = this.getLocale("wishes.list.error");
                 this.side.querySelector('.list')?.append(errorPlaceholder)
                 console.error(err);
             })
-        this.requestData("select", "global")
+        window.messenger.send(Query.DATA, "select", "global")
             .then(async v => await this.waitCreation(v))
             .catch(console.error)
             .then(values => this.update(values || [], "global"))
             .then(() => this.runProviders(LoadingMask.GLOBAL));
-        this.requestData("select", "user")
+            window.messenger.send(Query.DATA, "select", "user")
             .then(async v => await this.waitCreation(v))
             .catch(console.error)
             .then(values => this.update(values || [], "user"))
@@ -238,28 +240,28 @@ export class Home extends Activity {
         }
     }
 
-    protected onCreated(): void {
+    protected async onCreated() {
         (this.fragment as Overview).create();
         const wishListHeader = createElement({
             classes: ["header"],
             ripple: true,
-            action: "wish-list"
+            action: "wish-list",
+            text: await this.getLocale("wishes.list")
         });
-        wishListHeader.textContent = this.getLocale("wishes.list");
         this.sideHeader.append(wishListHeader);
         const wishAddHeader = createElement({
             classes: ["header"],
             ripple: true,
-            action: "wish-add"
+            action: "wish-add",
+            text: await this.getLocale("wishes.add")
         });
-        wishAddHeader.textContent = this.getLocale("wishes.add");
         this.sideHeader.append(wishAddHeader);
         const settingsHeader = createElement({
             classes: ["header"],
             ripple: true,
-            action: "stat-settings"
+            action: "stat-settings",
+            text: await this.getLocale("wishes.settings")
         });
-        settingsHeader.textContent = this.getLocale("wishes.settings");
         this.sideHeader.append(settingsHeader);
         super.onCreated();
     }
@@ -270,53 +272,50 @@ export class Home extends Activity {
         delete this.side;
     }
 
-    private update(values: string | Study[], key: "sessions"): { added: number; error?: string }
-    private update(values: string | GlobalRankRecord[], key: "global"): { added: number; error?: string }
-    private update(values: string | UserRankRecord[], key: "user"): { added: number; error?: string }
-    private update(values: string | Study[] | GlobalRankRecord[] | UserRankRecord[], key: "sessions" | "global" | "user") {
-        if (typeof values !== "string" && !!values.length) {
-            for (const wish of values) {
-                if (wish.name in this.data) {
-                    const entries = this.data[wish.name]!![key];
-                    if (!entries)
-                        this.data[wish.name][key] = [wish];
-                    else if (
-                        (key === "sessions" && !(<Study[]>entries).find(s => s.year === wish.year))
-                        || ((key === "global" || key === "user") && !(<(GlobalRankRecord | UserRankRecord)[]>entries)
-                            .find(s => s.record_time === (<GlobalRankRecord | UserRankRecord>wish).record_time))
-                    ) entries.push(wish);
-                } else this.data[wish.name] = {
-                    [key]: [wish]
-                };
-            }
+    private update(values: Study[], key: "sessions"): values is Exclude<Study[], []>;
+    private update(values: GlobalRankRecord[], key: "global"): values is Exclude<GlobalRankRecord[], []>;
+    private update(values: UserRankRecord[], key: "user"): values is Exclude<UserRankRecord[], []>;
+    private update(values: Study[] | GlobalRankRecord[] | UserRankRecord[], key: "sessions" | "global" | "user") {
+        for (const wish of values) {
+            if (wish.name in this.data) {
+                const entries = this.data[wish.name]!![key];
+                if (!entries)
+                    this.data[wish.name][key] = [wish];
+                else if (
+                    (key === "sessions" && !(<Study[]>entries).find(s => s.year === wish.year))
+                    || ((key === "global" || key === "user") && !(<(GlobalRankRecord | UserRankRecord)[]>entries)
+                        .find(s => s.record_time === (<GlobalRankRecord | UserRankRecord>wish).record_time))
+                ) entries.push(wish);
+            } else this.data[wish.name] = {
+                [key]: [wish]
+            };
         }
-        return {
-            added: typeof values === "string" ? 0 : values.length,
-            error: typeof values === "string" ? values : undefined
-        }
+        return values.length > 0;
     }
 
     public async insertRecord(type: "global", rec: GlobalRankRecord): Promise<void>;
     public async insertRecord(type: "user", rec: UserRankRecord): Promise<void>;
     public async insertRecord(type: "global" | "user", rec: GlobalRankRecord | UserRankRecord) {
-        await this.requestData("insert",
+        window.messenger.send(
+            Query.DATA,
+            "insert",
             type as (typeof rec) extends GlobalRankRecord ? "global" : "user",
-            rec as (typeof type) extends "global" ? GlobalRankRecord : UserRankRecord)
-        const cacheResult = this.update([rec],
-            type as (typeof rec) extends GlobalRankRecord ? "global" : "user");
-        if (!!cacheResult.error) throw cacheResult.error;
+            rec as (typeof type) extends "global" ? GlobalRankRecord : UserRankRecord
+        ).then(() => {
+            this.update([rec], type as (typeof rec) extends GlobalRankRecord ? "global" : "user")
+        })
     }
 
-    private updateStudies(additions: string | Study[]) {
+    private async updateStudies(additions: Study[], message?: string) {
         this.side.querySelector('.list')?.toggleAttribute("loading", false)
         while (!!this.sideList.childrenElements.length) 
             this.sideList.childrenElements.item(0).remove();
         const updateResult = this.update(additions, "sessions");
-        if (updateResult.added === 0) {
+        if (!updateResult) {
             const emptyPlaceholder = createElement({
-                classes: ["empty"]
+                classes: ["empty"],
+                text: message ?? await this.getLocale("wishes.list.empty")
             });
-            emptyPlaceholder.textContent = updateResult.error ?? this.getLocale("wishes.list.empty");
             this.side.querySelector('.list')?.append(emptyPlaceholder)
         } else {
             for (const wish in this.data) {
@@ -329,7 +328,7 @@ export class Home extends Activity {
                 const wishSession = createElement({
                     classes: ["session"]
                 });
-                wishSession.textContent = `${this.getLocale(`wish.session.${
+                wishSession.textContent = `${await this.getLocale(`wish.session.${
                     this.data[wish].sessions.length > 1 ? 'plural' : 'singular'}`)}: ${
                     this.data[wish].sessions.map(s => s.year).sort().join(", ")}`;
                 wishContainer.append(wishSession);
@@ -347,6 +346,7 @@ export class Home extends Activity {
         }
     }
 
+    /** @internal */
     changeFragment(fragment: WishFragment | Overview | TodayFragment) {
         this.fragment?.replace(this.fragment = fragment);
     }
@@ -354,7 +354,7 @@ export class Home extends Activity {
 
 class Overview extends Fragment {
     data: () => Promise<Data>;
-    locale: (key: string) => string;
+    locale: (key: string) => Promise<string>;
     private readonly timeFormat = new Intl.DateTimeFormat(undefined, {
         month: "long",
         day: "numeric"
@@ -365,7 +365,7 @@ class Overview extends Fragment {
         context?: Home,
         container?: HTMLElement,
         data?: () => Promise<Data>,
-        locale?: (key: string) => string
+        locale?: (key: string) => Promise<string>
     ) {
         super();
         this.context = context;
@@ -374,8 +374,8 @@ class Overview extends Fragment {
         this.locale = locale;
     }
 
-    protected onCreate(from?: Overview | WishFragment | TodayFragment): HTMLDivElement {
-        const root = super.onCreate(from);
+    protected async onCreate(from?: Overview | WishFragment | TodayFragment) {
+        const root = await super.onCreate(from);
         if (!!from) {
             this.data = from.data;
             this.locale = from.locale;
@@ -388,50 +388,50 @@ class Overview extends Fragment {
         });
         root.prepend(wrapper);
         const absTitle = createElement({
-            classes: ["title"]
+            classes: ["title"],
+            text: await this.locale("wishes.overview.abstract.title")
         })
-        absTitle.textContent = this.locale("wishes.overview.abstract.title")
         wrapper.append(absTitle)
         const abs = createElement({
             classes: ["abstract"]
         })
         const accepted = createElement({
-            classes: ["entry", "accepted"]
+            classes: ["entry", "accepted"],
+            text: await this.locale("wishes.overview.abstract.accepted")
         });
-        accepted.textContent = this.locale("wishes.overview.abstract.accepted");
         accepted.prepend(createElement({
             classes: ["value"]
         }))
         const pending = createElement({
-            classes: ["entry", "pending"]
+            classes: ["entry", "pending"],
+            text: await this.locale("wishes.overview.abstract.pending")
         });
-        pending.textContent = this.locale("wishes.overview.abstract.pending");
         pending.prepend(createElement({
             classes: ["value"]
         }))
         const refused = createElement({
-            classes: ["entry", "refused"]
+            classes: ["entry", "refused"],
+            text: await this.locale("wishes.overview.abstract.refused")
         });
-        refused.textContent = this.locale("wishes.overview.abstract.refused");
         refused.prepend(createElement({
             classes: ["value"]
         }))
         abs.append(accepted, pending, refused)
         const today = createElement({
-            classes: ["today"]
+            classes: ["today"],
+            text: await this.locale("wishes.overview.today.tip")
         })
-        today.textContent = this.locale("wishes.overview.today.tip");
         const todayGo = createElement({
             classes: ["go"],
-            ripple: true
+            ripple: true,
+            text: await this.locale("wishes.overview.today.letsgo")
         })
-        todayGo.textContent = this.locale("wishes.overview.today.letsgo");
         today.append(todayGo);
         wrapper.append(abs, today);
         const graphTitle = createElement({
-            classes: ["title"]
+            classes: ["title"],
+            text: await this.locale("wishes.overview.title")
         })
-        graphTitle.textContent = this.locale("wishes.overview.title")
         wrapper.append(graphTitle);
         this.graph = new Graph({
             displayLines: true,
@@ -489,16 +489,16 @@ class Overview extends Fragment {
     }
 
     private displayValue(on: "accepted" | "pending" | "refused", value: string) {
-        this.root!!.querySelector(`.${on} .value`).textContent = value;
+        this.root!!.querySelector(`.${on} .value`)!!.textContent = value;
     }
-    public replace(fragment: Overview | WishFragment | TodayFragment, transition = Transition.SLIDE) {
-        super.replace(fragment, transition)
+    public async replace(fragment: Overview | WishFragment | TodayFragment, transition = Transition.SLIDE) {
+        return super.replace(fragment, transition)
     }
 }
 
 class WishFragment extends Fragment {
     data: () => Promise<Data>;
-    locale: (key: string) => string;
+    locale: (key: string) => Promise<string>;
     readonly wishName!: string;
     private graph?: Graph;
     private speedGraph?: Graph;
@@ -512,8 +512,8 @@ class WishFragment extends Fragment {
         this.wishName = wishName;
     }
 
-    protected onCreate(from: Overview | WishFragment | TodayFragment): HTMLDivElement {
-        const root = super.onCreate();
+    protected async onCreate(from: Overview | WishFragment | TodayFragment) {
+        const root = await super.onCreate();
         this.data = from.data;
         this.locale = from.locale;
         root.classList.add("wish", "loadable");
@@ -528,18 +528,18 @@ class WishFragment extends Fragment {
         })
         title.textContent = this.wishName;
         const complement = createElement({
-            classes: ["complement", "update"]
+            classes: ["complement", "update"],
+            text: await this.locale("wish.update.last")
         })
-        complement.textContent = this.locale("wish.update.last")
         const cpValue = createElement({
             classes: ["value"]
         })
         complement.append(cpValue);
         title.append(complement);
         const initRank = createElement({
-            classes: ["complement", "initial"]
+            classes: ["complement", "initial"],
+            text: await this.locale("wish.rank.initial")
         })
-        initRank.textContent = this.locale("wish.rank.initial")
         const initRankValue = createElement({
             classes: ["value"]
         })
@@ -559,24 +559,24 @@ class WishFragment extends Fragment {
         this.graph.attach(wrapper);
         const speedHeader = createElement({
             classes: ["header", "speed"],
-            text: this.locale("wish.graph.speed.header")
+            text: await this.locale("wish.graph.speed.header")
         })
         speedHeader.append(createElement({
             classes: ["attachment"],
-            text: this.locale("wish.graph.speed.attachment")
+            text: await this.locale("wish.graph.speed.attachment")
         }))
         wrapper.append(speedHeader)
         this.speedGraph.attach(wrapper);
         return root;
     }
     protected onCreated(): void {
-        this.data().then(data => {
+        this.data().then(async data => {
             const wish = data[this.wishName];
             const update = (wish.global?.map(g => g.record_time) ?? [])
                 .concat(wish.user?.map(u => u.record_time) ?? [])
                 .map(Date.parse).sort().slice(-1)[0];
             this.root.querySelector(".container .title .complement.update .value").textContent = update === undefined ? 
-            this.locale("wish.rank.unknown") : new Date(update).toLocaleDateString(undefined, {
+            await this.locale("wish.rank.unknown") : new Date(update).toLocaleDateString(undefined, {
                 day: "numeric",
                 month: "long",
                 year: "numeric",
@@ -585,10 +585,10 @@ class WishFragment extends Fragment {
             });
             const initialRank = wish.user?.[0]?.application_absolute;
             this.root.querySelector(".container .title .complement.initial .value").textContent = 
-                (typeof initialRank !== "number" ? this.locale("wish.rank.unknown") : initialRank > 0 ? initialRank.toString() :
-                this.locale(initialRank === 0 ? "wish.rank.unknown.accepted" : "wish.rank.unknown.refused"));
+                (typeof initialRank !== "number" ? await this.locale("wish.rank.unknown") : initialRank > 0 ? initialRank.toString() :
+                await this.locale(initialRank === 0 ? "wish.rank.unknown.accepted" : "wish.rank.unknown.refused"));
             if ((initialRank ?? 0) < 1) this.root.toggleAttribute("no-data", true);
-            const userRank = new DatasetGraphEntry(this.locale("wish.rank.user"), "user-rank");
+            const userRank = new DatasetGraphEntry(await this.locale("wish.rank.user"), "user-rank");
             userRank.add(new Map(wish.user?.
                 until(record => record.application_queued < 0)?.
                 map(entry => [
@@ -596,17 +596,17 @@ class WishFragment extends Fragment {
                     entry.application_queued
                 ])
             ));
-            const allApplications = new DatasetGraphEntry(this.locale("wish.rank.all"), "app-all");
+            const allApplications = new DatasetGraphEntry(await this.locale("wish.rank.all"), "app-all");
             allApplications.add(new Map(wish.global?.filter(entry => entry.year === new Date().getFullYear())?.map(entry => [
                 Math.trunc(Date.parse(entry.record_time) / 864e5),
                 entry.application_all
             ])));
-            const lastAcceptedRank = new DatasetGraphEntry(this.locale("wish.rank.last"), "app-last");
+            const lastAcceptedRank = new DatasetGraphEntry(await this.locale("wish.rank.last"), "app-last");
             lastAcceptedRank.add(new Map(wish.global?.filter(entry => entry.year === new Date().getFullYear()).map(entry => [
                 Math.trunc(Date.parse(entry.record_time) / 864e5),
                 entry.application_last
             ])));
-            const renouncingPeopleBehindUser = new ComputedGraphEntry(this.locale("wish.graph.people.after"), "user-after", 
+            const renouncingPeopleBehindUser = new ComputedGraphEntry(await this.locale("wish.graph.people.after"), "user-after", 
                 (_, all, user) => all - user, allApplications, userRank)
             this.graph.addEntry(userRank);
             this.graph.addEntry(allApplications);
@@ -614,11 +614,11 @@ class WishFragment extends Fragment {
             this.graph.addEntry(renouncingPeopleBehindUser);
 
             const session = wish.sessions?.sort((a, b) => b.year - a.year)?.[0];
-            const userRankAdvancementSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.user"), "speed-user-rank", 
+            const userRankAdvancementSpeed = new PreviousBasedComputedGraphEntry(await this.locale("wish.graph.speed.user"), "speed-user-rank", 
                 (_, pre, current) => pre === undefined ? pre : (pre - current) / (session?.available || 1), userRank)
-            const formationAdvancementSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.last"), "speed-app-last", 
+            const formationAdvancementSpeed = new PreviousBasedComputedGraphEntry(await this.locale("wish.graph.speed.last"), "speed-app-last", 
                 (_, pre, current) => pre === undefined ? 0 : ((current - pre) / (session?.available || 1)), lastAcceptedRank)
-            const queueShrinkSpeed = new PreviousBasedComputedGraphEntry(this.locale("wish.graph.speed.all"), "speed-app-all", 
+            const queueShrinkSpeed = new PreviousBasedComputedGraphEntry(await this.locale("wish.graph.speed.all"), "speed-app-all", 
                 (_, pre, current) => pre === undefined ? 0 : ((pre - current) / (session?.available || 1)), allApplications)
             this.speedGraph.addEntry(userRankAdvancementSpeed);
             this.speedGraph.addEntry(formationAdvancementSpeed);
@@ -631,14 +631,14 @@ class WishFragment extends Fragment {
     protected onDestroyed(): void {
         delete this.graph;
     }
-    public replace(fragment: Overview | WishFragment | TodayFragment) {
-        super.replace(fragment, Transition.SLIDE, fragment instanceof Overview)
+    public async replace(fragment: Overview | WishFragment | TodayFragment) {
+        return super.replace(fragment, Transition.SLIDE, fragment instanceof Overview)
     }
 }
 
 class TodayFragment extends Fragment {
     data: () => Promise<Data>;
-    locale: (key: string) => string;
+    locale: (key: string) => Promise<string>;
     public query!: {
         session: Study,
         global?: GlobalRankRecord,
@@ -647,8 +647,8 @@ class TodayFragment extends Fragment {
         todayUser?: UserRankRecord
     }[]
 
-    protected onCreate(from: Overview | WishFragment | TodayFragment): HTMLDivElement {
-        const root = super.onCreate(from);
+    protected async onCreate(from: Overview | WishFragment | TodayFragment) {
+        const root = await super.onCreate(from);
         if (!!from) {
             this.data = from.data;
             this.locale = from.locale;
@@ -658,12 +658,12 @@ class TodayFragment extends Fragment {
             classes: ["container"]
         });
         const header = createElement({
-            classes: ["header"]
+            classes: ["header"],
+            text: await this.locale("wishes.today.header")
         })
-        header.textContent = this.locale("wishes.today.header")
-        const headerSubtitle = createElement();
-        headerSubtitle.textContent = this.locale("wishes.today.subtitle");
-        header.append(headerSubtitle);
+        header.append(createElement({
+            text: await this.locale("wishes.today.subtitle")
+        }));
         const fragmentWrapper = createElement({
             classes: ["wrapper"]
         })
@@ -688,8 +688,8 @@ class TodayFragment extends Fragment {
     protected onDestroyed(): void {
     }
 
-    public replace(fragment: Overview | WishFragment | TodayFragment) {
-        super.replace(fragment, Transition.SLIDE, fragment instanceof Overview)
+    public async replace(fragment: Overview | WishFragment | TodayFragment) {
+        return super.replace(fragment, Transition.SLIDE, fragment instanceof Overview)
     }
 }
 
@@ -705,8 +705,8 @@ class WishTodayEntryFragment extends Fragment {
         this.index = index;
     }
 
-    protected onCreate(from?: WishTodayEntryFragment): HTMLDivElement {
-        const root = super.onCreate(from);
+    protected async onCreate(from?: WishTodayEntryFragment) {
+        const root = await super.onCreate(from);
         if (!!from) this.todayFrag = from.todayFrag;
         const lastRecord = this.todayFrag!!.query[this.index];
         this.session = lastRecord?.session;
@@ -723,21 +723,21 @@ class WishTodayEntryFragment extends Fragment {
                 classes: ["form"]
             })
             const userRank = new TextField({
-                placeholder: this.todayFrag.locale("wishes.today.user.rank"),
+                placeholder: await this.todayFrag.locale("wishes.today.user.rank"),
                 oninput: () => buttonUpdate(userRank, this.user?.application_queued),
                 parent: form,
                 regex: /\d+/,
                 required: true
             }) as TextField;
             const globalAll = new TextField({
-                placeholder: this.todayFrag.locale("wishes.today.global.all"),
+                placeholder: await this.todayFrag.locale("wishes.today.global.all"),
                 oninput: () => buttonUpdate(globalAll, this.global?.application_all),
                 parent: form,
                 regex: /\d+/,
                 required: true
             }) as TextField;
             const globalLast = new TextField({
-                placeholder: this.todayFrag.locale("wishes.today.global.last"),
+                placeholder: await this.todayFrag.locale("wishes.today.global.last"),
                 oninput: () => buttonUpdate(globalLast, this.global?.application_last),
                 parent: form,
                 regex: /\d+/,
@@ -746,7 +746,7 @@ class WishTodayEntryFragment extends Fragment {
             let userAbs: TextField | undefined;
             if (!this.user) {
                 userAbs = new TextField({
-                    placeholder: this.todayFrag.locale("wishes.today.user.abs"),
+                    placeholder: await this.todayFrag.locale("wishes.today.user.abs"),
                     oninput: () => buttonUpdate(userAbs),
                     parent: form,
                     regex: /\d+/,
@@ -756,7 +756,7 @@ class WishTodayEntryFragment extends Fragment {
             const quickActions = createElement({
                 classes: ["actions", "quick"]
             })
-            const button = new Button(this.todayFrag.locale("wishes.today.next"), () => this.validate());
+            const button = new Button(await this.todayFrag.locale("wishes.today.next"), () => this.validate());
             const help = createElement({
                 classes: ["tip"],
                 ripple: true,
@@ -767,16 +767,16 @@ class WishTodayEntryFragment extends Fragment {
             const actions = createElement({
                 classes: ["actions"]
             });
-            new Button(this.todayFrag.locale("wishes.today.discarded"), () => this.validate(-2), actions).enabled = true;
-            if (!this.user) new Button(this.todayFrag.locale("wishes.today.refused"), () => this.validate(-1), actions).enabled = true;
-            new Button(this.todayFrag.locale("wishes.today.accepted"), () => this.validate(0), actions).enabled = true;
-            const buttonUpdate = (field: TextField, refValue?: number) => {
+            new Button(await this.todayFrag.locale("wishes.today.discarded"), () => this.validate(-2), actions).enabled = true;
+            if (!this.user) new Button(await this.todayFrag.locale("wishes.today.refused"), () => this.validate(-1), actions).enabled = true;
+            new Button(await this.todayFrag.locale("wishes.today.accepted"), () => this.validate(0), actions).enabled = true;
+            const buttonUpdate = async (field: TextField, refValue?: number) => {
                 const value = (field.element.firstElementChild as HTMLInputElement).value;
                 if (value === "" || !refValue) field.element.removeAttribute("trend");
                 else {
                     const trend = parseInt(value) - refValue;
                     field.element.setAttribute("trend", 
-                        isNaN(trend) ? this.todayFrag.locale("wishes.today.invalid") : `${trend > 0 ? '+' : ''}${trend}`)
+                        isNaN(trend) ? await this.todayFrag.locale("wishes.today.invalid") : `${trend > 0 ? '+' : ''}${trend}`)
                 }
                 button.enabled = (userRank.element.querySelector("input.field") as HTMLInputElement)?.checkValidity()
                     && (globalAll.element.querySelector("input.field") as HTMLInputElement)?.checkValidity()
@@ -791,10 +791,10 @@ class WishTodayEntryFragment extends Fragment {
             })
             summary.append(createElement({
                 classes: ["head"],
-                text: this.todayFrag.locale("wishes.today.summary.header.name")
+                text: await this.todayFrag.locale("wishes.today.summary.header.name")
             }), createElement({
                 classes: ["head"],
-                text: this.todayFrag.locale("wishes.today.summary.header.status")
+                text: await this.todayFrag.locale("wishes.today.summary.header.status")
             }))
             for (const wish of this.todayFrag.query) {
                 let details: HTMLDivElement;
@@ -802,21 +802,21 @@ class WishTodayEntryFragment extends Fragment {
                     case -2:
                         details = createElement({
                             classes: ["update", "state"],
-                            text: this.todayFrag.locale("wishes.today.summary.discarded"),
+                            text: await this.todayFrag.locale("wishes.today.summary.discarded"),
                             state: "discarded"
                         });
                         break;
                     case -1:
                         details = createElement({
                             classes: ["update", "state"],
-                            text: this.todayFrag.locale("wishes.today.summary.refused"),
+                            text: await this.todayFrag.locale("wishes.today.summary.refused"),
                             state: "refused"
                         })
                         break;
                     case 0:
                         details = createElement({
                             classes: ["update", "state"],
-                            text: this.todayFrag.locale("wishes.today.summary.accepted"),
+                            text: await this.todayFrag.locale("wishes.today.summary.accepted"),
                             state: "accepted"
                         });
                         break;
@@ -863,7 +863,7 @@ class WishTodayEntryFragment extends Fragment {
                 }), details);
             }
             root.append(summary);
-            const button = new Button(this.todayFrag.locale("wishes.today.summary.save"), async () => {
+            const button = new Button(await this.todayFrag.locale("wishes.today.summary.save"), async () => {
                 const activity = this.context as Home;
                 button.enabled = false;
                 button.element.addIcon(Icon.LOADING);
@@ -943,8 +943,8 @@ class WishTodayEntryFragment extends Fragment {
     }
     protected onDestroyed(): void {
     }
-    public replace(fragment: WishTodayEntryFragment) {
-        super.replace(fragment, this.index !== fragment.index ? Transition.FADE | Transition.SLIDE : Transition.FADE,
+    public async replace(fragment: WishTodayEntryFragment) {
+        return super.replace(fragment, this.index !== fragment.index ? Transition.FADE | Transition.SLIDE : Transition.FADE,
             fragment.index < this.index)
     }
     public create(todayFrag: TodayFragment, activity: Activity, container: HTMLDivElement) {

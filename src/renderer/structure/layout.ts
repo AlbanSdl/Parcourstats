@@ -24,13 +24,13 @@ export abstract class Layout {
      * Can be used to inherit values from the previous layout.
      * (such as cached locales for {@link Activity activities})
      */
-    protected abstract onCreate(from?: Layout): HTMLDivElement;
+    protected abstract onCreate(from?: Layout): HTMLDivElement | Promise<HTMLDivElement>;
     /**
      * Called when the layout has been inserted into the current view
      * and is starting its transition. You can apply (css) animations at that
      * time, they won't be cancelled.
      */
-    protected abstract onCreated(): void;
+    protected abstract onCreated(): void | Promise<void>;
     /**
      * Called right before the current layout starts to be animated out
      * of the screen.
@@ -38,13 +38,13 @@ export abstract class Layout {
      * all important values may have already been retrieved and they should
      * be deleted at that time.
      */
-    protected abstract onDestroy(): void;
+    protected abstract onDestroy(): void | Promise<void>;
     /**
      * Called right after the current layout has been fully removed from
      * screen (root no longer attached to the screen). The layout should be
      * deleted at that time.
      */
-    protected abstract onDestroyed(): void;
+    protected abstract onDestroyed(): void | Promise<void>;
 
     /**
      * Replaces the current layout by another one. Both layouts must have the same container
@@ -53,10 +53,10 @@ export abstract class Layout {
      * @param transition the transition to use for when inflating the new layout
      * @param invertTransition whether the transition should be inverted (eg. when going backwards)
      */
-    protected replace(by: Layout, transition: Transition = Transition.NONE, invertTransition: boolean = false) {
+    protected async replace(by: Layout, transition: Transition = Transition.NONE, invertTransition: boolean = false) {
         if (this.container !== by.container)
             throw new Error("Layout replacement can only be performed within the same container.")
-        by.createContext(this, transition, invertTransition);
+        return by.createContext(this, transition, invertTransition);
     }
 
     /**
@@ -66,14 +66,14 @@ export abstract class Layout {
      * @param invertTransition whether the transition should be inverted
      * @param destroy whether the previous layout must be destroyed
      */
-    protected createContext(
+    protected async createContext(
         using?: Layout,
         transition: Transition = Transition.NONE,
         invertTransition: boolean = false
     ) {
-        this.root = this.onCreate(using);
+        this.root = await this.onCreate(using);
         if (!!using) {
-            using.onDestroy();
+            await using.onDestroy();
             applyTransitionStyles(using.root!!, transition, false, invertTransition).then(() => {
                 using.root!!.remove();
                 delete using.root;
@@ -82,7 +82,7 @@ export abstract class Layout {
         }
         this.container.appendChild(this.root);
         applyTransitionStyles(this.root, transition, true, invertTransition);
-        this.onCreated();
+        return this.onCreated();
     }
 }
 

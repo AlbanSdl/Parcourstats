@@ -1,6 +1,4 @@
 app.name Parcourstats
-app.op.abort.destroyed Impossible de charger les données: la source n'existe plus
-app.op.error.wrong Arguments de chargement de données invalides
 wishes.list Vœux
 wishes.list.empty Tu n'as pas (encore) enregistré de vœux
 wishes.list.error Une erreur est survenue lors du chargement de tes vœux

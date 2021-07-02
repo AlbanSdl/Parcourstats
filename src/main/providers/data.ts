@@ -2,8 +2,8 @@ import { Database } from "sqlite3";
 import { join } from "path";
 import { Table } from "./table";
 import { app } from "electron/main";
-import { BackendRequest, ClientRequest, ProcessBridge } from "../../common/window";
 import { ipcMain } from "electron";
+import { Query, Recipient } from "../../common/window";
 
 export class DataProvider {
     private readonly studyTable!: Table<Study>;
@@ -11,69 +11,46 @@ export class DataProvider {
     private readonly rankUserTable!: Table<UserRankRecord>;
     private readonly db: Database;
 
-    constructor(ipc: ProcessBridge) {
+    constructor(ipc: Recipient<"back">) {
         this.db = new Database(join(app.getPath("userData"), "..", "Parcourstats", "stats.db"));
         this.studyTable = Table.create(this.db, "formations");
         this.rankGlobalTable = Table.create(this.db, "ranks");
         this.rankUserTable = Table.create(this.db, "user");
-        ipc.on(ClientRequest.DATA_REQUEST, ({reply, args}) => {
-            const [op, id, tableName, value] = args;
+        ipc.on(Query.DATA, (op, tableName, value?) => {
             switch (op) {
                 case "select":
                     const sTargetedYear = <number>value ?? 0;
-                    let sPromise: Promise<Study[] | GlobalRankRecord[] | UserRankRecord[]>;
                     switch (tableName) {
                         case "study":
-                            sPromise = this.studyTable.select("*", {
+                            return this.studyTable.select("*", {
                                 field: "year",
                                 operator: ">=",
                                 value: sTargetedYear
-                            })
-                            break;
+                            }) as Promise<Study[]>;
                         case "global":
-                            sPromise = this.rankGlobalTable.select("*", {
+                            return this.rankGlobalTable.select("*", {
                                 field: "year",
                                 operator: ">=",
                                 value: sTargetedYear
-                            })
-                            break;
+                            }) as Promise<GlobalRankRecord[]>;
                         case "user":
-                            sPromise = this.rankUserTable.select("*", {
+                            return this.rankUserTable.select("*", {
                                 field: "year",
                                 operator: ">=",
                                 value: sTargetedYear
-                            })
-                            break;
+                            }) as Promise<UserRankRecord[]>;
                         default:
-                            sPromise = Promise.reject(new Error("Unknown table"))
+                            return Promise.reject(new Error("Unknown table"))
                     }
-                    sPromise.then(values => reply(BackendRequest.DATA_RESPONSE, id, values))
-                        .catch(err => reply(BackendRequest.DATA_RESPONSE, id, err))
-                    break;
                 case "insert":
-                    let promise: Promise<void>;
-                    if (!value) return reply(BackendRequest.DATA_RESPONSE,
-                        id, new Error("Cannot insert null entry"));
+                    if (!value) throw new Error("Cannot insert null entry");
                     switch (tableName) {
-                        case "study":
-                            promise = this.studyTable.insert(value as Study)
-                            break;
-                        case "global":
-                            promise = this.rankGlobalTable.insert(value as GlobalRankRecord);
-                            break;
-                        case "user":
-                            promise = this.rankUserTable.insert(value as UserRankRecord);
-                            break;
-                        default:
-                            return reply(BackendRequest.DATA_RESPONSE,
-                                id, new Error("Unknown table"))
+                        case "study": return this.studyTable.insert(value as Study);
+                        case "global": return this.rankGlobalTable.insert(value as GlobalRankRecord);
+                        case "user": return this.rankUserTable.insert(value as UserRankRecord);
+                        default: throw new Error("Unknown table");
                     }
-                    promise.then(() => reply(BackendRequest.DATA_RESPONSE, id, []))
-                        .catch(err => reply(BackendRequest.DATA_RESPONSE, id, err))
-                    break;
-                default:
-                    reply(BackendRequest.DATA_RESPONSE, id, 
-                        new Error(`Cannot handle unknown operation ${op}`));
+                default: throw new Error(`Cannot handle unknown operation ${op}`);
             }
         })
     }
@@ -156,7 +133,7 @@ export class DataProvider {
     }
 
     public async close() {
-        ipcMain.removeAllListeners(ClientRequest.DATA_REQUEST);
+        ipcMain.removeAllListeners(Query.DATA);
         return new Promise(res => this.db.close(res));
     }
 }

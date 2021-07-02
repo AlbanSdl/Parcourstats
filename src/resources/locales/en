@@ -1,6 +1,4 @@
 app.name Parcourstats
-app.op.abort.destroyed Cannot retrieve data as provider no longer exists
-app.op.error.wrong Invalid arguments used when querying data
 wishes.list Wishes
 wishes.list.empty You haven't saved any wish yet
 wishes.list.error An error occurred while loading your wishes
