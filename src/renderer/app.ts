@@ -124,7 +124,7 @@ export class Home extends Activity {
             const stdy = <Study><unknown>Object.fromEntries(Object.entries(getWishAddFields())
                 .map(e => [e[0], e[0] === "name" ? e[1].value : parseInt(e[1].value)]));
             window.messenger.send(Query.DATA, "insert", "study", stdy)
-                .then((res: Study[]) => this.updateStudies(!!res.length ? res : [stdy]))
+                .then(() => this.updateStudies([stdy]))
                 .then(() => {
                     for (const entry of Object.entries(getWishAddFields()))
                         entry[1].value = entry[0] === "year" ? new Date().getFullYear().toString() : "";
@@ -202,13 +202,13 @@ export class Home extends Activity {
         this.fragment = new Overview(this, container, fragProvider, async key => this.getLocale(key));
 
         window.messenger.send(Query.DATA, "select", "study")
-            .then(async (values: Study[]) => await this.waitCreation(values))
+            .then((values: Study[]) => this.waitCreation(values))
             .then(values => this.updateStudies(values))
             .catch(async err => {
                 console.error(err);
-                await this.updateStudies([], await this.getLocale("wishes.list.error"));
-            })
-            .catch(async err => {
+                this.side.querySelector('.list')?.toggleAttribute("loading", false)
+                while (!!this.sideList.childrenElements.length) 
+                    this.sideList.childrenElements.item(0).remove();
                 const errorPlaceholder = createElement({
                     classes: ["empty"],
                     text: await this.getLocale("wishes.list.error")
@@ -217,12 +217,12 @@ export class Home extends Activity {
                 console.error(err);
             })
         window.messenger.send(Query.DATA, "select", "global")
-            .then(async v => await this.waitCreation(v))
+            .then(v => this.waitCreation(v))
             .catch(console.error)
             .then(values => this.update(values || [], "global"))
             .then(() => this.runProviders(LoadingMask.GLOBAL));
             window.messenger.send(Query.DATA, "select", "user")
-            .then(async v => await this.waitCreation(v))
+            .then(v => this.waitCreation(v))
             .catch(console.error)
             .then(values => this.update(values || [], "user"))
             .then(() => this.runProviders(LoadingMask.USER));
@@ -306,17 +306,16 @@ export class Home extends Activity {
         })
     }
 
-    private async updateStudies(additions: Study[], message?: string) {
+    private async updateStudies(additions: Study[]) {
         this.side.querySelector('.list')?.toggleAttribute("loading", false)
         while (!!this.sideList.childrenElements.length) 
             this.sideList.childrenElements.item(0).remove();
         const updateResult = this.update(additions, "sessions");
         if (!updateResult) {
-            const emptyPlaceholder = createElement({
+            this.side.querySelector('.list')?.append?.(createElement({
                 classes: ["empty"],
-                text: message ?? await this.getLocale("wishes.list.empty")
-            });
-            this.side.querySelector('.list')?.append(emptyPlaceholder)
+                text: await this.getLocale("wishes.list.empty")
+            }));
         } else {
             for (const wish in this.data) {
                 if (!this.data[wish].sessions) continue;

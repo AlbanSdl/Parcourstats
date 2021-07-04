@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import { Query, Recipient } from "../common/window";
 
 class FrontendIpc extends Recipient<"front"> {
-    protected canSend(query: Query, ...args: unknown[]): query is Query {
+    protected canSend(query: Query, ...args: unknown[]): boolean {
         switch (query) {
             case Query.WINDOW_EXIT:
             case Query.WINDOW_MAXIMIZE:
@@ -21,7 +21,7 @@ class FrontendIpc extends Recipient<"front"> {
                 return false;
         }
     }
-    protected canReceive(query: Query): query is Query.DATA | Query.LOCALIZE | Query.OPEN_EXTERNAL | Query.SETTINGS_GET | Query.SETTINGS_SET | Query.WINDOW_MAXIMIZE {
+    protected canReceive(query: Query, ..._args: unknown[]): boolean {
         switch (query) {
             case Query.DATA:
             case Query.LOCALIZE:
@@ -36,9 +36,13 @@ class FrontendIpc extends Recipient<"front"> {
     protected sendInternal(query: Query, channelId: number, healthy: boolean, ...args: unknown[]): void {
         ipcRenderer.send(query, channelId, healthy, ...args);
     }
-    protected registerInternal(query: Query, callback: (reply: (query: Query, channelId: number, healthy: boolean, ...args: unknown[]) => void, channelId: number, healthy: boolean, ...args: unknown[]) => void): void {
+    protected registerInternal(query: Query, callback: any): void {
         ipcRenderer.on(query, (_, channelId, healthy, ...args) => callback(
-            (query, id, h, ...args) => this.sendInternal(query, id, h, ...args), channelId, healthy, ...args));
+            (query: Query, id: number, h: boolean, ...args: unknown[]) => this.sendInternal(query, id, h, ...args),
+            channelId,
+            healthy,
+            ...args
+        ));
     }
     protected unregisterInternal(query: Query): void {
         ipcRenderer.removeAllListeners(query!!);

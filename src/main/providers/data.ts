@@ -21,26 +21,22 @@ export class DataProvider {
                 case "select":
                     const sTargetedYear = <number>value ?? 0;
                     switch (tableName) {
-                        case "study":
-                            return this.studyTable.select("*", {
-                                field: "year",
-                                operator: ">=",
-                                value: sTargetedYear
-                            }) as Promise<Study[]>;
-                        case "global":
-                            return this.rankGlobalTable.select("*", {
-                                field: "year",
-                                operator: ">=",
-                                value: sTargetedYear
-                            }) as Promise<GlobalRankRecord[]>;
-                        case "user":
-                            return this.rankUserTable.select("*", {
-                                field: "year",
-                                operator: ">=",
-                                value: sTargetedYear
-                            }) as Promise<UserRankRecord[]>;
-                        default:
-                            return Promise.reject(new Error("Unknown table"))
+                        case "study": return this.studyTable.select("*", {
+                            field: "year",
+                            operator: ">=",
+                            value: sTargetedYear
+                        });
+                        case "global": return this.rankGlobalTable.select("*", {
+                            field: "year",
+                            operator: ">=",
+                            value: sTargetedYear
+                        });
+                        case "user": return this.rankUserTable.select("*", {
+                            field: "year",
+                            operator: ">=",
+                            value: sTargetedYear
+                        });
+                        default: throw new Error("Unknown table");
                     }
                 case "insert":
                     if (!value) throw new Error("Cannot insert null entry");

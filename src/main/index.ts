@@ -36,21 +36,22 @@ export class ParcourStats {
                 session_bounds: [
                     new Date(this.settings.get("client.sessions_start", Date.now())),
                     new Date(this.settings.get("client.sessions_end", Date.now()))
-                ] as [Date, Date]
+                ] as [Date, Date],
+                theme: this.settings.get("client.theme", false)
             }
         })
-        this.ipc.on(Query.SETTINGS_SET, async (...update) => {
-            switch (update[0]) {
+        this.ipc.on(Query.SETTINGS_SET, async (key, value, extra?) => {
+            switch (key) {
                 case "lang":
-                    const locale = update[1];
+                    const locale = value;
                     if (locale === "fr" || locale === "en") this.i18n.lang = locale
                     else throw "Invalid locale"
+                case "theme":
                 case "filter":
-                    this.settings.set(update[0], update[1])
+                    this.settings.set(`client.${key}`, value)
                     return;
                 case "session_bounds":
-                    const [bounds,...dates] = update;
-                    this.settings.set(bounds, dates.map(bound => bound.getTime()))
+                    this.settings.set(`client.${key}`, [value as Date, extra].map(bound => bound.getTime()))
                     return;
                 default:
                     throw "Invalid configuration key";

@@ -5,22 +5,23 @@ declare global {
 }
 
 type RecipientSide = "back" | "front";
+type SendableQuery<S extends RecipientSide> = keyof {
+    [K in keyof Args as S extends keyof Args[K] ? K : never]: unknown;
+}
+type SendableQueryArguments<S extends RecipientSide, Q extends SendableQuery<RecipientSide>> = S extends keyof Args[Q] ?
+    Args[Q][S] extends [any, ...infer R] ? R : never : never;
+
 type RemoteRecipientSide<S extends RecipientSide> = Exclude<RecipientSide, S>;
-type SidedQuery<Side extends RecipientSide> = keyof {
-    [K in keyof ArgsMapping as Side extends keyof ArgsMapping[K] ? K : never]: unknown;
-}
-type SendableQuery<Side extends RecipientSide> = keyof {
-    [K in keyof ArgsMapping as Side extends keyof ArgsMapping[K] ? 
-        ArgsMapping[K][RemoteRecipientSide<Side>] extends [any] ? K : never : never]: unknown;
-}
-type SidedQueryArguments<S extends RecipientSide, Q extends SidedQuery<RecipientSide>> = S extends keyof ArgsMapping[Q] ?
-    ArgsMapping[Q][S] extends [...infer R] ? R : [void] : [void];
-type RawRequest<T = unknown> = [channelId: number, healthy: boolean, ...args: T[]];
+type RemoteQueryResponse<S extends RecipientSide, Q extends SendableQuery<RemoteRecipientSide<S>>> = 
+    RemoteRecipientSide<S> extends keyof Args[Q] ? Args[Q][RemoteRecipientSide<S>] extends [infer R, ...any] ? R : never : never;
+
+type RawRequest<T extends any[] = any> = [channelId: number, healthy: true, ...args: T]
+    | [channelId: number, healthy: false, ...args: [string]];
 
 export abstract class Recipient<S extends RecipientSide> {
     readonly #openedChannels: Map<
         number, {
-            onSuccess: (...value: SidedQueryArguments<RemoteRecipientSide<S>, SidedQuery<S>>) => void;
+            onSuccess: (value: RemoteQueryResponse<RemoteRecipientSide<S>, SendableQuery<S>>) => void;
             onError: (errorMessage?: string) => void;
         }
     > = new Map;
@@ -30,29 +31,27 @@ export abstract class Recipient<S extends RecipientSide> {
     #placeholders: Set<Query> = new Set;
 
     public async send<Q extends SendableQuery<S>>(
-        query: Q, ...args: SidedQueryArguments<S, Q>
-    ): Promise<SidedQueryArguments<RemoteRecipientSide<S>, Q>[0]> {
+        query: Q, ...args: SendableQueryArguments<S, Q>
+    ): Promise<RemoteQueryResponse<RemoteRecipientSide<S>, Q>> {
         if (!this.canSend(query, ...args))
             throw new Error(`Cannot send invalid message (#${query})`);
         this.#sent = true;
         return new Promise((res, rej) => {
             const id = this.generateId();
             this.#openedChannels.set(id, {
-                onSuccess: res as any,
+                onSuccess: res as () => void,
                 onError: rej
             });
             if (!this.#listenedQueries.has(query) && !this.#placeholders.has(query)) {
                 this.#placeholders.add(query);
-                this.setupListener(query, () => {
-                    throw new Error("Unhandled event")
-                })
+                this.setupListener(query);
             }
             this.sendInternal(query, id, true, ...args);
         });
     }
 
     public on<Q extends SendableQuery<RemoteRecipientSide<S>>>(
-        query: Q, action: (...args: SidedQueryArguments<RemoteRecipientSide<S>, Q>) => Promise<SidedQueryArguments<S, Q>[0]>
+        query: Q, action: (...args: SendableQueryArguments<RemoteRecipientSide<S>, Q>) => Promise<RemoteQueryResponse<S, Q>>
     ) {
         if (this.#placeholders.has(query)) {
             this.#placeholders.delete(query);
@@ -62,10 +61,17 @@ export abstract class Recipient<S extends RecipientSide> {
         this.setupListener(query, action);
     }
 
-    private setupListener<Q extends SidedQuery<RemoteRecipientSide<S>>>(
-        query: Q, action: (...args: SidedQueryArguments<RemoteRecipientSide<S>, Q>) => Promise<SidedQueryArguments<S, Q>[0]>
+    private setupListener<Q extends SendableQuery<RemoteRecipientSide<S>>>(
+        query: Q, action: (...args: SendableQueryArguments<RemoteRecipientSide<S>, Q>) => Promise<RemoteQueryResponse<S, Q>>
+    ): void;
+    private setupListener<Q extends SendableQuery<S>>(
+        query: Q
+    ): void;
+    private setupListener<Q extends SendableQuery<S> | SendableQuery<RemoteRecipientSide<S>>>(
+        query: Q, action?: Q extends SendableQuery<RemoteRecipientSide<S>> ?
+            ((...args: SendableQueryArguments<RemoteRecipientSide<S>, Q>) => Promise<RemoteQueryResponse<S, Q>>) : never
     ) {
-        this.registerInternal(query, async (reply, id, healthy, ...args) => {
+        this.registerInternal(query, async (reply, ...[id, healthy, ...args]) => {
             try {
                 if (!this.#sent) {
                     this.#modifier = Math.sign(id) * -1;
@@ -74,11 +80,14 @@ export abstract class Recipient<S extends RecipientSide> {
                 if (this.#openedChannels.has(id)) {
                     const channel = this.#openedChannels.get(id);
                     this.#openedChannels.delete(id);
-                    if (healthy) channel.onSuccess(...args as any)
+                    if (healthy) channel.onSuccess(args[0] as 
+                        RemoteQueryResponse<RemoteRecipientSide<S>, SendableQuery<S>>)
                     else channel.onError(args[0] as string)
                 }
-                else if (this.canReceive(query, ...args)) {
-                    const result = await action(...args as any);
+                else if (!action) throw new Error(`No event handler has been registered for event ${query}`);
+                else if (this.canReceive(query, ...args as SendableQueryArguments<RemoteRecipientSide<S>, Q>)) {
+                    const result = await (action as ((...args: SendableQueryArguments<RemoteRecipientSide<S>, Q>) => Promise<RemoteQueryResponse<S, Q>>))
+                        (...args as SendableQueryArguments<RemoteRecipientSide<S>, Q>) as RemoteQueryResponse<S, Q>;
                     if (healthy) reply(query, id, true, result);
                 }
                 else if (healthy) throw new Error("Invalid event");
@@ -94,11 +103,30 @@ export abstract class Recipient<S extends RecipientSide> {
         this.unregisterInternal(query);
     }
 
-    protected abstract canSend(query: Query, ...args: unknown[]): query is SendableQuery<S>;
-    protected abstract canReceive(query: Query, ...args: unknown[]): query is SidedQuery<RemoteRecipientSide<S>>;
-    protected abstract sendInternal(query: Query, ...request: RawRequest): void;
-    protected abstract registerInternal(
-        query: Query, callback: (reply: (query: Query, ...request: RawRequest) => void, ...request: RawRequest) => void
+    protected abstract canSend<Q extends SendableQuery<S>>(
+        query: Q,
+        ...args: SendableQueryArguments<S, Q>
+    ): boolean;
+    protected abstract canReceive<Q extends SendableQuery<RemoteRecipientSide<S>>>(
+        query: Q,
+        ...args: SendableQueryArguments<RemoteRecipientSide<S>, Q>
+    ): boolean;
+    protected abstract sendInternal<Q extends SendableQuery<S>>(
+        query: Q,
+        ...request: RawRequest<SendableQueryArguments<S, Q>>
+    ): void;
+    protected abstract sendInternal<Q extends SendableQuery<RemoteRecipientSide<S>>>(
+        query: Q,
+        ...request: RawRequest<[RemoteQueryResponse<RemoteRecipientSide<S>, Q>]>
+    ): void;
+    protected abstract registerInternal<Q extends SendableQuery<S>>(
+        query: Q, callback: (reply: undefined, ...request: RawRequest<[RemoteQueryResponse<RemoteRecipientSide<S>, Q>]>) => void
+    ): void;
+    protected abstract registerInternal<Q extends SendableQuery<RemoteRecipientSide<S>>>(
+        query: Q, callback: (reply: (
+            query: Q,
+            ...request: RawRequest<[RemoteQueryResponse<S, Q>]>
+        ) => void, ...request: RawRequest<SendableQueryArguments<RemoteRecipientSide<S>, Q>>) => void
     ): void;
     protected abstract unregisterInternal(query: Query): void;
 
@@ -123,50 +151,43 @@ export enum Query {
     WINDOW_MINIMIZE = "min"
 }
 
-interface ArgsMapping {
+interface Args {
     [Query.DATA]: {
-        front: [op: "select", table: "study" | "global" | "user", year?: number]
-        | [op: "insert", table: "study", entry: Study]
-        | [op: "insert", table: "global", entry: GlobalRankRecord]
-        | [op: "insert", table: "user", entry: UserRankRecord];
-        back: [content: void | Study[] | GlobalRankRecord[] | UserRankRecord[]];
+        front: [res: Study[], op: "select", table: "study", year?: number]
+        | [res: GlobalRankRecord[], op: "select", table: "global", year?: number]
+        | [res: UserRankRecord[], op: "select", table: "user", year?: number]
+        | [res: void, op: "insert", table: "study", value: Study]
+        | [res: void, op: "insert", table: "global", value: GlobalRankRecord]
+        | [res: void, op: "insert", table: "user", value: UserRankRecord]
     },
     [Query.LOCALIZE]: {
-        front: [key: string];
-        back: [localized: string];
+        front: [res: string, key: string]
     }
     [Query.OPEN_EXTERNAL]: {
-        front: [uri: `${string}://${string}`];
-        back: [void];
-    },
+        front: [res: void, uri: `${string}://${string}`]
+    }
     [Query.SETTINGS_GET]: {
-        front: [void];
-        back: [
-            settings: {
-                lang?: "fr" | "en";
-                filter?: boolean;
-                session_bounds?: [Date, Date];
-                theme?: boolean;
-            }
-        ];
-    },
+        front: [res: {
+            lang?: "fr" | "en",
+            filter?: boolean,
+            session_bounds?: [from: Date, to: Date],
+            theme?: boolean
+        }]
+    }
     [Query.SETTINGS_SET]: {
-        front: [property: "lang", locale: "fr" | "en"]
-        | [property: "theme", useLightTheme: boolean]
-        | [property: "filter", isFiltered: boolean]
-        | [property: "session_bounds", from: Date, to: Date];
-        back: [void]
-    },
+        front: [res: void, property: "lang", locale: "fr" | "en"]
+        | [res: void, property: "filter", isFiltered: boolean]
+        | [res: void, property: "session_bounds", from: Date, to: Date]
+        | [res: void, property: "theme", useLightTheme: boolean]
+    }
     [Query.WINDOW_EXIT]: {
-        front: [void];
-        back: [void];
-    },
+        front: [res: void]
+    }
     [Query.WINDOW_MAXIMIZE]: {
-        front: [void];
-        back: [isMaximized: boolean];
-    },
+        front: [res: boolean]
+        back: [res: void, isMaximized: boolean]
+    }
     [Query.WINDOW_MINIMIZE]: {
-        front: [void];
-        back: [void];
+        front: [res: void]
     }
 }

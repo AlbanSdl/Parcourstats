@@ -809,7 +809,7 @@ svg {
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
-    padding: 20px 10px 0;
+    padding: 20px 10px;
     box-sizing: border-box;
 }
 .activity.home > .side > .wrapper > .add > .header,
