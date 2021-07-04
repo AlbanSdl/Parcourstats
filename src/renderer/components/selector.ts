@@ -1,24 +1,25 @@
-export const selectionAttribute = "selected"
-export const selectionPresentAttribute = "has-selection"
+export const selectionAttribute = "selected";
+export const selectionPresentAttribute = "has-selection";
+const noListenerAttribute = "silent";
 
 type SelectionOptions<T> = {
     container: HTMLElement,
     extractor: (this: Selector<T>, element?: Element) => T,
     isUnique: true,
-    listener?: (this: Selector<T>, value: T) => void,
+    listener?: (this: Selector<T>, triggered: boolean, value: T) => void,
     neverEmpty?: boolean
 } | {
     container: HTMLElement,
     extractor: (this: Selector<T>, element: Element) => T,
     isUnique?: false,
-    listener?: (this: Selector<T>, ...values: T[]) => void,
+    listener?: (this: Selector<T>, triggered: boolean, ...values: T[]) => void,
     neverEmpty?: boolean
 }
 
 export class Selector<T> {
     private readonly container!: HTMLElement;
     private readonly extractor!: (element: Element) => T;
-    private readonly listener?: (...element: T[]) => void;
+    private readonly listener?: (triggered: boolean, ...element: T[]) => void;
     private observer?: MutationObserver;
     public readonly isUnique!: boolean;
     public readonly neverEmpty!: boolean;
@@ -32,6 +33,18 @@ export class Selector<T> {
         this.listen();
     }
 
+    public findElement(valueFor: T) {
+        return Array.from(this.childrenElements).find(e => this.extractor(e) === valueFor)
+    }
+
+    public select(value: T, trigger: boolean = true) {
+        const element = this.findElement(value);
+        if (!!element) {
+            element.toggleAttribute(noListenerAttribute, !trigger);
+            element.toggleAttribute(selectionAttribute, true);
+        }
+    }
+
     public get childrenElements() {
         return this.container.children;
     }
@@ -40,9 +53,10 @@ export class Selector<T> {
         return Array.from(this.childrenElements).map(this.extractor, this);
     }
 
-    public append(element: HTMLElement) {
+    public append(element: HTMLElement, trigger: boolean = true) {
         if (this.selectionElements.length < 1 && this.neverEmpty)
             element.toggleAttribute("selected", true);
+        element.toggleAttribute(noListenerAttribute, !trigger);
         this.container.append(element);
         element.addEventListener('click', function () {
             this.toggleAttribute("selected");
@@ -67,15 +81,16 @@ export class Selector<T> {
         const updateSelection = (obs: MutationObserver, entry?: Element) => {
             obs.disconnect();
             if (this.isUnique) {
-                for (const caption of this.container.children)
-                    caption.toggleAttribute(selectionAttribute, caption === entry);
-                this.container.toggleAttribute(selectionPresentAttribute, !!entry)
-                this.listener?.(this.extractor(entry));
+                for (const choice of this.container.children)
+                    choice.toggleAttribute(selectionAttribute, choice === entry);
+                this.container.toggleAttribute(selectionPresentAttribute, !!entry);
+                this.listener?.(!entry?.hasAttribute(noListenerAttribute), this.extractor(entry));
             } else {
                 const selection = this.selection;
                 this.container.toggleAttribute(selectionPresentAttribute, selection.length > 0);
-                this.listener?.(...selection);
+                this.listener?.(!entry?.hasAttribute(noListenerAttribute), ...selection);
             }
+            entry?.removeAttribute(noListenerAttribute);
             obs.observe(this.container, mutationOptions);
         }
         this.observer = new MutationObserver((entries, obs) => {
@@ -93,6 +108,8 @@ export class Selector<T> {
                     for (const added of entry.addedNodes)
                         if (added instanceof Element && added.hasAttribute(selectionAttribute))
                             updateSelection(obs, added);
+                        else if (added instanceof Element)
+                            added.removeAttribute(noListenerAttribute);
                     for (const deleted of entry.removedNodes)
                         if (deleted instanceof Element && deleted.hasAttribute(selectionAttribute)) {
                             if (this.neverEmpty && this.selectionElements.length === 0)

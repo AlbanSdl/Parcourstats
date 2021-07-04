@@ -14,6 +14,9 @@ interface DropdownOptions<T> {
     }
 }
 
+const expandedAttribute = "expanded";
+const disabledAttribute = "disabled";
+
 export class Dropdown<T> implements Component<HTMLDivElement> {
     public readonly element: HTMLDivElement = createElement({
         classes: ["wrapper", "dropdown"]
@@ -22,10 +25,8 @@ export class Dropdown<T> implements Component<HTMLDivElement> {
         [key: string]: T;
     };
     readonly #onSelect!: (value: T) => void;
-    #isExpanded: boolean = true;
+    readonly #selector!: Selector<T>;
     #a11yCursor: number = 0;
-    #selector!: Selector<T>;
-    #enabled!: boolean;
 
     constructor(options: DropdownOptions<T>) {
         this.#values = {};
@@ -40,7 +41,7 @@ export class Dropdown<T> implements Component<HTMLDivElement> {
                 child.toggleAttribute("a11y-focus", false);
         })
         wrapper.addEventListener('keydown', event => {
-            if (!this.#enabled) return;
+            if (!this.isEnabled) return;
             let cursorUpdated: number;
             switch (event.code) {
                 case "Space":
@@ -54,7 +55,7 @@ export class Dropdown<T> implements Component<HTMLDivElement> {
                     cursorUpdated = this.#a11yCursor - 1;
                 case "ArrowDown":
                 case "ArrowRight":
-                    if (!this.#isExpanded) return;
+                    if (!this.isExpanded) return;
                     if (cursorUpdated === undefined)
                         cursorUpdated = this.#a11yCursor + 1;
                     const available = this.#selector.childrenElements.length;
@@ -85,34 +86,37 @@ export class Dropdown<T> implements Component<HTMLDivElement> {
         wrapper.append(list);
         this.element.append(wrapper);
         options?.parent?.appendChild(this.element);
-        this.enabled = options?.disabled !== true;
+        this.isEnabled = options?.disabled !== true;
         this.#selector = new Selector({
             container: list,
             extractor: e => this.#values[e.getAttribute("of")],
             isUnique: true,
             neverEmpty: true,
-            listener: (value: T) => {
-                if (this.#isExpanded) {
+            listener: (triggers: boolean, value: T) => {
+                if (!triggers) return;
+                if (this.isExpanded && this.isEnabled)
                     this.#onSelect(value);
-                    this.#a11yCursor = this.#selector.children.indexOf(value);
-                }
-                this.updateStatus(!this.#isExpanded)
+                this.#a11yCursor = this.#selector.children.indexOf(value);
+                if (this.isEnabled) this.isExpanded = !this.isExpanded;
             }
         })
         for (const name in options.values)
-            this.set(name, options.values[name]);
+            this.setEntry(name, options.values[name], false);
+    }
+
+    private get isExpanded() {
+        return this.list?.hasAttribute(expandedAttribute);
+    }
+
+    private set isExpanded(expanded: boolean) {
+        this.list?.toggleAttribute(expandedAttribute, expanded);
     }
 
     private get list(): HTMLElement | null {
         return this.element.querySelector(".list.wrapper > .list");
     }
 
-    private updateStatus(expanded: boolean) {
-        this.#isExpanded = expanded;
-        this.list?.toggleAttribute("expanded", expanded);
-    }
-
-    public set(label: string, value?: T) {
+    public setEntry(label: string, value?: T, trigger: boolean = true) {
         if (value === undefined) {
             delete this.#values[label];
             this.list.querySelector(`.value[of="${label}"]`)?.remove();
@@ -124,16 +128,21 @@ export class Dropdown<T> implements Component<HTMLDivElement> {
                 classes: ["value"],
                 of: label,
                 ripple: true
-            }))
+            }), trigger)
         }
     }
 
-    public get enabled() {
-        return this.#enabled;
+    public get isEnabled() {
+        return this.list?.hasAttribute(disabledAttribute) === false;
     }
 
-    public set enabled(value: boolean) {
-        this.list?.toggleAttribute("disabled", !value);
-        this.#enabled = value;
+    public set isEnabled(value: boolean) {
+        this.list?.toggleAttribute(disabledAttribute, !value);
+    }
+
+    public select(value: T, trigger: boolean = true) {
+        if (this.#selector.selection.includes(value)) return;
+        this.#selector.select(value, trigger);
+        this.#a11yCursor = this.#selector.children.indexOf(value);
     }
 }

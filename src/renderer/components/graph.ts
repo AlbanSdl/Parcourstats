@@ -319,7 +319,7 @@ export class Graph {
             container: caption,
             extractor: e => e?.id?.match?.(/(?<=^caption-).+$/si)?.[0],
             isUnique: true,
-            listener: entry => {
+            listener: (_, entry) => {
                 for (const caption of this.caption.children)
                     this.graph.getElementById(`path-${caption}`)
                         ?.toggleAttribute(selectionAttribute, caption === entry)

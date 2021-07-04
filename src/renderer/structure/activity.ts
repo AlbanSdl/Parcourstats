@@ -31,7 +31,7 @@ export abstract class Activity extends Layout {
     protected onDestroy(): void | Promise<void> {
     }
 
-    protected async waitCreation<T>(this: Activity, value: T): Promise<T> {
+    protected async waitCreation<T = void>(this: Activity, value?: T): Promise<T> {
         return new Promise(res => {
             if (this.creationLock.created) res(value);
             else this.creationLock.locks.push(() => res(value));

@@ -11,6 +11,13 @@ wishes.add.op Enregistrer
 wishes.add.error Impossible d'enregistrer la formation
 wishes.settings Paramètres
 wishes.settings.header Quelques paramètres seront bientôt accessibles dont la langue de l'application.
+wishes.settings.error Impossible d'enregistrer les paramètres.
+app.settings.theme Thème sombre
+app.settings.lang Langue
+app.settings.filter Filtrer les vœux acceptés ou refusés
+app.settings.bounds Dates de la procédure Parcoursup
+app.settings.record Enregistrer de nouveau tes rangs
+app.settings.about A propos
 wish.session.singular Session
 wish.session.plural Sessions
 wishes.overview.abstract.title Vue d'ensemble

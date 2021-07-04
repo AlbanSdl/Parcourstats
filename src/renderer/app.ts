@@ -10,7 +10,7 @@ import { Button, ButtonStyle } from "components/button";
 import { AppNotification } from "components/notification";
 import { Switch } from "components/forms/switch";
 import { Dropdown } from "components/forms/dropdown";
-import { Query } from "../common/window";
+import { Locale, Query } from "../common/window";
 
 interface Data {
     [name: string]: {
@@ -34,6 +34,7 @@ export class Home extends Activity {
     private fragment: Overview | WishFragment | TodayFragment;
     private loadingState = 0;
     private providers: WeakRef<(d: Data) => void>[] = []
+    private lang?: Locale;
 
     public create() {
         this.createContext();
@@ -41,6 +42,18 @@ export class Home extends Activity {
 
     protected async onCreate() {
         const root = await super.onCreate();
+        window.messenger.send(Query.SETTINGS_GET).then(settings => {
+            document.documentElement.setAttribute("theme", !settings.theme ? "dark" : "light");
+            return settings;
+        })
+        .then(settings => this.waitCreation(settings))
+        .then(settings => {
+            themeSetting.status = !settings.theme
+            localeSetting.isEnabled = true;
+            localeSetting.select(settings.lang, false);
+            this.lang = settings.lang;
+            filterSetting.status = settings.filter;
+        })
         root.classList.add("home");
         this.getLocale("app.name")
             .then(name => this.title = name);
@@ -56,7 +69,7 @@ export class Home extends Activity {
             extractor: e => e?.getAttribute?.("action"),
             isUnique: true,
             neverEmpty: true,
-            listener: action => this.updateMenu(action)
+            listener: (_, action) => this.updateMenu(action)
         })
         const wrapper = createElement({
             classes: ["wrapper"]
@@ -69,7 +82,7 @@ export class Home extends Activity {
             container: sideList,
             extractor: e => e?.getAttribute?.("name"),
             isUnique: true,
-            listener: name => {
+            listener: (_, name) => {
                 const frag = !!name ? new WishFragment(name) : new Overview;
                 this.fragment.replace(frag);
                 this.fragment = frag;
@@ -155,31 +168,45 @@ export class Home extends Activity {
             text: await this.getLocale("wishes.settings.header")
         })
         sideSettings.append(sideSettingsHeader);
-        new Switch({
+        const themeSetting = new Switch({
             label: await this.getLocale("app.settings.theme"),
             oninput: e => {
-                // send to main process and save
-                document.documentElement.setAttribute("theme", e.target.checked ? "dark" : "light");
+                window.messenger.send(Query.SETTINGS_SET, "theme", !e.target.checked).catch(async err => {
+                    console.error(err);
+                    new AppNotification(await this.getLocale("wishes.settings.error"), 1e4, ['error'])
+                }).finally(() => document.documentElement.setAttribute("theme", e.target.checked ? "dark" : "light"))
             },
             parent: sideSettings
-        })
-        new Dropdown({
+        });
+        const localeSetting = new Dropdown<Locale>({
             label: await this.getLocale("app.settings.lang"),
-            onSelect: console.log,
+            onSelect: locale => {
+                if (locale !== this.lang) window.messenger.send(Query.SETTINGS_SET, "lang", locale).then(() => {
+                    this.clearCachedLocale();
+                    const reCreatedActivity = new Home();
+                    this.replace(reCreatedActivity).then(() => reCreatedActivity.sideHeader.select("stat-settings"))
+                }).catch(async err => {
+                    console.error(err);
+                    new AppNotification(await this.getLocale("wishes.settings.error"), 1e4, ['error'])
+                })
+            },
             values: {
                 ["Français"]: "fr",
                 ["English"]: "en"
             },
-            parent: sideSettings
+            parent: sideSettings,
+            disabled: true
         })
-        new Switch({
+        const filterSetting = new Switch({
             label: await this.getLocale("app.settings.filter"),
-            oninput: e => console.log((e.target as HTMLInputElement).checked),
+            oninput: e => {
+                console.log(e.target.checked ? "Filtering" : "Unfiltering")
+            },
             parent: sideSettings
         })
         const sessionDates = createElement({
             classes: ["custom-settings", "bounds"],
-            text: await this.getLocale("app.settings.bounds")
+            text: await this.getLocale("app.settings.bounds"),
         })
         const recordOption = createElement({
             classes: ["custom-settings", "record"],

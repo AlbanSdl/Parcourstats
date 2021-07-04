@@ -168,14 +168,14 @@ interface Args {
     }
     [Query.SETTINGS_GET]: {
         front: [res: {
-            lang?: "fr" | "en",
-            filter?: boolean,
-            session_bounds?: [from: Date, to: Date],
-            theme?: boolean
+            lang: Locale,
+            filter: boolean,
+            session_bounds: [from: Date, to: Date],
+            theme: boolean
         }]
     }
     [Query.SETTINGS_SET]: {
-        front: [res: void, property: "lang", locale: "fr" | "en"]
+        front: [res: void, property: "lang", locale: Locale]
         | [res: void, property: "filter", isFiltered: boolean]
         | [res: void, property: "session_bounds", from: Date, to: Date]
         | [res: void, property: "theme", useLightTheme: boolean]
@@ -191,3 +191,5 @@ interface Args {
         front: [res: void]
     }
 }
+
+export type Locale = "en" | "fr";

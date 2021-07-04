@@ -47,4 +47,13 @@ export class Switch implements Component<HTMLDivElement> {
         this.element.append(wrapper, helper);
         options?.parent?.appendChild(this.element)
     }
+
+    public get status() {
+        return !!(this.element.querySelector("label > input.switch[type=checkbox]") as HTMLInputElement)?.checked
+    }
+
+    public set status(activated: boolean) {
+        const input = this.element.querySelector("label > input.switch[type=checkbox]") as HTMLInputElement;
+        if (!!input) input!.checked = activated;
+    }
 }

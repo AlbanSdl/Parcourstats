@@ -4,7 +4,7 @@ import { i18n } from "./providers/i18n";
 import { Ipc } from "./ipc";
 import { Settings } from "./providers/settings";
 import { DataProvider } from "./providers/data";
-import { Query, Recipient } from "../common/window";
+import { Locale, Query, Recipient } from "../common/window";
 
 app.setAppUserModelId("fr.asdl.parcourstats");
 
@@ -31,7 +31,7 @@ export class ParcourStats {
         this.ipc.on(Query.OPEN_EXTERNAL, async link => shell.openExternal(link))
         this.ipc.on(Query.SETTINGS_GET, async () => {
             return {
-                lang: this.settings.get<"fr" | "en">("client.lang", "fr"),
+                lang: this.settings.get<Locale>("client.lang", "fr"),
                 filter: this.settings.get("client.filter", false),
                 session_bounds: [
                     new Date(this.settings.get("client.sessions_start", Date.now())),
@@ -44,7 +44,8 @@ export class ParcourStats {
             switch (key) {
                 case "lang":
                     const locale = value;
-                    if (locale === "fr" || locale === "en") this.i18n.lang = locale
+                    if (locale === "fr" || locale === "en")
+                        await this.i18n.setLocale(locale)
                     else throw "Invalid locale"
                 case "theme":
                 case "filter":

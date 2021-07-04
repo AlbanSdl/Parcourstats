@@ -11,6 +11,13 @@ wishes.add.op Save
 wishes.add.error The formation could not be saved
 wishes.settings Settings
 wishes.settings.header A few settings will be available soon, including the app language.
+wishes.settings.error Impossible d'enregistrer les paramètres.
+app.settings.theme Dark theme
+app.settings.lang Language
+app.settings.filter Filter out accepted and refused wishes
+app.settings.bounds Parcoursup calendar
+app.settings.record Save ranks one more time today
+app.settings.about About
 wish.session.singular Session
 wish.session.plural Sessions
 wishes.overview.abstract.title Overview
@@ -49,7 +56,7 @@ wish.rank.unknown.accepted You're part of the firsts who have been accepted here
 wish.rank.unknown.refused Your application has not been selected by this formation
 wish.graph.people.after People waiting after you in queue
 wish.graph.speed.header Data evolution
-wish.graph.speed.attachment All speeds are divided by the amount of students this formation accepts so that it is relevant to compare the curves below with the ones of all your other wishes. The data below is not affected by the initial "surbooking" of the formation.
+wish.graph.speed.attachment All speeds are divided by the amount of students this formation accepts so that it is relevant to compare the curves below with the ones of all your other wishes. The data below is not affected by the initial "overbooking" of the formation.
 wish.graph.speed.user Rank progression speed
 wish.graph.speed.last Formation fulfilment speed
 wish.graph.speed.all Queue shrink speed
