@@ -16,13 +16,8 @@ window.onload = () => {
         if (!!target) {
             if (!savedFsIcon[`${max}`]) {
                 target.firstElementChild.remove();
-                target.addIcon(max ? Icon.WINDOW_EXFS : Icon.WINDOW_ENFS).then(icon => {
-                    savedFsIcon[`${max}`] = icon;
-                })
-            } else {
-                target.replaceChild(savedFsIcon[`${max}`],
-                    target.firstElementChild)
-            }
+                target.addIcon(max ? Icon.WINDOW_EXFS : Icon.WINDOW_ENFS).then(icon => savedFsIcon[`${max}`] = icon)
+            } else target.replaceChild(savedFsIcon[`${max}`], target.firstElementChild)
         }
     })
     document.getElementById("wdicc").addEventListener('click', () => 

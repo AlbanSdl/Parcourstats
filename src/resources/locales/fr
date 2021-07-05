@@ -10,14 +10,20 @@ wishes.add.available Places disponibles
 wishes.add.op Enregistrer
 wishes.add.error Impossible d'enregistrer la formation
 wishes.settings Paramètres
-wishes.settings.header Quelques paramètres seront bientôt accessibles dont la langue de l'application.
 wishes.settings.error Impossible d'enregistrer les paramètres.
 app.settings.theme Thème sombre
 app.settings.lang Langue
 app.settings.filter Filtrer les vœux acceptés ou refusés
-app.settings.bounds Dates de la procédure Parcoursup
 app.settings.record Enregistrer de nouveau tes rangs
-app.settings.about A propos
+app.settings.record.detail Parcourstats te propose d'enregistrer tes rangs tous les jours avec au moins 12 heures d'intervalle.
+app.settings.record.button Enregistrer de nouveau
+app.settings.about A propos de
+app.settings.about.libs.unknown Version inconnue
+app.settings.about.this Une application pour tes vœux Parcoursup... qui t'indique VRAIMENT comment ils évoluent. L'application n'accède pas toute seule à ton dossier, c'est toi qui rentre les valeurs que Parcoursup t'indique.
+app.settings.about.libs.core Version des composants principaux
+app.settings.about.libs Bibliothèques tierces
+app.settings.about.libs.expl Parcourstats utilise des scripts tiers appelés "bibliothèques". Ils permettent d'ajouter certaines fonctionnalités à l'application.
+app.settings.about.libs.error Une erreur est survenue et la liste des bibliothèques n'a pas pû être chargée !
 wish.session.singular Session
 wish.session.plural Sessions
 wishes.overview.abstract.title Vue d'ensemble

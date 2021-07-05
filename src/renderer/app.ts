@@ -31,7 +31,7 @@ export class Home extends Activity {
     private sideHeader: Selector<string>;
     private sideList: Selector<string>;
     private readonly data: Data = {};
-    private fragment: Overview | WishFragment | TodayFragment;
+    private fragment: Overview | WishFragment | TodayFragment | AboutFragment;
     private loadingState = 0;
     private providers: WeakRef<(d: Data) => void>[] = []
     private lang?: Locale;
@@ -49,10 +49,10 @@ export class Home extends Activity {
         .then(settings => this.waitCreation(settings))
         .then(settings => {
             themeSetting.status = !settings.theme
-            localeSetting.isEnabled = true;
             localeSetting.select(settings.lang, false);
             this.lang = settings.lang;
             filterSetting.status = settings.filter;
+            this.side.querySelector(".list")?.toggleAttribute("filtered", settings.filter);
         })
         root.classList.add("home");
         this.getLocale("app.name")
@@ -163,11 +163,6 @@ export class Home extends Activity {
         const sideSettings = createElement({
             classes: ["settings"]
         })
-        const sideSettingsHeader = createElement({
-            classes: ["header"],
-            text: await this.getLocale("wishes.settings.header")
-        })
-        sideSettings.append(sideSettingsHeader);
         const themeSetting = new Switch({
             label: await this.getLocale("app.settings.theme"),
             oninput: e => {
@@ -194,29 +189,41 @@ export class Home extends Activity {
                 ["Français"]: "fr",
                 ["English"]: "en"
             },
-            parent: sideSettings,
-            disabled: true
+            parent: sideSettings
         })
         const filterSetting = new Switch({
             label: await this.getLocale("app.settings.filter"),
             oninput: e => {
-                console.log(e.target.checked ? "Filtering" : "Unfiltering")
+                window.messenger.send(Query.SETTINGS_SET, "filter", e.target.checked).catch(async err => {
+                    console.error(err);
+                    new AppNotification(await this.getLocale("wishes.settings.error"), 1e4, ['error'])
+                }).finally(() => {
+                    this.side.querySelector(".list")?.toggleAttribute("filtered", e.target.checked);
+                });
             },
             parent: sideSettings
         })
-        const sessionDates = createElement({
-            classes: ["custom-settings", "bounds"],
-            text: await this.getLocale("app.settings.bounds"),
-        })
         const recordOption = createElement({
-            classes: ["custom-settings", "record"],
+            classes: ["record"],
             text: await this.getLocale("app.settings.record")
         })
+        recordOption.append(createElement({
+            classes: ["description"],
+            text: await this.getLocale("app.settings.record.detail")
+        }))
+        const recordButton = new Button(await this.getLocale("app.settings.record.button"), () => {
+            this.changeFragment(new TodayFragment())
+        }, recordOption);
+        recordButton.enabled = true;
         const aboutProperty = createElement({
-            classes: ["custom-settings", "about"],
-            text: await this.getLocale("app.settings.about")
+            classes: ["about"],
+            text: (await Promise.all([this.getLocale("app.settings.about"), this.getLocale("app.name")])).join(" "),
+            ripple: true
         })
-        sideSettings.append(sessionDates, recordOption, aboutProperty);
+        aboutProperty.addEventListener('click', () => {
+            this.changeFragment(this.fragment instanceof AboutFragment ? new Overview() : new AboutFragment())
+        })
+        sideSettings.append(recordOption, aboutProperty);
         wrapper.append(sideSettings);
         const container = createElement({
             classes: ["container"]
@@ -232,7 +239,6 @@ export class Home extends Activity {
             .then((values: Study[]) => this.waitCreation(values))
             .then(values => this.updateStudies(values))
             .catch(async err => {
-                console.error(err);
                 this.side.querySelector('.list')?.toggleAttribute("loading", false)
                 while (!!this.sideList.childrenElements.length) 
                     this.sideList.childrenElements.item(0).remove();
@@ -260,6 +266,13 @@ export class Home extends Activity {
         if (this.loadingState < 7) {
             this.loadingState |= mask;
             if (this.loadingState >= 7) {
+                for (const wishContainer of this.side.querySelectorAll(".list > .wish")) {
+                    const wishData = this.data[wishContainer.getAttribute("name")];
+                    if (!wishData?.user || !wishData?.sessions) continue;
+                    wishContainer.toggleAttribute("active", wishData.sessions.length > 0 
+                        && wishData.sessions[0].year === new Date().getFullYear() 
+                        && (wishData.user.map(ur => ur.application_queued).sort()[0] ?? -1) > 0)
+                }
                 for (const ref of this.providers) 
                     ref.deref()?.(this.data);
                 this.providers.splice(0, this.providers.length)
@@ -334,18 +347,22 @@ export class Home extends Activity {
     }
 
     private async updateStudies(additions: Study[]) {
-        this.side.querySelector('.list')?.toggleAttribute("loading", false)
-        while (!!this.sideList.childrenElements.length) 
-            this.sideList.childrenElements.item(0).remove();
+        const list = this.side.querySelector('.list');
+        if (!list) return;
+        list.toggleAttribute("loading", false)
+        for (const element of list.children)
+            if (!element.classList.contains("wish"))
+                element.remove();
         const updateResult = this.update(additions, "sessions");
-        if (!updateResult) {
+        if (list.children.length === 0 && !updateResult) {
             this.side.querySelector('.list')?.append?.(createElement({
                 classes: ["empty"],
                 text: await this.getLocale("wishes.list.empty")
             }));
-        } else {
+        } else if (updateResult) {
             for (const wish in this.data) {
-                if (!this.data[wish].sessions) continue;
+                if (!this.data[wish].sessions || !additions.find(a => a.name === wish)) continue;
+                const sessions = this.data[wish].sessions.sort((a, b) => b.year - a.year);
                 const wishContainer = createElement({
                     classes: ["wish"],
                     ripple: true,
@@ -354,9 +371,9 @@ export class Home extends Activity {
                 const wishSession = createElement({
                     classes: ["session"]
                 });
-                wishSession.textContent = `${await this.getLocale(`wish.session.${
-                    this.data[wish].sessions.length > 1 ? 'plural' : 'singular'}`)}: ${
-                    this.data[wish].sessions.map(s => s.year).sort().join(", ")}`;
+                wishSession.textContent = `${
+                    await this.getLocale(`wish.session.${sessions.length > 1 ? 'plural' : 'singular'}`)
+                }: ${sessions.map(s => s.year).join(", ")}`;
                 wishContainer.append(wishSession);
                 this.sideList.append(wishContainer)
             }
@@ -373,7 +390,7 @@ export class Home extends Activity {
     }
 
     /** @internal */
-    changeFragment(fragment: WishFragment | Overview | TodayFragment) {
+    changeFragment(fragment: WishFragment | Overview | TodayFragment | AboutFragment) {
         this.fragment?.replace(this.fragment = fragment);
     }
 }
@@ -400,7 +417,7 @@ class Overview extends Fragment {
         this.locale = locale;
     }
 
-    protected async onCreate(from?: Overview | WishFragment | TodayFragment) {
+    protected async onCreate(from?: Overview | WishFragment | TodayFragment | AboutFragment) {
         const root = await super.onCreate(from);
         if (!!from) {
             this.data = from.data;
@@ -517,7 +534,7 @@ class Overview extends Fragment {
     private displayValue(on: "accepted" | "pending" | "refused", value: string) {
         this.root!!.querySelector(`.${on} .value`)!!.textContent = value;
     }
-    public async replace(fragment: Overview | WishFragment | TodayFragment, transition = Transition.SLIDE) {
+    public async replace(fragment: Overview | WishFragment | TodayFragment | AboutFragment, transition = Transition.SLIDE) {
         return super.replace(fragment, transition)
     }
 }
@@ -538,7 +555,7 @@ class WishFragment extends Fragment {
         this.wishName = wishName;
     }
 
-    protected async onCreate(from: Overview | WishFragment | TodayFragment) {
+    protected async onCreate(from: Overview | WishFragment | TodayFragment | AboutFragment) {
         const root = await super.onCreate();
         this.data = from.data;
         this.locale = from.locale;
@@ -657,7 +674,7 @@ class WishFragment extends Fragment {
     protected onDestroyed(): void {
         delete this.graph;
     }
-    public async replace(fragment: Overview | WishFragment | TodayFragment) {
+    public async replace(fragment: Overview | WishFragment | TodayFragment | AboutFragment) {
         return super.replace(fragment, Transition.SLIDE, fragment instanceof Overview)
     }
 }
@@ -673,7 +690,7 @@ class TodayFragment extends Fragment {
         todayUser?: UserRankRecord
     }[]
 
-    protected async onCreate(from: Overview | WishFragment | TodayFragment) {
+    protected async onCreate(from: Overview | WishFragment | TodayFragment | AboutFragment) {
         const root = await super.onCreate(from);
         if (!!from) {
             this.data = from.data;
@@ -714,7 +731,7 @@ class TodayFragment extends Fragment {
     protected onDestroyed(): void {
     }
 
-    public async replace(fragment: Overview | WishFragment | TodayFragment) {
+    public async replace(fragment: Overview | WishFragment | TodayFragment | AboutFragment) {
         return super.replace(fragment, Transition.SLIDE, fragment instanceof Overview)
     }
 }
@@ -978,5 +995,118 @@ class WishTodayEntryFragment extends Fragment {
         this.context = activity;
         this.container = container;
         this.createContext();
+    }
+}
+
+class AboutFragment extends Fragment {
+    data: () => Promise<Data>;
+    locale: (key: string) => Promise<string>;
+
+    protected async onCreate(from: Overview | WishFragment | TodayFragment | AboutFragment) {
+        const root = await super.onCreate();
+        this.data = from.data;
+        this.locale = from.locale;
+        root.classList.add("about", "loadable");
+        root.toggleAttribute("loading", true)
+        root.addIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
+        
+        const container = createElement({
+            classes: ["container"],
+            text: (await Promise.all([this.locale("app.settings.about"), this.locale("app.name")])).join(" ")
+        });
+
+        const thisApp = createElement({
+            text: await this.locale("app.settings.about.this")
+        })
+        const coreDeps = createElement({
+            classes: ["deps", "core"],
+            text: await this.locale("app.settings.about.libs.core")
+        })
+        coreDeps.append(createElement({
+            classes: ["separator"]
+        }))
+        const depsList = createElement({
+            classes: ["deps"]
+        })
+        container.append(thisApp, coreDeps, createElement({
+            classes: ["libhead"],
+            title: await this.locale("app.settings.about.libs"),
+            text: await this.locale("app.settings.about.libs.expl")
+        }), depsList);
+        root.append(container);
+        return root;
+    }
+    protected onCreated(): void {
+        this.root.toggleAttribute("loading", false);
+        window.messenger.send(Query.CONTEXT).catch(async err => {
+            console.error(err);
+            const erroredVersion = await this.locale("app.settings.about.libs.unknown")
+            return {
+                appVersion: erroredVersion,
+                electronVersion: erroredVersion,
+                nodeJsVersion: erroredVersion,
+                chromiumVersion: erroredVersion,
+                dependencies: undefined as {
+                    [name: string]: {
+                        version: string;
+                        description?: string;
+                        author?: string;
+                        license?: string;
+                    };
+                }
+            }
+        }).then(async context => {
+            this.root.querySelector(".container").setAttribute("version", context.appVersion);
+            this.root.querySelector(".container > .deps.core")?.append(createElement({
+                tag: "div",
+                name: "Electron",
+                version: context.electronVersion
+            }), createElement({
+                tag: "div",
+                name: "Chromium",
+                version: context.chromiumVersion
+            }), createElement({
+                tag: "div",
+                name: "NodeJS",
+                version: context.nodeJsVersion
+            }))
+            if (!context.dependencies) {
+                this.root.querySelector(".container > .deps:not(.core)").append(createElement({
+                    classes: ["error"],
+                    text: await this.locale("app.settings.about.libs.error")
+                }))
+            } else {
+                for (const name in context.dependencies) {
+                    const lib = context.dependencies[name];
+                    const wrapper = createElement({
+                        classes: ["dep", "wrapper"]
+                    });
+                    wrapper.append(createElement({
+                        classes: ["version"],
+                        text: lib.version
+                    }), createElement({
+                        classes: ["name"],
+                        text: name
+                    }), createElement({
+                        classes: ["desc"],
+                        text: lib.description
+                    }), createElement({
+                        classes: ["author"],
+                        text: lib.author
+                    }), createElement({
+                        classes: ["licence"],
+                        text: lib.license
+                    }));
+                    this.root.querySelector(".container > .deps:not(.core)").append(wrapper);
+                }
+            }
+        });
+    }
+    protected onDestroy(): void {
+    }
+    protected onDestroyed(): void {
+    }
+    public async replace(fragment: Overview | WishFragment | TodayFragment | AboutFragment) {
+        return super.replace(fragment, Transition.SLIDE, true)
     }
 }

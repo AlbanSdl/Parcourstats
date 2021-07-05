@@ -10,14 +10,20 @@ wishes.add.available Student count
 wishes.add.op Save
 wishes.add.error The formation could not be saved
 wishes.settings Settings
-wishes.settings.header A few settings will be available soon, including the app language.
-wishes.settings.error Impossible d'enregistrer les paramètres.
+wishes.settings.error Cound not save settings.
 app.settings.theme Dark theme
 app.settings.lang Language
 app.settings.filter Filter out accepted and refused wishes
-app.settings.bounds Parcoursup calendar
 app.settings.record Save ranks one more time today
+app.settings.record.detail Parcourstats will prompt you to record your ranks every day at least 12 hours apart.
+app.settings.record.button Record again
 app.settings.about About
+app.settings.about.libs.unknown Unknown version
+app.settings.about.this An app for your Parcoursup wishes... that ACTUALLY shows you how your wishes evolve. The app has no access to your account, you will have to report values from the website.
+app.settings.about.libs.core Framework version
+app.settings.about.libs Third-party libraries
+app.settings.about.libs.expl Parcourstats loads third-party scripts called "libraries". They improve the app and add features.
+app.settings.about.libs.error An error occurred and the library list could not be loaded !
 wish.session.singular Session
 wish.session.plural Sessions
 wishes.overview.abstract.title Overview

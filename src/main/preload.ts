@@ -4,6 +4,7 @@ import { Query, Recipient } from "../common/window";
 class FrontendIpc extends Recipient<"front"> {
     protected canSend(query: Query, ...args: unknown[]): boolean {
         switch (query) {
+            case Query.CONTEXT:
             case Query.WINDOW_EXIT:
             case Query.WINDOW_MAXIMIZE:
             case Query.WINDOW_MINIMIZE:
@@ -23,6 +24,7 @@ class FrontendIpc extends Recipient<"front"> {
     }
     protected canReceive(query: Query, ..._args: unknown[]): boolean {
         switch (query) {
+            case Query.CONTEXT:
             case Query.DATA:
             case Query.LOCALIZE:
             case Query.OPEN_EXTERNAL:

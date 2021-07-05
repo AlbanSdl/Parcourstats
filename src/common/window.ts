@@ -141,6 +141,7 @@ export abstract class Recipient<S extends RecipientSide> {
 }
 
 export enum Query {
+    CONTEXT = "ctx",
     DATA = "dtr",
     LOCALIZE = "loc",
     OPEN_EXTERNAL = "ext",
@@ -152,6 +153,22 @@ export enum Query {
 }
 
 interface Args {
+    [Query.CONTEXT]: {
+        front: [res: {
+            appVersion: string,
+            electronVersion: string,
+            nodeJsVersion: string,
+            chromiumVersion: string,
+            dependencies: {
+                [name: string]: {
+                    version: string,
+                    description?: string,
+                    author?: string,
+                    license?: string
+                }
+            }
+        }]
+    }
     [Query.DATA]: {
         front: [res: Study[], op: "select", table: "study", year?: number]
         | [res: GlobalRankRecord[], op: "select", table: "global", year?: number]
@@ -170,14 +187,12 @@ interface Args {
         front: [res: {
             lang: Locale,
             filter: boolean,
-            session_bounds: [from: Date, to: Date],
             theme: boolean
         }]
     }
     [Query.SETTINGS_SET]: {
         front: [res: void, property: "lang", locale: Locale]
         | [res: void, property: "filter", isFiltered: boolean]
-        | [res: void, property: "session_bounds", from: Date, to: Date]
         | [res: void, property: "theme", useLightTheme: boolean]
     }
     [Query.WINDOW_EXIT]: {

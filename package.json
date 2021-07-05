@@ -1,6 +1,6 @@
 {
   "name": "parcourstats",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A Parcoursup watcher",
   "main": "main/index.js",
   "private": true,
@@ -40,18 +40,16 @@
     "extends": null,
     "productName": "Parcourstats",
     "appId": "fr.asdl.parcourstats",
-    "mac": {
-      "category": "public.app-category.education"
-    },
     "copyright": "Copyright © 2021 ${author}",
     "directories": {
       "output": "build/"
     },
     "icon": "raw/resources/icons/app-icon.png",
-    "nsis": {
-      "installerIcon": ".icon-ico/icon.ico",
-      "uninstallerIcon": ".icon-ico/icon.ico",
-      "deleteAppDataOnUninstall": true
+    "win": {
+      "target": "portable"
+    },
+    "mac": {
+      "category": "public.app-category.education"
     },
     "files": [
       {

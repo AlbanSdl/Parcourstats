@@ -5,6 +5,7 @@ import { Ipc } from "./ipc";
 import { Settings } from "./providers/settings";
 import { DataProvider } from "./providers/data";
 import { Locale, Query, Recipient } from "../common/window";
+import { readdir, readFile } from "fs/promises";
 
 app.setAppUserModelId("fr.asdl.parcourstats");
 
@@ -33,14 +34,10 @@ export class ParcourStats {
             return {
                 lang: this.settings.get<Locale>("client.lang", "fr"),
                 filter: this.settings.get("client.filter", false),
-                session_bounds: [
-                    new Date(this.settings.get("client.sessions_start", Date.now())),
-                    new Date(this.settings.get("client.sessions_end", Date.now()))
-                ] as [Date, Date],
                 theme: this.settings.get("client.theme", false)
             }
         })
-        this.ipc.on(Query.SETTINGS_SET, async (key, value, extra?) => {
+        this.ipc.on(Query.SETTINGS_SET, async (key, value) => {
             switch (key) {
                 case "lang":
                     const locale = value;
@@ -51,13 +48,32 @@ export class ParcourStats {
                 case "filter":
                     this.settings.set(`client.${key}`, value)
                     return;
-                case "session_bounds":
-                    this.settings.set(`client.${key}`, [value as Date, extra].map(bound => bound.getTime()))
-                    return;
                 default:
                     throw "Invalid configuration key";
             }
         })
+        this.ipc.on(Query.CONTEXT, async () => {
+            const dirs = await readdir(join(__dirname, "..", "node_modules"), "utf8");
+            const deps = await Promise.all(dirs.map(dir => 
+                readFile(join(__dirname, "..", "node_modules", dir, "package.json"), "utf8")
+                .then(JSON.parse)
+                .then(pkg => [dir, {
+                    version: pkg["version"] ?? this.i18n.get("app.settings.about.libs.unknown"),
+                    description: pkg["description"],
+                    author: typeof pkg["author"] === "object" ? pkg["author"]["name"] : 
+                        (pkg["author"] as string).replace(/^([^<>]+?)\s?(<.*?>)?\s?(\(.*?\))?$/u, "$1"),
+                    license: pkg["license"]
+                }] as const)
+                .catch(() => [])
+            ));
+            return {
+                appVersion: app.getVersion(),
+                electronVersion: process.versions.electron,
+                chromiumVersion: process.versions.chrome,
+                nodeJsVersion: process.versions.node,
+                dependencies: Object.fromEntries(deps.filter(v => !!v.length))
+            };
+        });
     }
 
     public async init() {
@@ -77,7 +93,8 @@ export class ParcourStats {
         if (this.settings.get("client.maximized", true)) this.window.maximize();
         else this.window.show();
         this.window.menuBarVisible = false;
-        this.window.loadFile(join(__dirname, '../renderer/index.html'));
+        this.window.loadFile(join(__dirname, '../renderer/index.html')).then(() => 
+            this.ipc.send(Query.WINDOW_MAXIMIZE, this.settings.get("client.maximized", true)));
         this.window.on("closed", () => {
             this.window = null
         })
