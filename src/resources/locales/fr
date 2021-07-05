@@ -43,6 +43,7 @@ wishes.today.invalid Valeur invalide
 wishes.today.next Confirmer
 wishes.today.discarded J'ai renoncé à ce vœu
 wishes.today.refused La candidature n'a pas été retenue
+wishes.today.closed La formation n'a plus de places disponibles
 wishes.today.accepted Le vœu a été accepté
 wishes.today.summary.header.name Formation
 wishes.today.summary.header.status Changements
@@ -53,7 +54,11 @@ wishes.today.summary.save Enregistrer
 wishes.today.summary.save.error Impossible d'enregistrer
 wishes.today.summary.save.error.retry Clique pour rouvrir la page
 wish.update.last Dernière mise à jour:
-wish.rank.initial Ton rang absolu:
+wish.status.pending Ta candidature est en liste d'attente
+wish.status.accepted Tu as reçu une proposition d'admission pour ce vœu
+wish.status.refused Toutes les places de la formation ont été remplies
+wish.status.resigned Tu as renoncé à ce vœu
+wish.rank.initial Ton rang absolu
 wish.rank.user Ton rang dans la file d'attente
 wish.rank.all Personnes en file d'attente
 wish.rank.last Rang de la dernière proposition

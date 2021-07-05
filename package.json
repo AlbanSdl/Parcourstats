@@ -45,8 +45,10 @@
       "output": "build/"
     },
     "icon": "raw/resources/icons/app-icon.png",
-    "win": {
-      "target": "portable"
+    "publish": null,
+    "nsis": {
+      "installerIcon": ".icon-ico/icon.ico",
+      "uninstallerIcon": ".icon-ico/icon.ico"
     },
     "mac": {
       "category": "public.app-category.education"

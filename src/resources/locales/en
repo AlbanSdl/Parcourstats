@@ -43,6 +43,7 @@ wishes.today.invalid Invalid value
 wishes.today.next Continue
 wishes.today.discarded I resigned
 wishes.today.refused My application has not be retained
+wishes.today.closed Formation is full
 wishes.today.accepted The wish was accepted
 wishes.today.summary.header.name Formation
 wishes.today.summary.header.status Updates
@@ -53,7 +54,11 @@ wishes.today.summary.save Save
 wishes.today.summary.save.error An error occurred while saving ranks
 wishes.today.summary.save.error.retry Click to reopen page
 wish.update.last Last update:
-wish.rank.initial Your absolute rank:
+wish.status.pending Your application is in the waitlist
+wish.status.accepted You received a positive response
+wish.status.refused The formation is full
+wish.status.resigned You resigned
+wish.rank.initial Your absolute rank
 wish.rank.user Your queued rank
 wish.rank.all All applications
 wish.rank.last Number of proposals sent by the formation

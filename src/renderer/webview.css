@@ -1082,7 +1082,48 @@ svg {
     gap: 10px;
     line-height: normal;
 }
-.activity.home > .container > .fragment.wish[no-data] > .container > :not(.title) {
+.activity.home > .container > .fragment.wish > .container > .overview {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    gap: 10px 15px;
+    background-color: var(--color-secondary-alt);
+    border-radius: 5px;
+    margin: 10px auto;
+    padding: 10px;
+    width: fit-content;
+    max-width: 800px;
+}
+.activity.home > .container > .fragment.wish > .container > .overview > .overall {
+    flex: 1 0 100%;
+    text-align: center;
+    font-size: 18px;
+}
+.activity.home > .container > .fragment.wish > .container > .overview > .rank {
+    display: flex;
+    flex-flow: column-reverse nowrap;
+    align-items: center;
+    flex: 1 1 0;
+    white-space: nowrap;
+}
+.activity.home > .container > .fragment.wish > .container > .overview > .rank::before {
+    content: attr(position);
+    font-weight: bold;
+    font-size: 20px;
+}
+.activity.home > .container > .fragment.wish > .container > .overview > .rank.user::before {
+    color: var(--color-accent);
+}
+.activity.home > .container > .fragment.wish > .container > .overview > .rank.abs::before {
+    color: var(--color-orange);
+}
+.activity.home > .container > .fragment.wish > .container > .overview > .rank.all::before {
+    color: var(--color-red-invert);
+}
+.activity.home > .container > .fragment.wish > .container > .overview > .rank.last::before {
+    color: var(--color-green-invert);
+}
+.activity.home > .container > .fragment.wish[no-data] > .container > :not(.title):not(.overview) {
     display: none;
 }
 .activity.home > .container > .fragment.today > .container {
@@ -1342,6 +1383,11 @@ svg {
 }
 .activity.home > .container > .fragment.about > .container > .deps:not(.core) > * {
     font-size: 16px;
+}
+.activity.home > .container > .fragment.about > .container > .deps:not(.core) > .error {
+    column-span: all;
+    color: var(--color-red);
+    padding: 0 5px;
 }
 .activity.home > .container > .fragment.about > .container > .deps:not(.core) > .dep.wrapper {
     display: grid;

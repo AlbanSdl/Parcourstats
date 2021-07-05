@@ -13,7 +13,7 @@ export class ParcourStats {
 
     private readonly ipc: Recipient<"back"> = new Ipc(this);
     private readonly settings = new Settings();
-    private readonly i18n = new i18n(this.settings.get<"fr" | "en">("client.lang", "fr"));
+    private i18n?: i18n;
     public window: BrowserWindow = null;
     private database: DataProvider;
 
@@ -28,7 +28,7 @@ export class ParcourStats {
             return true;
         })
         this.ipc.on(Query.WINDOW_MINIMIZE, async () => this.window.minimize())
-        this.ipc.on(Query.LOCALIZE, async key => this.i18n.get(key))
+        this.ipc.on(Query.LOCALIZE, async key => this.i18n?.get(key) ?? key)
         this.ipc.on(Query.OPEN_EXTERNAL, async link => shell.openExternal(link))
         this.ipc.on(Query.SETTINGS_GET, async () => {
             return {
@@ -77,6 +77,8 @@ export class ParcourStats {
     }
 
     public async init() {
+        this.i18n ??= new i18n(this.settings.get<"fr" | "en">("client.lang") ??
+            app.getLocaleCountryCode()?.toLowerCase() === "fr" ? "fr" : "en");
         this.database = new DataProvider(this.ipc);
         await this.database.createTables();
         this.window = new BrowserWindow({

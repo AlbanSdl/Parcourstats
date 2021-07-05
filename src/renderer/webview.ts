@@ -1,4 +1,3 @@
-import "expansions";
 import { enableIcons, Icon } from "components/icon";
 import { Home } from "app";
 import { Query } from "../common/window";
@@ -7,6 +6,14 @@ const savedFsIcon = {
     "true": null,
     "false": null
 };
+
+Array.prototype.until = function <T, A>(
+    this: Array<T>, 
+    predicate: (this: A, value: T, index: number, obj: T[]) => unknown,
+    thisArg?: A
+) {
+    return this.slice(0, (i => i === undefined ? i : i - 1)(-~this.findIndex(predicate, thisArg) || void 0));
+}
 
 window.onload = () => {
     enableIcons();
