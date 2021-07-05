@@ -934,14 +934,14 @@ class WishTodayEntryFragment extends Fragment {
                                 classes: ["update"],
                                 text: wish.todayUser?.application_queued?.toString(),
                                 from: wish.user.application_queued,
-                                type: this.todayFrag.locale("wishes.today.user.rank")
+                                type: await this.todayFrag.locale("wishes.today.user.rank")
                             }))
                         }
                         if (!wish.user) {
                             details.append(createElement({
                                 classes: ["update"],
                                 text: wish.todayUser?.application_absolute?.toString(),
-                                type: this.todayFrag.locale("wishes.today.user.abs")
+                                type: await this.todayFrag.locale("wishes.today.user.abs")
                             }))
                         }
                         if (wish.global.application_all !== wish.todayGlobal.application_all) {
@@ -949,7 +949,7 @@ class WishTodayEntryFragment extends Fragment {
                                 classes: ["update"],
                                 text: wish.todayGlobal?.application_all?.toString(),
                                 from: wish.global.application_all,
-                                type: this.todayFrag.locale("wishes.today.global.all")
+                                type: await this.todayFrag.locale("wishes.today.global.all")
                             }))
                         }
                         if (wish.global.application_last !== wish.todayGlobal.application_last) {
@@ -957,7 +957,7 @@ class WishTodayEntryFragment extends Fragment {
                                 classes: ["update"],
                                 text: wish.todayGlobal?.application_last?.toString(),
                                 from: wish.global.application_last,
-                                type: this.todayFrag.locale("wishes.today.global.last")
+                                type: await this.todayFrag.locale("wishes.today.global.last")
                             }))
                         }
                         break;
