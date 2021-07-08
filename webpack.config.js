@@ -8,7 +8,7 @@ module.exports = {
     entry: './src/renderer/webview.ts',
     output: {
         filename: 'webview.js',
-        path: path.join(__dirname, './build/raw/renderer'),
+        path: path.join(__dirname, './build/src/renderer'),
     },
     optimization: {
         minimize: true

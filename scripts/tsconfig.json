@@ -1,0 +1,16 @@
+{
+    "extends": "../src/tsconfig.json",
+    "compilerOptions": {
+        "module": "CommonJS",
+        "noImplicitAny": false,
+        "outDir": "../build/scripts/",
+        "moduleResolution": "Node",
+        "skipLibCheck": true
+    },
+    "include": [
+        "*.ts"
+    ],
+    "exclude": [
+        "../*.ts"
+    ]
+}

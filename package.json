@@ -5,14 +5,15 @@
   "main": "main/index.js",
   "private": true,
   "scripts": {
-    "clean": "node -e \"require('fs').rmSync('./build', {force:true,recursive:true})\"",
-    "gather-resources": "copyfiles -u 1 -e src/**/*.ts -e **/tsconfig.json src/**/* build/raw/",
+    "clean": "node -e \"require('fs').rmSync('build/src', {force:true,recursive:true})\"",
+    "gather-resources": "copyfiles -u 1 -e src/**/*.ts -e **/tsconfig.json src/**/* build/src/",
     "compile-main": "tsc --p src/main/tsconfig.json && npm run gather-resources && webpack",
     "compile-tests": "tsc --p tests/tsconfig.json",
-    "start-no-compile": "electron ./build/raw/main/index.js",
-    "test-no-compile": "node ./build/tests/main.js",
+    "compile-setup": "tsc --p scripts/tsconfig.json",
+    "start-no-compile": "electron build/src/main/index.js",
+    "test-no-compile": "node build/tests/main.js",
     "start": "npm run clean && npm run compile-main && npm run start-no-compile",
-    "build": "npm run clean && npm run compile-main && electron-builder",
+    "build": "npm run clean && npm run compile-main && npm run compile-setup && node build/scripts/build.js",
     "test": "npm run clean && npm run compile-tests && npm run test-no-compile"
   },
   "repository": {
@@ -35,34 +36,6 @@
     "typescript": "^4.3.2",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.0"
-  },
-  "build": {
-    "extends": null,
-    "productName": "Parcourstats",
-    "appId": "fr.asdl.parcourstats",
-    "copyright": "Copyright © 2021 ${author}",
-    "directories": {
-      "output": "build/"
-    },
-    "icon": "raw/resources/icons/app-icon.png",
-    "publish": null,
-    "nsis": {
-      "installerIcon": ".icon-ico/icon.ico",
-      "uninstallerIcon": ".icon-ico/icon.ico"
-    },
-    "mac": {
-      "category": "public.app-category.education"
-    },
-    "files": [
-      {
-        "from": "build/raw",
-        "to": "",
-        "filter": [
-          "**/*"
-        ]
-      },
-      "package.json"
-    ]
   },
   "dependencies": {
     "sqlite3": "^5.0.2"

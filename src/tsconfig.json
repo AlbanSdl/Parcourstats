@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "target": "ESNext",
-        "outDir": "../build/raw"
+        "outDir": "../build/src"
     },
     "include": [
         "**/**.ts"
