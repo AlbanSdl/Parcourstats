@@ -1,20 +1,36 @@
-import { ModuleDefault, ModuleSink } from "./sink";
-import { build, Configuration, Packager } from "app-builder-lib";
 // @ts-ignore
 import { name, author } from "../../package.json";
+import { rm } from "fs/promises";
+import { join } from "path";
+import { JsonPackage, ModuleSink } from "./sink";
+import { build, Configuration, Packager } from "app-builder-lib";
 import { normalizeOptions } from "electron-builder/out/builder";
 import { Metadata, SourceRepositoryInfo } from "electron-builder";
+
+const production = !process.argv.includes("--dev-mode");
 
 class SinkPackager extends Packager {
     #sink = new ModuleSink({
         modules: {
             "sqlite3": {
-                keep: /^lib([\\/]+.*)?|\w+\.js(on)?$/
-            },
-            "node-pre-gyp": {
-                keep: /^package\.json|lib([\\/]+node-pre-gyp\.js)?$/,
-                patch: (name, platform, arch) => name === ModuleDefault ? 
-                `{find: () => \"node_modules/sqlite3/lib/binding/napi-v3-${platform.nodeName}-${arch}\"}` : "null"
+                keep: /^lib([\\/].*)?|\w+\.js(on)?$/,
+                patch: (name, platform, arch, provider) => {
+                    if (name === "package.json")
+                        return provider().then(JSON.parse).then((pkg: JsonPackage) => {
+                            delete pkg["binary"];
+                            delete pkg["peerDependencies"];
+                            delete pkg["peerDependenciesMeta"];
+                            delete pkg["optionalDependencies"];
+                            delete pkg.devDependencies;
+                            delete pkg.scripts;
+                            delete pkg.keywords;
+                            delete pkg.dependencies;
+                            return JSON.stringify(pkg);
+                        })
+                    if (/^lib[\\/]sqlite3-binding\.js$/.test(name))
+                        return `module.exports = exports = require(\"./binding/napi-v3-${
+                            platform.nodeName}-${arch}/node_sqlite3.node\");`
+                }
             }
         }
     });
@@ -45,6 +61,10 @@ class SinkPackager extends Packager {
                 buildResources: this.#sink.outputPath
             },
             beforeBuild: async context => this.#sink.start(context).then(() => true),
+            afterPack: async context => production || rm(join(context.appOutDir, "locales"), {
+                recursive: true,
+                force: true
+            }),
             files: this.#sink.paths
         }, metadata, devMetadata, repositoryInfo)
     }

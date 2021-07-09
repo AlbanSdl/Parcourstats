@@ -1398,10 +1398,6 @@ svg {
     break-inside: avoid-column;
     margin-bottom: 5px;
 }
-.activity.home > .container > .fragment.about > .container > .deps:not(.core) > :first-child {
-    text-align: justify;
-    font-style: italic;
-}
 .activity.home > .container > .fragment.about > .container > .deps > .dep.wrapper > .version,
 .activity.home > .container > .fragment.about > .container > .deps > .dep.wrapper > .licence {
     grid-column: 2;
