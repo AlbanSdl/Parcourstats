@@ -336,7 +336,7 @@ export class Home extends Activity {
     public async insertRecord(type: "global", rec: GlobalRankRecord): Promise<void>;
     public async insertRecord(type: "user", rec: UserRankRecord): Promise<void>;
     public async insertRecord(type: "global" | "user", rec: GlobalRankRecord | UserRankRecord) {
-        window.messenger.send(
+        return window.messenger.send(
             Query.DATA,
             "insert",
             type as (typeof rec) extends GlobalRankRecord ? "global" : "user",
