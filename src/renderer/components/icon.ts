@@ -26,6 +26,7 @@ export enum Icon {
     PSUP = 'ic-parcoursup',
     PSUP_FULL = 'ic-parcoursup-full',
     PSTATS = 'ic-parcourstats',
+    TREND = 'trend',
     WINDOW_EXFS = 'fullscreen_exit',
     WINDOW_ENFS = 'fullscreen'
 }

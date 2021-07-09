@@ -625,6 +625,23 @@ class WishFragment extends Fragment {
         }))
         wrapper.append(speedHeader)
         this.speedGraph.attach(wrapper);
+        const updateTable = createElement({
+            classes: ["updates"]
+        })
+        const header = createElement({
+            classes: ["row", "header"]
+        });
+        header.append(createElement({
+            text: await this.locale("wish.updates.header.time")
+        }), createElement({
+            text: await this.locale("wish.updates.header.rank")
+        }), createElement({
+            text: await this.locale("wish.updates.header.last")
+        }), createElement({
+            text: await this.locale("wish.updates.header.all")
+        }))
+        updateTable.append(header);
+        wrapper.append(updateTable);
         return root;
     }
     protected onCreated(): void {
@@ -727,6 +744,63 @@ class WishFragment extends Fragment {
                 this.speedGraph.addEntry(userRankAdvancementSpeed);
                 this.speedGraph.addEntry(formationAdvancementSpeed);
                 this.speedGraph.addEntry(queueShrinkSpeed);
+
+                const recordDates = new Set(userData.map(userRecord => Date.parse(userRecord.record_time))
+                    .concat(globalData.map(globalRecord => Date.parse(globalRecord.record_time)))
+                    .map(timestamp => Math.trunc(timestamp / 86400000))
+                    .sort((a, b) => b - a));
+                let previous: {
+                    row: HTMLElement,
+                    glob?: GlobalRankRecord,
+                    user?: UserRankRecord
+                };
+                const getSignedNumber = (n: number) => n < 0 || !isFinite(n) ? n.toString() : `+${n.toString()}`;
+                const fast = (value: number, diff: number) => isFinite(diff) && !!Math.trunc(20 * Math.abs(diff) / (value || 1))
+                for (const record of recordDates) {
+                    const glob = globalData.find(gl => Math.trunc(new Date(gl.record_time).getTime() / 86400000) === record);
+                    const user = userData.find(us => Math.trunc(new Date(us.record_time).getTime() / 86400000) === record);
+                    if (user.application_queued < 0) continue;
+                    const previousRankElement = previous?.row?.children?.item(1) as HTMLElement,
+                        previousLastElement = previous?.row?.children?.item(2) as HTMLElement,
+                        previousAllElement = previous?.row?.children?.item(3) as HTMLElement;
+                    if (!!previousRankElement) {
+                        const diff = previous.user?.application_queued - user?.application_queued;
+                        previousRankElement.setAttribute("diff", getSignedNumber(diff));
+                        if (fast(user?.application_queued, diff))
+                            previousRankElement.addIcon(Icon.TREND);
+                    }
+                    if (!!previousLastElement) {
+                        const diff = previous.glob?.application_last - glob?.application_last;
+                        previousLastElement.setAttribute("diff", getSignedNumber(diff));
+                        if (fast(glob?.application_last, diff))
+                            previousLastElement.addIcon(Icon.TREND);
+                    }
+                    if (!!previousAllElement) {
+                        const diff = previous.glob?.application_all - glob?.application_all;
+                        previousAllElement.setAttribute("diff", getSignedNumber(diff));
+                        if (fast(glob?.application_all, diff))
+                            previousAllElement.addIcon(Icon.TREND);
+                    }
+                    
+                    const row = createElement({
+                        classes: ["row"]
+                    });
+                    row.append(createElement({
+                        text: this.timeFormat.format(Date.parse(glob?.record_time || user!!.record_time))
+                    }), createElement({
+                        text: user?.application_queued?.toString() ?? "-"
+                    }), createElement({
+                        text: glob?.application_last?.toString() ?? "-"
+                    }), createElement({
+                        text: glob?.application_all?.toString() ?? "-"
+                    }))
+                    this.root.querySelector(".container > .updates")?.append(row);
+                    previous = {
+                        row,
+                        glob,
+                        user
+                    }
+                }
             }
             this.root.toggleAttribute("loading", false)
         })

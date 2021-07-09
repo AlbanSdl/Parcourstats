@@ -2,22 +2,27 @@
 :root[theme=dark] {
     /* Themable */
     --color-secondary-strong: #000;
-    --color-secondary: #222;
-    --color-secondary-alt: #333;
-    --color-secondary-detail: #454545;
-    --color-disabled: #888;
-    --color-primary-detail: #cdcdcd;
-    --color-primary: #fff;
+    --color-secondary-bold: #101010;
+    --color-secondary: #181818;
+    --color-secondary-alt: #202020;
+    --color-secondary-mix: #282828;
+    --color-secondary-detail: #303030;
+    --color-disabled: #777;
+    --color-primary-detail: #bebebe;
+    --color-primary-alt: #dedede;
+    --color-primary: #fefefe;
     --color-accent: #2287fa;
-    --color-app-bar: #111;
     --color-green: var(--color-green-light);
     --color-green-invert: var(--color-green-dark);
     --color-red: var(--color-red-light);
     --color-red-invert: var(--color-red-dark);
+    --color-orange: var(--color-orange-light);
+    --color-orange-invert: var(--color-orange-dark);
     /* App Constants */
     --color-green-light: #28cd00;
     --color-green-dark: #208a05;
-    --color-orange: #fa0;
+    --color-orange-light: #fd0;
+    --color-orange-dark: #f90;
     --color-red-light: #f55;
     --color-red-dark: #c00;
     --color-black: #000;
@@ -29,16 +34,22 @@
 }
 :root[theme=light] {
     --color-secondary-strong: #fff;
+    --color-secondary-bold: #f8f8f8;
     --color-secondary: #efefef;
-    --color-secondary-alt: #dfdfdf;
-    --color-secondary-detail: #bcbcbc;
+    --color-secondary-alt: #e8e8e8;
+    --color-secondary-mix: #e4e4e4;
+    --color-secondary-detail: #dfdfdf;
     --color-disabled: #aaa;
-    --color-primary-detail: #787878;
-    --color-primary: #002;
+    --color-primary-detail: #515151;
+    --color-primary-alt: #313131;
+    --color-primary: #212121;
+    --color-primary-bold: #111133;
+    --color-primary-strong: #002;
     --color-accent: #22c8fa;
-    --color-app-bar: #fcfcfc;
     --color-green: var(--color-green-dark);
     --color-green-invert: var(--color-green-light);
+    --color-orange: var(--color-orange-dark);
+    --color-orange-invert: var(--color-orange-light);
     --color-red: var(--color-red-dark);
     --color-red-invert: var(--color-red-light);
 }
@@ -767,7 +778,7 @@ svg {
 .activity.home > .side > .wrapper > .list > .wish {
     position: relative;
     display: block;
-    background: var(--color-secondary);
+    background: var(--color-secondary-alt);
     width: 100%;
     padding: 10px;
     cursor: pointer;
@@ -787,13 +798,13 @@ svg {
 .activity.home > .side > .wrapper > .list > .wish > .session {
     font-style: italic;
     font-size: 14px;
-    color: var(--color-disabled);
+    color: var(--color-primary-detail);
     display: block;
     width: 100%;
     transition: all .4s ease-in-out;
 }
 .activity.home > .side > .wrapper > .list > .wish[selected] > .session {
-    color: var(--color-primary-detail);
+    color: var(--color-primary-alt);
 }
 .activity.home > .side > .wrapper > .list > .wish + .wish::after {
     border-top: 1px solid var(--color-secondary-detail);
@@ -892,27 +903,27 @@ svg {
     overflow: hidden;
 }
 .activity.home > .container > .fragment > .container {
-    display: block;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 20px;
     position: relative;
     overflow: hidden auto;
     padding: 30px 10px;
-}
-.activity.home > .container > .fragment.overview > .container {
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: center;
     height: 100%;
     box-sizing: border-box;
+}
+.activity.home > .container > .fragment.overview > .container {
+    align-items: center;
 }
 .activity.home > .container > .fragment.overview > .container > .abstract {
     display: flex;
     flex-flow: row wrap;
     justify-content: center;
     align-items: center;
-    margin: 30px;
+    margin: 0 30px;
     font-size: 16px;
     gap: 15px;
-    background-color: var(--color-app-bar);
+    background-color: var(--color-secondary-bold);
     padding: 2px 10px 10px 10px;
     border-radius: 10px;
 }
@@ -939,7 +950,7 @@ svg {
     color: var(--color-orange)
 }
 .activity.home > .container > .fragment.overview > .container > .today {
-    margin: 0;
+    margin: 0 30px;
     font-size: 18px;
     background-color: var(--color-red-invert);
     padding: 0 10px;
@@ -954,7 +965,6 @@ svg {
     overflow: hidden;
 }
 .activity.home > .container > .fragment.overview > .container > .today[present] {
-    margin: 0 30px 30px;
     padding: 10px;
     flex-basis: auto;
     overflow: visible;
@@ -977,7 +987,6 @@ svg {
 }
 .activity.home > .container > .fragment.overview > .container > .title:first-child {
     font-size: 50px;
-    margin-block: 10px;
 }
 .activity.home > .container > .fragment.overview > .container > .title {
     font-size: 28px;
@@ -1046,10 +1055,6 @@ svg {
 .activity.home > .container > .fragment.wish > .container > .graph.container > .graph > path.graph-data[id$="app-last"] {
     stroke: var(--color-green-invert);
 }
-.activity.home > .container > .fragment.wish > .container {
-    height: 100%;
-    box-sizing: border-box;
-}
 .activity.home > .container > .fragment.wish > .container > .title {
     font-size: 50px;
     font-weight: lighter;
@@ -1060,7 +1065,7 @@ svg {
     margin-top: 10px;
 }
 .activity.home > .container > .fragment.wish > .container > .header {
-    padding: 30px 20px 10px;
+    padding: 20px 20px 0;
     font-size: 30px;
     display: flex;
     align-items: center;
@@ -1089,7 +1094,7 @@ svg {
     gap: 10px 15px;
     background-color: var(--color-secondary-alt);
     border-radius: 5px;
-    margin: 10px auto;
+    margin: 0 auto;
     padding: 10px;
     width: fit-content;
     max-width: 800px;
@@ -1126,11 +1131,66 @@ svg {
 .activity.home > .container > .fragment.wish[no-data] > .container > :not(.title):not(.overview) {
     display: none;
 }
+.activity.home > .container > .fragment.wish > .container > .updates {
+    display: table;
+    min-width: 70%;
+    border-radius: 5px;
+    overflow: hidden;
+    margin: auto;
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row {
+    display: table-row;
+    background-color: var(--color-secondary-alt);
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row:nth-child(2n) {
+    background-color: var(--color-secondary-mix);
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row.header {
+    background-color: var(--color-accent);
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row > * {
+    display: table-cell;
+    padding: 5px 15px;
+    text-align: center;
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row > [diff]::after {
+    margin-left: 6px;
+    font-style: italic;
+    font-size: 14px;
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row svg {
+    width: 1em;
+    height: 18px;
+    padding-left: 6px;
+    display: inline-block;
+    vertical-align: text-bottom;
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row > [diff^="-"] > svg {
+    transform: scaleY(-1);
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row > [diff^="+"]:nth-child(2n + 1) > svg,
+.activity.home > .container > .fragment.wish > .container > .updates > .row > [diff^="-"]:nth-child(2n) > svg {
+    fill: var(--color-green);
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row > [diff^="+"]:nth-child(2n + 1)::after,
+.activity.home > .container > .fragment.wish > .container > .updates > .row > [diff^="-"]:nth-child(2n)::after {
+    content: attr(diff);
+    color: var(--color-green);
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row > [diff^="-"]:nth-child(2n + 1) > svg,
+.activity.home > .container > .fragment.wish > .container > .updates > .row > [diff^="+"]:nth-child(2n) > svg {
+    fill: var(--color-red);
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row > [diff^="-"]:nth-child(2n + 1)::after,
+.activity.home > .container > .fragment.wish > .container > .updates > .row > [diff^="+"]:nth-child(2n)::after {
+    content: attr(diff);
+    color: var(--color-red);
+}
+.activity.home > .container > .fragment.wish > .container > .updates > .row > [diff="+0"]::after {
+    content: attr(diff);
+    color: var(--color-orange) !important;
+}
 .activity.home > .container > .fragment.today > .container {
-    box-sizing: border-box;
-    display: flex;
-    flex-flow: column nowrap;
-    height: 100%;
     gap: 10px;
 }
 .activity.home > .container > .fragment.today > .container > .header {
@@ -1243,7 +1303,7 @@ svg {
     grid-template-columns: 1fr 2fr;
     overflow: auto;
     border-radius: 5px;
-    max-width: 800px;
+    min-width: 80%;
 }
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .summary > * {
     padding: 10px;
@@ -1252,7 +1312,7 @@ svg {
 }
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .summary > :not(.head)::before {
     transition: background-color .25s ease-in-out;
-    background-color: var(--color-secondary-detail);
+    background-color: var(--color-secondary-mix);
     content: "";
     position: absolute;
     width: 100%;
@@ -1317,12 +1377,6 @@ svg {
 }
 .activity.home > .container > .fragment.about > .container {
     font-size: 30px;
-    position: relative;
-    display: flex;
-    flex-flow: column nowrap;
-    gap: 15px;
-    height: 100%;
-    box-sizing: border-box;
 }
 .activity.home > .container > .fragment.about > .container[version]::before {
     content: attr(version);
@@ -1434,7 +1488,7 @@ svg {
  .app-bar {
     width: 100vw;
     height: 24px;
-    background: var(--color-app-bar);
+    background: var(--color-secondary-bold);
     z-index: 10;
     position: fixed;
     -webkit-app-region: drag;
@@ -1464,7 +1518,7 @@ svg {
     background-color: var(--color-green);
 }
 .app-bar .status .minimize {
-    background-color: var(--color-orange);
+    background-color: var(--color-orange-dark);
 }
 .app-bar .status .close {
     background-color: var(--color-red);
@@ -1510,7 +1564,7 @@ svg {
     color: var(--color-accent)
 }
 ::-webkit-scrollbar {
-    background: var(--color-app-bar);
+    background: var(--color-secondary-bold);
     width: 2px;
 }
 ::-webkit-scrollbar-button {

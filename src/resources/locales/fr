@@ -71,3 +71,7 @@ wish.graph.speed.attachment Les différentes vitesses sont affichées en fonctio
 wish.graph.speed.user Vitesse d'évolution de ton rang
 wish.graph.speed.last Vitesse de remplissage de la formation
 wish.graph.speed.all Vitesse de diminution de la file d'attente
+wish.updates.header.time Date
+wish.updates.header.rank Ton rang
+wish.updates.header.last Dernière proposition
+wish.updates.header.all Taille de la file d'attente

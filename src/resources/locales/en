@@ -71,3 +71,7 @@ wish.graph.speed.attachment All speeds are divided by the amount of students thi
 wish.graph.speed.user Rank progression speed
 wish.graph.speed.last Formation fulfilment speed
 wish.graph.speed.all Queue shrink speed
+wish.updates.header.time Date
+wish.updates.header.rank Your rank
+wish.updates.header.last Last proposal
+wish.updates.header.all Queue size
