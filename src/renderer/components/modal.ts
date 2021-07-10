@@ -115,7 +115,7 @@ export class Modal {
 
         // ActionBar close button
         const closeButton = createElement({classes: ['close', 'center-flexed'], ripple: true});
-        closeButton.addIcon(Icon.CLOSE);
+        closeButton.setIcon(Icon.CLOSE);
         this.actionBar.appendChild(closeButton);
         closeButton.addEventListener('click', () => {
             this.hide();

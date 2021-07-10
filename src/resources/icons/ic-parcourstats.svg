@@ -2,6 +2,6 @@
 <!-- Logo of parcourstats (created from logo of parcoursup) -->
 <svg xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/2000/xlink" viewBox="0 0 27 27" fill="#f33">
     <path id="c" d="m2 16c-1 0-2 1-2 2s1 2 2 2h5v5c0 1 1 2 2 2s2-1 2-2v-7s0-2-2-2"/>
-    <path fill="#3d566e" d="m19 16h-3.5a4.5 4.5 0 1 1 4.5-4.5c0 .5-.5 1-1 1-.5 0-1-.5-1-1a2.5 2.5 0 1 0 -2.5 2.5h3.5c.5 0 1 0.5 1 1 .0.5-.5 1-1 1z"/>
+    <path fill="#3d566e" d="m19 16h-3.5a4.5 4.5 0 1 1 4.5-4.5c0 .5-.5 1-1 1-.5 0-1-.5-1-1a2.5 2.5 0 1 0 -2.5 2.5h3.5c.5 0 1 .5 1 1 .0.5-.5 1-1 1z"/>
     <use href="#c" x="16" y="-16"/>
 </svg>

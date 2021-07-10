@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <title>Parcourstats</title>
     <link rel="stylesheet" href="./webview.css">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self';object-src 'none';style-src 'self' 'unsafe-inline'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self';object-src 'self';style-src 'self' 'unsafe-inline'" />
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp" />
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin" />
     <script src="./webview.js"></script>
   </head>
   <body>
@@ -16,6 +18,8 @@
         <div class="close" id="wdicc" data-icon="close"></div>
       </div>
     </div>
-    <div class="app-container" id="app-container"></div>
+    <div class="app-container" id="app-container">
+      <div class="splash" data-icon="ic-pstats"></div>
+    </div>
   </body>
 </html>

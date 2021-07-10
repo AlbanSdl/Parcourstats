@@ -38,7 +38,7 @@ export class AppNotification {
             id: `notification-${this.id}`
         });
         this.elementClose = createElement({classes: ['close', 'center-flexed']});
-        this.elementClose.addIcon(Icon.CLOSE);
+        this.elementClose.setIcon(Icon.CLOSE);
         this.element.appendChild(this.elementClose)
         const notifContent = createElement({classes: ['content']});
         notifContent.innerText = this.content

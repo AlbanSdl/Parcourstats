@@ -145,6 +145,7 @@ export enum Query {
     DATA = "dtr",
     LOCALIZE = "loc",
     OPEN_EXTERNAL = "ext",
+    READY = "rdy",
     SETTINGS_GET = "get",
     SETTINGS_SET = "set",
     WINDOW_EXIT = "wex",
@@ -182,6 +183,9 @@ interface Args {
     }
     [Query.OPEN_EXTERNAL]: {
         front: [res: void, uri: `${string}://${string}`]
+    }
+    [Query.READY]: {
+        front: [res: void]
     }
     [Query.SETTINGS_GET]: {
         front: [res: {

@@ -12,7 +12,7 @@ interface GraphReference {
     readonly element: SVGPathElement | null,
     readonly caption: HTMLDivElement,
     computeAbsCoordinates(x: number, y: number): PointData<number>,
-    updateScale(changes: Map<number, number>): void,
+    updateScale(changes: Map<number, number>, invalidateLayout?: boolean): void,
     detach(): void,
     attachReady(ref: EntryReference): void
 }
@@ -143,7 +143,7 @@ abstract class GraphEntry {
         return this.#name;
     }
 
-    public attachToGraph(ref: GraphReference) {
+    public attachToGraph(ref: GraphReference, invalidateLayout = true) {
         this.reference?.detach();
         this.reference = ref;
         this.reference?.attachReady({
@@ -152,8 +152,8 @@ abstract class GraphEntry {
                 return this.id;
             }
         });
-        this.reference?.updateScale(this.values);
-        this.updateDisplay(GraphEntryUpdate.NAME | GraphEntryUpdate.VALUES, true);
+        this.reference?.updateScale(this.values, invalidateLayout);
+        this.updateDisplay(GraphEntryUpdate.NAME | GraphEntryUpdate.VALUES, invalidateLayout);
     }
 
     protected updateDisplay(code: GraphEntryUpdate, animate = false) {
@@ -327,7 +327,8 @@ export class Graph {
             }
         });
         this.wrapper.append(this.graph, caption);
-        options?.entries?.forEach(this.addEntry, this)
+        options?.entries?.forEach(entry => this.addEntry(entry, false))
+        this.invalidate();
     }
 
     public attach(parent: Element) {
@@ -335,7 +336,7 @@ export class Graph {
         this.updateAxisSteps();
     }
 
-    public addEntry(entry: GraphEntry) {
+    public addEntry(entry: GraphEntry, invalidateLayout = true) {
         let chart = this, id = entry.id, attached = false;
         const assertAttached = () => {
             if (!attached) throw new Error("Graph entry has no parent")
@@ -358,9 +359,9 @@ export class Graph {
                 chart = undefined;
                 attached = false;
             },
-            updateScale: (changes: Map<number, number>) => {
+            updateScale: (changes: Map<number, number>, invalidateLayout = true) => {
                 assertAttached();
-                this.updateScale(changes)
+                this.updateScale(changes, invalidateLayout)
             },
             computeAbsCoordinates: (x: number, y: number) => {
                 assertAttached();
@@ -374,17 +375,19 @@ export class Graph {
                 this.entries.push(ref);
                 attached = true;
             }
-        });
+        }, invalidateLayout);
     }
 
-    private updateScale(changes: Map<number, number>) {
+    private updateScale(changes: Map<number, number>, invalidateLayout = true) {
         if (changes.size > 0 && this.#boundingBox.expand(
             ...changes.entries(),
             ...(this.displayYZero ? [[changes.keys().next().value!!, 0] as [number, number]] : [])
-        )) {
-            this.entries.forEach(e => e.updateBounds());
-            if (!!this.wrapper.parentElement) this.updateAxisSteps();
-        }
+        ) && invalidateLayout) this.invalidate()
+    }
+
+    public invalidate() {
+        this.entries.forEach(e => e.updateBounds());
+        if (!!this.wrapper.parentElement) this.updateAxisSteps();
     }
 
     private computeLocationComponent(value: number, ratio: number, outerPaddingMultiplier: number = 1) {

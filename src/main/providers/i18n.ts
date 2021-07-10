@@ -5,13 +5,8 @@ import { Locale } from "../../common/window";
 
 export class i18n implements IProvider<string> {
 
+    readonly #translation: Map<string, string> = new Map();
     #lang: Locale;
-    protected readonly translation: Map<string, string>;
-
-    constructor(lang: Locale) {
-        this.translation = new Map();
-        this.setLocale(lang);
-    }
 
     public get lang() {
         return this.#lang;
@@ -26,17 +21,17 @@ export class i18n implements IProvider<string> {
 
     private async load(locale: Locale) {
         return readFile(path.join(__dirname, `../../resources/locales/${locale}`), "utf8").then(data => {
-            this.translation.clear();
-            data.split("\n").forEach(str => {
+            this.#translation.clear();
+            for (const str of data.split("\n")) {
                 const sp = str.split(/\s/);
-                if (sp.length > 1)
-                    this.translation.set(sp[0], sp.slice(1, sp.length).filter((l) => l.length > 0).join(" "));
-            })
+                if (sp.length > 1) this.#translation.set(sp[0], sp.slice(1, sp.length)
+                    .filter((l) => l.length > 0).join(" "));
+            }
         })
     }
 
     public get(id: string): string {
-        const translation = this.translation.get(id);
+        const translation = this.#translation.get(id);
         return translation ?? id;
     }
 

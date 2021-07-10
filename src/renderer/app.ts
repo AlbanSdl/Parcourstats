@@ -1,8 +1,8 @@
 import { createElement } from "structure/element";
 import { Icon } from "components/icon";
-import { Activity } from "./structure/activity";
+import { Activity } from "structure/activity";
 import { selectionAttribute, Selector } from "components/selector";
-import { Fragment } from "./structure/fragment";
+import { Fragment } from "structure/fragment";
 import { ComputedGraphEntry, DatasetGraphEntry, Graph, PreviousBasedComputedGraphEntry } from "components/graph";
 import { Transition } from "structure/layout";
 import { TextField } from "components/forms/textfield";
@@ -42,6 +42,7 @@ export class Home extends Activity {
 
     protected async onCreate() {
         const root = await super.onCreate();
+        this.initDataLoading();
         window.messenger.send(Query.SETTINGS_GET).then(settings => {
             document.documentElement.setAttribute("theme", !settings.theme ? "dark" : "light");
             return settings;
@@ -90,7 +91,7 @@ export class Home extends Activity {
         })
         wrapper.append(sideList)
         this.side.append(sideHeaders, wrapper);
-        sideList.addIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
+        sideList.setIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
         const sideAdd = createElement({
             classes: ["add"]
         })
@@ -234,32 +235,52 @@ export class Home extends Activity {
             else this.providers.push(new WeakRef(res));
         });
         this.fragment = new Overview(this, container, fragProvider, async key => this.getLocale(key));
-
-        window.messenger.send(Query.DATA, "select", "study")
-            .then((values: Study[]) => this.waitCreation(values))
-            .then(values => this.updateStudies(values))
-            .catch(async err => {
-                this.side.querySelector('.list')?.toggleAttribute("loading", false)
-                while (!!this.sideList.childrenElements.length) 
-                    this.sideList.childrenElements.item(0).remove();
-                const errorPlaceholder = createElement({
-                    classes: ["empty"],
-                    text: await this.getLocale("wishes.list.error")
-                });
-                this.side.querySelector('.list')?.append(errorPlaceholder)
-                console.error(err);
-            })
-        window.messenger.send(Query.DATA, "select", "global")
-            .then(v => this.waitCreation(v))
-            .catch(console.error)
-            .then(values => this.update(values || [], "global"))
-            .then(() => this.runProviders(LoadingMask.GLOBAL));
-            window.messenger.send(Query.DATA, "select", "user")
-            .then(v => this.waitCreation(v))
-            .catch(console.error)
-            .then(values => this.update(values || [], "user"))
-            .then(() => this.runProviders(LoadingMask.USER));
         return root;
+    }
+
+    private async initDataLoading() {
+        const animStartTime = Date.now();
+        await window.messenger.send(Query.READY);
+        await Promise.all([
+            window.messenger.send(Query.DATA, "select", "study")
+                .then((values: Study[]) => this.waitCreation(values))
+                .then(values => this.updateStudies(values))
+                .catch(async err => {
+                    this.side.querySelector('.list')?.toggleAttribute("loading", false)
+                    while (!!this.sideList.childrenElements.length) 
+                        this.sideList.childrenElements.item(0).remove();
+                    const errorPlaceholder = createElement({
+                        classes: ["empty"],
+                        text: await this.getLocale("wishes.list.error")
+                    });
+                    this.side.querySelector('.list')?.append(errorPlaceholder)
+                    console.error(err);
+                }),
+            window.messenger.send(Query.DATA, "select", "global")
+                .then(v => this.waitCreation(v))
+                .catch(console.error)
+                .then(values => this.update(values || [], "global"))
+                .then(() => this.runProviders(LoadingMask.GLOBAL)),
+            window.messenger.send(Query.DATA, "select", "user")
+                .then(v => this.waitCreation(v))
+                .catch(console.error)
+                .then(values => this.update(values || [], "user"))
+                .then(() => this.runProviders(LoadingMask.USER))
+        ]);
+        await this.waitCreation();
+        const splash = this.container?.querySelector(".splash");
+        if (!!splash) {
+            setTimeout(() => {
+                for (const child of splash.children) {
+                    child.querySelectorAll("animate, animateTransform").forEach(
+                    (anim: SVGAnimateElement | SVGAnimateTransformElement) => {
+                        const started = anim.getAttribute("begin") !== "indefinite";
+                        if (started) anim.setAttribute("repeatCount", "1");
+                        else (<any>anim).beginElement();
+                    });
+                }
+            }, 2000 - (Date.now() - animStartTime) % 2000);
+        }
     }
 
     private runProviders(mask: LoadingMask) {
@@ -425,7 +446,7 @@ class Overview extends Fragment {
         }
         root.classList.add("overview", "loadable");
         root.toggleAttribute("loading", true)
-        root.addIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
+        root.setIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
         const wrapper = createElement({
             classes: ["container"]
         });
@@ -503,8 +524,9 @@ class Overview extends Fragment {
                 if ([...values.values()].reduce((p, c) => p + c, 0) <= 0) continue;
                 index++;
                 graphEntry.add(values);
-                this.graph?.addEntry(graphEntry);
+                this.graph?.addEntry(graphEntry, false);
             }
+            this.graph?.invalidate();
             this.root.toggleAttribute("loading", false)
             const lastUpdate = new Date(Object.values(d)
                 .map(entry => [...entry.global, ...entry.user])
@@ -561,7 +583,7 @@ class WishFragment extends Fragment {
         this.locale = from.locale;
         root.classList.add("wish", "loadable");
         root.toggleAttribute("loading", true)
-        root.addIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
+        root.setIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
         const wrapper = createElement({
             classes: ["container"]
         });
@@ -729,10 +751,11 @@ class WishFragment extends Fragment {
                 ])));
                 const renouncingPeopleBehindUser = new ComputedGraphEntry(await this.locale("wish.graph.people.after"), "user-after", 
                     (_, all, user) => all - user, allApplications, userRank)
-                this.graph.addEntry(userRank);
-                this.graph.addEntry(allApplications);
-                this.graph.addEntry(lastAcceptedRank);
-                this.graph.addEntry(renouncingPeopleBehindUser);
+                this.graph.addEntry(userRank, false);
+                this.graph.addEntry(allApplications, false);
+                this.graph.addEntry(lastAcceptedRank, false);
+                this.graph.addEntry(renouncingPeopleBehindUser, false);
+                this.graph.invalidate();
     
                 const size = wish.sessions?.sort((a, b) => b.year - a.year)?.[0]?.available || 1;
                 const userRankAdvancementSpeed = new PreviousBasedComputedGraphEntry(await this.locale("wish.graph.speed.user"), "speed-user-rank", 
@@ -741,9 +764,10 @@ class WishFragment extends Fragment {
                     (_, pre, current) => pre === undefined ? 0 : (current - pre) / size, lastAcceptedRank)
                 const queueShrinkSpeed = new PreviousBasedComputedGraphEntry(await this.locale("wish.graph.speed.all"), "speed-app-all", 
                     (_, pre, current) => pre === undefined ? 0 : (pre - current) / size, allApplications)
-                this.speedGraph.addEntry(userRankAdvancementSpeed);
-                this.speedGraph.addEntry(formationAdvancementSpeed);
-                this.speedGraph.addEntry(queueShrinkSpeed);
+                this.speedGraph.addEntry(userRankAdvancementSpeed, false);
+                this.speedGraph.addEntry(formationAdvancementSpeed, false);
+                this.speedGraph.addEntry(queueShrinkSpeed, false);
+                this.speedGraph.invalidate();
 
                 const recordDates = new Set(userData.map(userRecord => Date.parse(userRecord.record_time))
                     .concat(globalData.map(globalRecord => Date.parse(globalRecord.record_time)))
@@ -767,19 +791,19 @@ class WishFragment extends Fragment {
                         const diff = previous.user?.application_queued - user?.application_queued;
                         previousRankElement.setAttribute("diff", getSignedNumber(diff));
                         if (fast(user?.application_queued, diff))
-                            previousRankElement.addIcon(Icon.TREND);
+                            previousRankElement.setIcon(Icon.TREND);
                     }
                     if (!!previousLastElement) {
                         const diff = previous.glob?.application_last - glob?.application_last;
                         previousLastElement.setAttribute("diff", getSignedNumber(diff));
                         if (fast(glob?.application_last, diff))
-                            previousLastElement.addIcon(Icon.TREND);
+                            previousLastElement.setIcon(Icon.TREND);
                     }
                     if (!!previousAllElement) {
                         const diff = previous.glob?.application_all - glob?.application_all;
                         previousAllElement.setAttribute("diff", getSignedNumber(diff));
                         if (fast(glob?.application_all, diff))
-                            previousAllElement.addIcon(Icon.TREND);
+                            previousAllElement.setIcon(Icon.TREND);
                     }
                     
                     const row = createElement({
@@ -1045,7 +1069,7 @@ class WishTodayEntryFragment extends Fragment {
             const button = new Button(await this.todayFrag.locale("wishes.today.summary.save"), async () => {
                 const activity = this.context as Home;
                 button.enabled = false;
-                button.element.addIcon(Icon.LOADING);
+                button.element.setIcon(Icon.LOADING);
                 let itemIndex = 2;
                 let errors = [];
                 for (const wish of this.todayFrag.query) {
@@ -1144,7 +1168,7 @@ class AboutFragment extends Fragment {
         this.locale = from.locale;
         root.classList.add("about", "loadable");
         root.toggleAttribute("loading", true)
-        root.addIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
+        root.setIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
         
         const container = createElement({
             classes: ["container"],

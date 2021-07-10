@@ -682,6 +682,21 @@ svg {
     box-sizing: border-box;
     padding: 24px 0 0 0 !important;
 }
+.app-container > .splash {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--color-black);
+    z-index: 1;
+}
+.app-container > .splash > svg {
+    height: 20vmin;
+    overflow: visible;
+}
 
 /*
  * Loaders
