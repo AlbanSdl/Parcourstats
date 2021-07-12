@@ -239,7 +239,6 @@ export class Home extends Activity {
     }
 
     private async initDataLoading() {
-        const animStartTime = Date.now();
         await window.messenger.send(Query.READY);
         await Promise.all([
             window.messenger.send(Query.DATA, "select", "study")
@@ -269,17 +268,13 @@ export class Home extends Activity {
         ]);
         await this.waitCreation();
         const splash = this.container?.querySelector(".splash");
-        if (!!splash) {
-            setTimeout(() => {
-                for (const child of splash.children) {
-                    child.querySelectorAll("animate, animateTransform").forEach(
-                    (anim: SVGAnimateElement | SVGAnimateTransformElement) => {
-                        const started = anim.getAttribute("begin") !== "indefinite";
-                        if (started) anim.setAttribute("repeatCount", "1");
-                        else (<any>anim).beginElement();
-                    });
-                }
-            }, 2000 - (Date.now() - animStartTime) % 2000);
+        if (!!splash) for (const child of splash.children) {
+            child.querySelectorAll("animate, animateTransform").forEach(
+            (anim: SVGAnimateElement | SVGAnimateTransformElement) => {
+                const started = anim.getAttribute("begin") !== "indefinite";
+                if (started) anim.setAttribute("repeatCount", "1");
+                else (<any>anim).beginElement();
+            });
         }
     }
 

@@ -1,6 +1,7 @@
 import { enableIcons, Icon } from "components/icon";
 import { Home } from "app";
 import { Query } from "../common/window";
+import { AppNotification } from "components/notification";
 
 Array.prototype.until = function <T, A>(
     this: Array<T>, 
@@ -9,6 +10,11 @@ Array.prototype.until = function <T, A>(
 ) {
     return this.slice(0, (i => i === undefined ? i : i - 1)(-~this.findIndex(predicate, thisArg) || void 0));
 }
+
+window.addEventListener("securitypolicyviolation", e => {
+    new AppNotification(`[CSP] Blocked ${e.blockedURI}. Directive: ${e.violatedDirective}. Invoked from ${
+        e.sourceFile || "unknown"}:${e.lineNumber}:${e.columnNumber}`, -1, ["error"]);
+});
 
 window.onload = () => {
     enableIcons();

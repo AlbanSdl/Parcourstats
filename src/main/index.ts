@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from "electron";
+import { app, BrowserWindow, shell, session } from "electron";
 import { join } from "path";
 import { Ipc } from "./ipc";
 import type { i18n } from "./providers/i18n";
@@ -84,6 +84,19 @@ export class ParcourStats {
     }
 
     public async init() {
+        session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+            const injectedHeaders = {
+                "Cross-Origin-Resource-Policy": "same-site",
+                "Cross-Origin-Embedder-Policy": "require-corp",
+                "Cross-Origin-Opener-Policy": "same-origin",
+                "Content-Security-Policy": details.resourceType.includes("html") || details.url.match(/\.html$/) ? [
+                    "default-src 'self'",
+                    "object-src 'none'",
+                    "style-src 'self' 'unsafe-inline'"
+                ] : undefined
+            };
+            callback({responseHeaders: {...details.responseHeaders, ...injectedHeaders}});
+        })
         this.window = new BrowserWindow({
             width: 800,
             height: 600,
