@@ -64,6 +64,8 @@ html {
     font-family: Source Sans Pro, sans-serif;
     font-weight: 300;
     user-select: none;
+    display: flex;
+    flex-flow: column nowrap;
 }
 
 svg {
@@ -91,9 +93,10 @@ svg {
     display: block;
     right: 5%;
     z-index: 1000;
-    top: 50px;
+    padding-top: 50px;
     height: 100%;
     pointer-events: none;
+    box-sizing: border-box;
 }
 .notification {
     position: relative;
@@ -676,26 +679,29 @@ svg {
 .app-container {
     display: flex;
     flex-direction: column;
-    position: fixed;
+    position: relative;
     width: 100vw;
-    height: 100vh;
-    box-sizing: border-box;
-    padding: 24px 0 0 0 !important;
+    height: 100%;
 }
 .app-container > .splash {
     display: flex;
     flex-flow: column nowrap;
     justify-content: center;
     align-items: center;
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    background-color: var(--color-black);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-secondary-detail);
     z-index: 1;
+    overflow: hidden;
+    clip-path: url(#splash-clip);
 }
 .app-container > .splash > svg {
     height: 20vmin;
     overflow: visible;
+}
+.app-container > .splash > svg > clipPath {
+    transform: scale(calc(1/27));
 }
 
 /*
@@ -1504,8 +1510,6 @@ svg {
     width: 100vw;
     height: 24px;
     background: var(--color-secondary-bold);
-    z-index: 10;
-    position: fixed;
     -webkit-app-region: drag;
 }
 .app-bar > .title {

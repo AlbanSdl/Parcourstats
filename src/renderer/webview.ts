@@ -13,7 +13,7 @@ Array.prototype.until = function <T, A>(
 
 window.addEventListener("securitypolicyviolation", e => {
     new AppNotification(`[CSP] Blocked ${e.blockedURI}. Directive: ${e.violatedDirective}. Invoked from ${
-        e.sourceFile || "unknown"}:${e.lineNumber}:${e.columnNumber}`, -1, ["error"]);
+        e.documentURI || "unknown"}:${e.lineNumber}:${e.columnNumber}`, -1, ["error"]);
 });
 
 window.onload = () => {

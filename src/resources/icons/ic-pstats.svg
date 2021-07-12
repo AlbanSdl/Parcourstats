@@ -4,19 +4,24 @@
 viewBox="0 0 27 27" fill="none" stroke-linecap="round" stroke-linejoin="round">
     <path stroke="#f33" stroke-width="4" id="c" d="m2 18h7v7" transform="translate(-27 27)" opacity="0">
         <animateTransform attributeName="transform" type="translate" fill="freeze" begin="indefinite"
-            dur="500ms" repeatCount="1" calcMode="spline" keyTimes="0;1" keySplines="0 0.8 0.5 1" values="-27 27;0 0"/>
-        <animate attributeName="opacity" fill="freeze" begin="indefinite" dur="500ms" repeatCount="1" from="0" to="1"/>
+            dur="500ms" calcMode="spline" keyTimes="0;1" keySplines="0 0.8 0.5 1" values="-27 27;0 0"/>
+        <animate attributeName="opacity" fill="freeze" begin="indefinite" dur="500ms" from="0" to="1"/>
     </path>
     <path stroke="#3d566e" stroke-width="2" d="m19 11.5a3.5 3.5 0 1 0-3.5 3.5a3.5 3.5 0 0 0 3.5-3.5">
-        <animate attributeName="d" begin="indefinite" dur="150ms" fill="freeze" repeatCount="1"
-            values="m19 11.5a3.5 3.5 0 1 0-3.5 3.5a3.5 3.5 0 0 0 3.5-3.5;m19 11.5a3.5 3.5 0 1 0-3.5 3.5h3.5"/>
+        <animate attributeName="d" begin="indefinite" dur="150ms" fill="freeze" to="m19 11.5a3.5 3.5 0 1 0-3.5 3.5h3.5"/>
         <animate attributeName="stroke-dashoffset" dur="1s" fill="freeze" repeatCount="indefinite" values="0;22"/>
         <animate attributeName="stroke-dasharray" dur="2s" fill="freeze" repeatCount="indefinite" values="0 22;16 6;0 22"/>
         <animate attributeName="stroke-dashoffset" dur="350ms" fill="freeze" begin="indefinite" to="22"/>
         <animate attributeName="stroke-dasharray" dur="350ms" fill="freeze" begin="indefinite" to="22 0"/>
-        <animateTransform attributeName="transform" type="rotate" fill="freeze" repeatCount="indefinite" dur="9s" 
+        <animateTransform attributeName="transform" type="rotate" fill="freeze" repeatCount="indefinite" dur="9s"
             from="0 15.5 11.5" to="360 15.5 11.5"/>
         <animateTransform attributeName="transform" type="rotate" fill="freeze" begin="indefinite" dur="350ms" to="0 15.5 11.5"/>
     </path>
     <use href="#c" x="16" y="-16"/>
+    <clipPath id="splash-clip" clipPathUnits="objectBoundingBox">
+        <path d="m0 0h27v27h-27z">
+            <animate attributeName="d" calcMode="spline" keyTimes="0;1" keySplines="0 0.8 0.5 1" 
+                begin="indefinite" dur="600ms" fill="freeze" to="m0 13.5h27v0h-27z"/>
+        </path>
+    </clipPath>
 </svg>
