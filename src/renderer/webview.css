@@ -118,6 +118,10 @@ svg {
     background: var(--color-primary);
     color: var(--color-secondary);
     fill: var(--color-secondary);
+    box-shadow: 0 0 3px var(--color-black)
+}
+.notification .ripple {
+    background: var(--color-secondary) !important;
 }
 .notification.pending {
     transform: translateX(calc(100% + 5vw));
@@ -132,6 +136,9 @@ svg {
     background: var(--color-red-invert);
     color: var(--color-primary);
     fill: var(--color-primary);
+}
+.notification.red .ripple {
+    background: var(--color-primary) !important;
 }
 .notification > .close {
     position: relative;

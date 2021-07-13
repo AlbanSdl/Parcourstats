@@ -15,7 +15,7 @@ window.addEventListener("securitypolicyviolation", e => {
     new AppNotification({
         content: `Blocked ${e.blockedURI}. Directive: ${e.violatedDirective}. Invoked from ${
             e.documentURI || "unknown"}:${e.lineNumber}:${e.columnNumber}`,
-        prefix: "CSP",
+        prefix: "Security Warning",
         flags: AppNotification.Type.ERROR
     });
 });
