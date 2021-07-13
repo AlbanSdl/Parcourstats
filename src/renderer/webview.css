@@ -90,42 +90,49 @@ svg {
     max-width: 300px;
     width: 80%;
     position: fixed;
-    display: block;
+    display: flex;
+    flex-flow: column nowrap;
     right: 5%;
     z-index: 1000;
     padding-top: 50px;
-    height: 100%;
     pointer-events: none;
     box-sizing: border-box;
 }
 .notification {
-    position: relative;
+    max-height: 100px;
     display: flex;
     text-align: center;
     font-size: 20px;
-    top: 5px;
-    width: auto;
-    max-width: 300px;
-    padding: 10px;
-    padding-right: 5px;
+    padding: 10px 5px 10px 10px;
+    margin-top: 5px;
     border-radius: 2px;
-    z-index: 10000;
-    margin-top:10px;
-    min-height: 50px;
+    z-index: 1000;
+    opacity: 1;
+    overflow: hidden;
     pointer-events: all;
+    transition: all .5s ease-in-out;
     align-items: center;
     justify-content: space-between;
     flex-direction: row-reverse;
     user-select: none;
     background: var(--color-primary);
     color: var(--color-secondary);
+    fill: var(--color-secondary);
 }
-.notification.error {
+.notification.pending {
+    transform: translateX(calc(100% + 5vw));
+}
+.notification.collapsed {
+    max-height: 0;
+    padding-block: 0;
+    margin: 0;
+    opacity: .4;
+}
+.notification.red {
     background: var(--color-red-invert);
     color: var(--color-primary);
-    fill: var(--color-primary) !important;
+    fill: var(--color-primary);
 }
-.modal > .actionbar .close,
 .notification > .close {
     position: relative;
     flex-shrink: 0;
@@ -136,7 +143,6 @@ svg {
     cursor: pointer;
     z-index: 100;
     margin: 5px;
-    fill: var(--color-secondary);
 }
 .notification > .close > svg {
     width: unset;
@@ -148,6 +154,14 @@ svg {
 .notification > .content {
     hyphens: auto;
     width: 100%;
+}
+.notification > .content[prefix]::before {
+    content: attr(prefix);
+    color: inherit;
+    font-weight: bold;
+    display: block;
+    margin: auto;
+    text-align: center;
 }
 .notif-content > .ic {
     vertical-align: sub;
@@ -416,60 +430,6 @@ svg {
 }
 
 /*
- * Tooltips
- */
-.tooltip {
-    position: absolute;
-    padding: 4px 6px;
-    border-radius: 2px;
-    opacity: 0;
-    background: var(--color-secondary);
-    font-size: 15px;
-}
-.tooltip::after {
-    content: "";
-    position: absolute;
-    margin: -5px;
-    border-width: 5px;
-    border-style: solid;
-}
-.tooltip.left {
-    transform: translateX(-100%) translateY(-50%);
-}
-.tooltip.left::after {
-    top: 50%;
-    left: 0;
-    border-color: transparent var(--color-secondary) transparent transparent;
-}
-.tooltip.right {
-    transform: translateY(-50%);
-}
-.tooltip.right::after {
-    top: 50%;
-    left: 100%;
-    border-color: transparent transparent transparent var(--color-secondary);
-}
-.tooltip.top {
-    transform: translateX(-50%) translateY(-100%);
-}
-.tooltip.top::after {
-    top: 0;
-    left: 50%;
-    border-color: transparent transparent var(--color-secondary) transparent;
-}
-.tooltip.bottom {
-    transform: translateX(-50%);
-}
-.tooltip.bottom::after {
-    top: 100%;
-    left: 50%;
-    border-color: var(--color-secondary) transparent transparent transparent;
-}
-.smooth {
-    transition: all .5s ease-in-out;
-}
-
-/*
  * Buttons
  */
 .button {
@@ -569,82 +529,6 @@ svg {
 .graph.container > .graph > *,
 .graph.container > .graph + .caption > * {
     transition: all .2s ease-in-out;
-}
-
-/*
- * Drawables
- */
-.drawn-acc-fill {
-    fill: var(--color-accent)
-}
-.drawn-acc-stroke {
-    stroke: var(--color-accent)
-}
-
-/*
- * Modals
- */
-.modal {
-    display: none;
-    top: 50%;
-    float: left;
-    left: 50%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    transform: translateX(-50%) translateY(-50%);
-    position: fixed;
-    z-index: 99999;
-    box-shadow: 0 0 20px var(--color-black);
-    border-radius: 2px;
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: 100%;
-    background: var(--color-secondary);
-    color: var(--color-primary);
-}
-.modal > .actionbar {
-    width: auto;
-    height: auto;
-    padding: 5px;
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    align-content: space-around;
-    justify-content: space-between;
-    user-select: none;
-    background: var(--color-primary);
-    color: var(--color-secondary);
-}
-.modal > .actionbar > .writable {
-    font-size: 26px;
-    text-decoration: none;
-    margin: 8px;
-}
-.modal .container {
-    padding: 8px 12px;
-    max-height: 75vh;
-    overflow: auto;
-}
-.modal .actionlist {
-    position: relative;
-    padding: 2px 0 8px 8px;
-    display: flex;
-    justify-content: flex-end;
-}
-.mask {
-    display: none;
-    overflow: hidden;
-    background-color: var(--color-black);
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.8;
-    z-index: 9999;
 }
 
 /*
@@ -1543,9 +1427,6 @@ svg {
     background-color: var(--color-red);
 }
 
-/*
- * Fonts
- */
 @font-face{
     font-family: Source Sans Pro;
     font-weight: 300;
@@ -1569,15 +1450,6 @@ svg {
     src: url("../resources/fonts/Open Sans Pro/SourceSansPro-ExtraLightItalic.ttf") format('truetype');
 }
 
-@media (max-width: 700px) {
-    #notif-holder, .notification {
-        max-width: 80%
-    }
-}
-
-/*
- * General improvements
- */
 ::selection {
     background-color: var(--color-secondary);
     color: var(--color-accent)

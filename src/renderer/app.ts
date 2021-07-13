@@ -147,7 +147,11 @@ export class Home extends Activity {
                     this.side.querySelector("[action=wish-list]").toggleAttribute(selectionAttribute, true);
                 })
                 .catch(async err => {
-                    new AppNotification(await this.getLocale("wishes.add.error"), 15000, ["error"]);
+                    new AppNotification({
+                        content: await this.getLocale("wishes.add.error"),
+                        duration: 15e3,
+                        flags: AppNotification.Type.ERROR
+                    });
                     console.error(err);
                     button.enabled = true;
                     return true;
@@ -169,7 +173,11 @@ export class Home extends Activity {
             oninput: e => {
                 window.messenger.send(Query.SETTINGS_SET, "theme", !e.target.checked).catch(async err => {
                     console.error(err);
-                    new AppNotification(await this.getLocale("wishes.settings.error"), 1e4, ['error'])
+                    new AppNotification({
+                        content: await this.getLocale("wishes.settings.error"),
+                        duration: 1e4,
+                        flags: AppNotification.Type.ERROR
+                    })
                 }).finally(() => document.documentElement.setAttribute("theme", e.target.checked ? "dark" : "light"))
             },
             parent: sideSettings
@@ -183,7 +191,11 @@ export class Home extends Activity {
                     this.replace(reCreatedActivity).then(() => reCreatedActivity.sideHeader.select("stat-settings"))
                 }).catch(async err => {
                     console.error(err);
-                    new AppNotification(await this.getLocale("wishes.settings.error"), 1e4, ['error'])
+                    new AppNotification({
+                        content: await this.getLocale("wishes.settings.error"),
+                        duration: 1e4,
+                        flags: AppNotification.Type.ERROR
+                    })
                 })
             },
             values: {
@@ -197,7 +209,11 @@ export class Home extends Activity {
             oninput: e => {
                 window.messenger.send(Query.SETTINGS_SET, "filter", e.target.checked).catch(async err => {
                     console.error(err);
-                    new AppNotification(await this.getLocale("wishes.settings.error"), 1e4, ['error'])
+                    new AppNotification({
+                        content: await this.getLocale("wishes.settings.error"),
+                        duration: 1e4,
+                        flags: AppNotification.Type.ERROR
+                    })
                 }).finally(() => {
                     this.side.querySelector(".list")?.toggleAttribute("filtered", e.target.checked);
                 });
@@ -1083,13 +1099,17 @@ class WishTodayEntryFragment extends Fragment {
                     }
                 }
                 activity.changeFragment(new Overview())
-                if (errors.length > 0) new AppNotification([
-                    this.todayFrag.locale("wishes.today.summary.save.error"),
-                    ...errors,
-                    this.todayFrag.locale("wishes.today.summary.save.error.retry")
-                ].join(" "), -1, ["error"], undefined, () => {
-                    activity.changeFragment(new TodayFragment())
-                    return true;
+                if (errors.length > 0) new AppNotification({
+                    content: [
+                        this.todayFrag.locale("wishes.today.summary.save.error"),
+                        ...errors,
+                        this.todayFrag.locale("wishes.today.summary.save.error.retry")
+                    ].join(" "),
+                    flags: AppNotification.Type.ERROR,
+                    onClick: () => {
+                        activity.changeFragment(new TodayFragment())
+                        return true;
+                    }
                 })
                 button.element.lastElementChild?.remove();
             }, root);

@@ -1,5 +1,4 @@
 import { createElement } from "structure/element";
-import { AnimationType, Drawable } from "./draw";
 import { selectionAttribute, selectionPresentAttribute, Selector } from "./selector";
 
 interface PointData<T> {
@@ -153,10 +152,10 @@ abstract class GraphEntry {
             }
         });
         this.reference?.updateScale(this.values, invalidateLayout);
-        this.updateDisplay(GraphEntryUpdate.NAME | GraphEntryUpdate.VALUES, invalidateLayout);
+        this.updateDisplay(GraphEntryUpdate.NAME | GraphEntryUpdate.VALUES);
     }
 
-    protected updateDisplay(code: GraphEntryUpdate, animate = false) {
+    protected updateDisplay(code: GraphEntryUpdate) {
         if (!this.reference) return;
         const element = this.reference!!.element
         if (!element) return;
@@ -172,7 +171,6 @@ abstract class GraphEntry {
                 path += `${!path?'M':'L'}${absCoords.x} ${absCoords.y}`;
             }
             element.setAttribute("d", path);
-            if (animate) new Drawable(element).animate(AnimationType.ONLY_STROKE, 400)
         }
     }
 }
