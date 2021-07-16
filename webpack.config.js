@@ -3,7 +3,7 @@ const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {
     mode: process.env.NODE_ENV ?? "production",
-    target: 'electron13.0-renderer',
+    target: 'electron13.1-renderer',
     devtool: 'inline-source-map',
     entry: './src/renderer/webview.ts',
     output: {
@@ -16,7 +16,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.tsx?$/,
+                test: /\.ts$/,
                 use: [{
                     loader: 'ts-loader',
                     options: {
@@ -27,7 +27,7 @@ module.exports = {
         ]
     },
     resolve: {
-        extensions: ['.tsx', '.ts'],
+        extensions: ['.ts'],
         roots: ['./src/renderer/'],
         preferRelative: true,
         plugins: [new TsconfigPathsPlugin({
