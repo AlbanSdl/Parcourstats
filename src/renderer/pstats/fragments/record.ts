@@ -10,16 +10,16 @@ import { Transition } from "structure/layout";
 import { Overview } from "overview";
 import { Page } from "pstats/page";
 
-export class TodayFragment extends Page<Home, Data> {
+export class TodayFragment extends Page<Home, LoadedData> {
     public query!: {
-        session: Study,
-        global?: GlobalRankRecord,
-        user?: UserRankRecord,
+        session: LoadedType<Study>,
+        global?: LoadedType<GlobalRankRecord>,
+        user?: LoadedType<UserRankRecord>,
         todayGlobal?: GlobalRankRecord,
         todayUser?: UserRankRecord
     }[]
 
-    protected async onCreate(from: Page<Home, Data>) {
+    protected async onCreate(from: Page<Home, LoadedData>) {
         const root = await super.onCreate(from);
         root.classList.add("today");
         const container = createElement({
@@ -44,8 +44,8 @@ export class TodayFragment extends Page<Home, Data> {
             const currentYear = new Date().getFullYear();
             this.query = Object.values(activityData).map(entry => ({
                 session: entry.sessions?.slice(0)?.sort((a, b) => b.year - a.year)?.[0],
-                global: entry.global?.slice(0)?.sort((a, b) => Date.parse(b.record_time) - Date.parse(a.record_time))?.[0],
-                user: entry.user?.slice(0)?.sort((a, b) => Date.parse(b.record_time) - Date.parse(a.record_time))?.[0],
+                global: entry.global?.slice(0)?.sort((a, b) => b.record_time - a.record_time)?.[0],
+                user: entry.user?.slice(0)?.sort((a, b) => b.record_time - a.record_time)?.[0],
             })).filter(entry => (entry.user?.application_queued ?? 1) > 0 && entry.session?.year === currentYear);
             new WishTodayEntryFragment(0).create(this, this.context,
                 this.root.querySelector(".container > .wrapper"))
@@ -61,8 +61,8 @@ class WishTodayEntryFragment extends Fragment {
     private readonly index!: number;
     private todayFrag!: TodayFragment;
     private session?: Study;
-    private global?: GlobalRankRecord;
-    private user?: UserRankRecord;
+    private global?: LoadedType<GlobalRankRecord>;
+    private user?: LoadedType<UserRankRecord>;
 
     constructor(index: number) {
         super();

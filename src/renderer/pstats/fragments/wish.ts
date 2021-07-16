@@ -4,7 +4,7 @@ import { Icon } from "components/icon";
 import { createElement } from "structure/element";
 import { Page } from "pstats/page";
 
-export class WishFragment extends Page<Home, Data> {
+export class WishFragment extends Page<Home, LoadedData> {
     readonly wishName!: string;
     private graph?: Graph;
     private speedGraph?: Graph;
@@ -18,7 +18,7 @@ export class WishFragment extends Page<Home, Data> {
         this.wishName = wishName;
     }
 
-    protected async onCreate(from: Page<Home, Data>) {
+    protected async onCreate(from: Page<Home, LoadedData>) {
         const root = await super.onCreate(from);
         root.classList.add("wish", "loadable");
         root.toggleAttribute("loading", true)
@@ -110,7 +110,6 @@ export class WishFragment extends Page<Home, Data> {
             const wish = data[this.wishName];
             const update = (wish.global?.map(g => g.record_time) ?? [])
                 .concat(wish.user?.map(u => u.record_time) ?? [])
-                .map(Date.parse)
                 .sort()
                 .slice(-1)[0];
             this.root.querySelector(".container .title .complement.update .value").textContent = update === undefined ? 
@@ -124,12 +123,12 @@ export class WishFragment extends Page<Home, Data> {
 
             const currentYear = new Date().getFullYear();
             const userData = wish.user?.filter(entry => entry.year === currentYear)
-                    ?.sort((a, b) => Date.parse(b.record_time) - Date.parse(a.record_time)) ?? [],
+                    ?.sort((a, b) => b.record_time - a.record_time) ?? [],
                 globalData = wish.global?.filter(entry => entry.year === currentYear)
-                    ?.sort((a, b) => Date.parse(b.record_time) - Date.parse(a.record_time)) ?? []
+                    ?.sort((a, b) => b.record_time - a.record_time) ?? []
             let overall: string;
-            let displayedRank: UserRankRecord | undefined;
-            let displayGlobalData: GlobalRankRecord | undefined;
+            let displayedRank: LoadedType<UserRankRecord> | undefined;
+            let displayGlobalData: LoadedType<GlobalRankRecord> | undefined;
             if (userData[0]?.application_queued > 0) {
                 overall = await this.getLocale("wish.status.pending");
                 displayedRank = userData[0];
@@ -174,18 +173,18 @@ export class WishFragment extends Page<Home, Data> {
                 userRank.add(new Map(userData.slice().reverse()
                     .until(record => record.application_queued < 0)
                     .map(entry => [
-                        Math.trunc(Date.parse(entry.record_time) / 864e5),
+                        Math.trunc(entry.record_time / 864e5),
                         entry.application_queued
                     ])
                 ));
                 const allApplications = new DatasetGraphEntry(await this.getLocale("wish.rank.all"), "app-all");
                 allApplications.add(new Map(globalData.map(entry => [
-                    Math.trunc(Date.parse(entry.record_time) / 864e5),
+                    Math.trunc(entry.record_time / 864e5),
                     entry.application_all
                 ])));
                 const lastAcceptedRank = new DatasetGraphEntry(await this.getLocale("wish.rank.last"), "app-last");
                 lastAcceptedRank.add(new Map(globalData.map(entry => [
-                    Math.trunc(Date.parse(entry.record_time) / 864e5),
+                    Math.trunc(entry.record_time / 864e5),
                     entry.application_last
                 ])));
                 const renouncingPeopleBehindUser = new ComputedGraphEntry(await this.getLocale("wish.graph.people.after"), "user-after", 
@@ -208,14 +207,14 @@ export class WishFragment extends Page<Home, Data> {
                 this.speedGraph.addEntry(queueShrinkSpeed, false);
                 this.speedGraph.invalidate();
 
-                const recordDates = new Set(userData.map(userRecord => Date.parse(userRecord.record_time))
-                    .concat(globalData.map(globalRecord => Date.parse(globalRecord.record_time)))
+                const recordDates = new Set(userData.map(userRecord => userRecord.record_time)
+                    .concat(globalData.map(globalRecord => globalRecord.record_time))
                     .map(timestamp => Math.trunc(timestamp / 86400000))
                     .sort((a, b) => b - a));
                 let previous: {
                     row: HTMLElement,
-                    glob?: GlobalRankRecord,
-                    user?: UserRankRecord
+                    glob?: LoadedType<GlobalRankRecord>,
+                    user?: LoadedType<UserRankRecord>
                 };
                 const getSignedNumber = (n: number) => n < 0 || !isFinite(n) ? n.toString() : `+${n.toString()}`;
                 const fast = (value: number, diff: number) => isFinite(diff) && !!Math.trunc(20 * Math.abs(diff) / (value || 1))
@@ -249,7 +248,7 @@ export class WishFragment extends Page<Home, Data> {
                         classes: ["row"]
                     });
                     row.append(createElement({
-                        text: this.timeFormat.format(Date.parse(glob?.record_time || user!!.record_time))
+                        text: this.timeFormat.format(glob?.record_time || user!!.record_time)
                     }), createElement({
                         text: user?.application_queued?.toString() ?? "-"
                     }), createElement({

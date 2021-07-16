@@ -1,4 +1,4 @@
-import type { Page } from "./page";
+import type { Page } from "page";
 import { Button, ButtonStyle } from "components/button";
 import { Dropdown } from "components/forms/dropdown";
 import { Switch } from "components/forms/switch";
@@ -25,10 +25,13 @@ export class Home extends Activity {
     private side: HTMLElement;
     private sideHeader: Selector<string>;
     private sideList: Selector<string>;
-    private readonly data: Data = {};
-    private fragment: Page<Home, Data>;
+
+    private readonly data: LoadedData = {};
+    private fragment: Page<Home, LoadedData>;
+
     private loadingState = 0;
-    private providers: WeakRef<(d: Data) => void>[] = []
+    private providers: WeakRef<(d: LoadedData) => void>[] = [];
+
     private lang?: Locale;
 
     public create() {
@@ -241,7 +244,7 @@ export class Home extends Activity {
             classes: ["container"]
         });
         root.append(this.side, container);
-        const fragProvider = () => new Promise<Data>(res => {
+        const fragProvider = () => new Promise<LoadedData>(res => {
             if (this.loadingState >= 7) res(this.data);
             else this.providers.push(new WeakRef(res));
         });
@@ -335,30 +338,35 @@ export class Home extends Activity {
     }
 
     protected onDestroyed(): void {
+        this.sideList.stop();
         this.sideHeader.stop();
+        delete this.sideList;
         delete this.sideHeader;
         delete this.side;
     }
 
-    private update(values: Study[], key: "sessions"): values is Exclude<Study[], []>;
-    private update(values: GlobalRankRecord[], key: "global"): values is Exclude<GlobalRankRecord[], []>;
-    private update(values: UserRankRecord[], key: "user"): values is Exclude<UserRankRecord[], []>;
+    private update(values: Study[], key: "sessions"): boolean;
+    private update(values: GlobalRankRecord[], key: "global"): boolean;
+    private update(values: UserRankRecord[], key: "user"): boolean;
     private update(values: Study[] | GlobalRankRecord[] | UserRankRecord[], key: "sessions" | "global" | "user") {
-        for (const wish of values) {
+        const vals: LoadedType[] = values.map((entry: RemoteData) => "record_time" in entry ? Object.assign(entry, {
+            record_time: Date.parse(entry.record_time)
+        }) : entry);
+        for (const wish of vals) {
             if (wish.name in this.data) {
                 const entries = this.data[wish.name]!![key];
                 if (!entries)
                     this.data[wish.name][key] = [wish];
                 else if (
                     (key === "sessions" && !(<Study[]>entries).find(s => s.year === wish.year))
-                    || ((key === "global" || key === "user") && !(<(GlobalRankRecord | UserRankRecord)[]>entries)
-                        .find(s => s.record_time === (<GlobalRankRecord | UserRankRecord>wish).record_time))
+                    || ((key === "global" || key === "user") && !(<(LoadedType<GlobalRankRecord | UserRankRecord>)[]>entries)
+                        .find(s => s.record_time === (<LoadedType<GlobalRankRecord | UserRankRecord>>wish).record_time))
                 ) entries.push(wish);
             } else this.data[wish.name] = {
                 [key]: [wish]
             };
         }
-        return values.length > 0;
+        return vals.length > 0;
     }
 
     public async insertRecord(type: "global", rec: GlobalRankRecord): Promise<void>;
@@ -418,7 +426,7 @@ export class Home extends Activity {
     }
 
     /** @internal */
-    changeFragment(fragment: Page<Home, Data>) {
+    changeFragment(fragment: Page<Home, LoadedData>) {
         this.fragment?.replace(this.fragment = fragment);
     }
 }

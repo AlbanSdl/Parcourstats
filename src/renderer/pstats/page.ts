@@ -3,8 +3,8 @@ import { Fragment } from "structure/fragment";
 import { Transition } from "structure/layout";
 import { Overview } from "fragments/overview";
 
-export abstract class Page<A extends Activity, D extends Data> extends Fragment implements Localizer {
-    private dataProvider: () => Promise<Data>;
+export abstract class Page<A extends Activity, D> extends Fragment implements Localizer {
+    private dataProvider: () => Promise<D>;
     private localeProvider: (key: string) => Promise<string>;
     protected readonly forceTransitionDirection?: boolean;
 

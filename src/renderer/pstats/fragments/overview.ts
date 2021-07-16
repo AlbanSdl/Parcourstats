@@ -5,7 +5,7 @@ import { createElement } from "structure/element";
 import { TodayFragment } from "record";
 import { Page } from "pstats/page";
 
-export class Overview extends Page<Home, Data> {
+export class Overview extends Page<Home, LoadedData> {
     private readonly timeFormat = new Intl.DateTimeFormat(undefined, {
         month: "long",
         day: "numeric"
@@ -13,7 +13,7 @@ export class Overview extends Page<Home, Data> {
     private graph?: Graph;
     protected readonly forceTransitionDirection = false;
 
-    protected async onCreate(from?: Page<Home, Data>) {
+    protected async onCreate(from?: Page<Home, LoadedData>) {
         const root = await super.onCreate(from);
         root.classList.add("overview", "loadable");
         root.toggleAttribute("loading", true)
@@ -91,7 +91,7 @@ export class Overview extends Page<Home, Data> {
                 const graphEntry = new DatasetGraphEntry(study, `overview-${index}`)
                 const values = new Map(d[study].user
                     .until(record => record.application_queued < 0)
-                    .map(rec => [Date.parse(rec.record_time), rec.application_queued]));
+                    .map(rec => [rec.record_time, rec.application_queued]));
                 if ([...values.values()].reduce((p, c) => p + c, 0) <= 0) continue;
                 index++;
                 graphEntry.add(values);
@@ -103,7 +103,7 @@ export class Overview extends Page<Home, Data> {
                 .map(entry => [...entry.global, ...entry.user])
                 .reduce((a, b) => [...a, ...b])
                 .filter(record => !!record)
-                .sort((a, b) => Date.parse(b.record_time) - Date.parse(a.record_time))[0]?.record_time),
+                .sort((a, b) => b.record_time - a.record_time)[0]?.record_time),
                 currentDate = new Date();
             if (currentDate.getTime() - lastUpdate.getTime() > 43200000 &&
                 lastUpdate.getFullYear() === currentDate.getFullYear() && 

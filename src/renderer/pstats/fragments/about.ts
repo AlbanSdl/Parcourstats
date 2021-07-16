@@ -4,10 +4,10 @@ import { createElement } from "structure/element";
 import { Query } from "../../../common/window";
 import { Page } from "pstats/page";
 
-export class AboutFragment extends Page<Home, Data> {
+export class AboutFragment extends Page<Home, LoadedData> {
     protected readonly forceTransitionDirection = true;
 
-    protected async onCreate(from: Page<Home, Data>) {
+    protected async onCreate(from: Page<Home, LoadedData>) {
         const root = await super.onCreate(from);
         root.classList.add("about", "loadable");
         root.toggleAttribute("loading", true)
