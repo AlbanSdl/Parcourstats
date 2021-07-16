@@ -4,7 +4,6 @@
         "module": "CommonJS",
         "noImplicitAny": true,
         "outDir": "../build/tests",
-        "baseUrl": ".",
         "moduleResolution": "Node"
     }, "include": [
         "**/*.ts"

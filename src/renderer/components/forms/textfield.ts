@@ -1,5 +1,4 @@
 import { createElement } from "structure/element";
-import { Component } from "../component";
 
 interface TextFieldOptions {
     id?: string,
@@ -12,7 +11,7 @@ interface TextFieldOptions {
     spellcheck?: boolean
 }
 
-export class TextField implements Component<HTMLDivElement> {
+export class TextField {
     public readonly element: HTMLDivElement = createElement({
         classes: ["wrapper", "text-field"]
     });

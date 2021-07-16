@@ -1,5 +1,5 @@
 import { enableIcons, Icon } from "components/icon";
-import { Home } from "app";
+import { Home } from "pstats/home";
 import { Query } from "../common/window";
 import { AppNotification } from "components/notification";
 

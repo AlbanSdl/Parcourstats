@@ -1,6 +1,5 @@
 import { createElement } from "structure/element";
-import { Component } from "./component";
-import { Ripple } from "./ripple";
+import { Ripple } from "ripple";
 
 export enum ButtonStyle {
     RAISED = 0b0,
@@ -8,7 +7,7 @@ export enum ButtonStyle {
     COMPACT = 0b10,
 }
 
-export class Button implements Component<HTMLElement> {
+export class Button {
     public readonly element: HTMLElement;
 
     constructor(content: string, private onclick: (this: Button, ev: MouseEvent) => any, 

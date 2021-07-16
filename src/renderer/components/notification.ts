@@ -1,5 +1,5 @@
-import { Ripple } from "./ripple";
-import { Icon } from "./icon";
+import { Ripple } from "ripple";
+import { Icon } from "icon";
 import { createElement } from "structure/element";
 
 export class AppNotification {

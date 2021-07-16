@@ -1,6 +1,6 @@
-import { Layout, Transition } from "./layout";
-import { Activity } from "./activity";
-import { createElement } from "./element";
+import { Layout, Transition } from "layout";
+import { Activity } from "activity";
+import { createElement } from "element";
 
 export abstract class Fragment extends Layout {
     protected context: Activity;

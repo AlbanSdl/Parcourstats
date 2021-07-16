@@ -1,5 +1,5 @@
 import { createElement } from "structure/element";
-import { selectionAttribute, selectionPresentAttribute, Selector } from "./selector";
+import { selectionAttribute, selectionPresentAttribute, Selector } from "selector";
 
 interface PointData<T> {
     readonly x: T,

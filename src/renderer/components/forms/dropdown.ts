@@ -1,6 +1,5 @@
 import { Selector } from "components/selector";
 import { createElement } from "structure/element";
-import { Component } from "../component";
 
 interface DropdownOptions<T> {
     disabled?: boolean,
@@ -17,8 +16,8 @@ interface DropdownOptions<T> {
 const expandedAttribute = "expanded";
 const disabledAttribute = "disabled";
 
-export class Dropdown<T> implements Component<HTMLDivElement> {
-    public readonly element: HTMLDivElement = createElement({
+export class Dropdown<T> {
+    private readonly element: HTMLDivElement = createElement({
         classes: ["wrapper", "dropdown"]
     });
     readonly #values!: {

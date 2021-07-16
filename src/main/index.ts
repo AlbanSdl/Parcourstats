@@ -110,9 +110,10 @@ export class ParcourStats {
         });
         this.window.menuBarVisible = false;
         this.ipc.on(Query.READY, async () => {
+            const shouldShow = !this.settings;
             this.settings ??= new ((await import("./providers/settings")).Settings)();
             if (this.settings.get("client.maximized", true)) this.window.maximize();
-            else this.window.show();
+            if (shouldShow) this.window.show();
             if (!this.i18n) {
                 const i18n = new ((await import("./providers/i18n")).i18n)();
                 await i18n.setLocale(this.settings.get<"fr" | "en">("client.lang") ??

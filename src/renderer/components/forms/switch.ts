@@ -1,5 +1,4 @@
 import { createElement } from "structure/element";
-import { Component } from "../component";
 
 interface SwitchOptions {
     disabled?: boolean,
@@ -13,8 +12,8 @@ interface SwitchOptions {
     required?: boolean
 }
 
-export class Switch implements Component<HTMLDivElement> {
-    public readonly element: HTMLDivElement = createElement({
+export class Switch {
+    private readonly element: HTMLDivElement = createElement({
         classes: ["wrapper", "switch"]
     });
 

@@ -28,6 +28,8 @@ module.exports = {
     },
     resolve: {
         extensions: ['.tsx', '.ts'],
+        roots: ['./src/renderer/'],
+        preferRelative: true,
         plugins: [new TsconfigPathsPlugin({
             configFile: "./src/renderer/tsconfig.json"
         })]

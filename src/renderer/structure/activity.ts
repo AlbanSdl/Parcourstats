@@ -1,6 +1,6 @@
 import { Query } from "../../common/window";
-import { createElement } from "./element";
-import { Layout } from "./layout";
+import { createElement } from "element";
+import { Layout } from "layout";
 
 export abstract class Activity extends Layout {
     private readonly cachedLocales: Map<string, string> = new Map();

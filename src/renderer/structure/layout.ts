@@ -87,8 +87,8 @@ export abstract class Layout {
 }
 
 async function applyTransitionStyles(root: HTMLDivElement, transition: Transition, isOpening: false, invert: boolean): Promise<void>;
-function applyTransitionStyles(root: HTMLDivElement, transition: Transition, isOpening: true, invert: boolean): void;
-function applyTransitionStyles(root: HTMLDivElement, transition: Transition, isOpening: boolean, invert: boolean): Promise<void> | void {
+async function applyTransitionStyles(root: HTMLDivElement, transition: Transition, isOpening: true, invert: boolean): Promise<void>;
+async function applyTransitionStyles(root: HTMLDivElement, transition: Transition, isOpening: boolean, invert: boolean): Promise<void> {
     const applied = [Transition.SLIDE, Transition.FADE].filter(tr => tr & transition).map(tr => Transition[tr].toLowerCase());
     const regularDirection = invert ? !isOpening : isOpening;
     const direction = regularDirection ? "in" : "out";
@@ -105,6 +105,6 @@ function applyTransitionStyles(root: HTMLDivElement, transition: Transition, isO
         })
     } else {
         applied.forEach(attr => root.getAttribute(attr) === direction ? root.removeAttribute(attr) : 0)
-        return Promise.resolve();
+        return;
     }
 }
