@@ -4,7 +4,7 @@ interface TextFieldOptions {
     id?: string,
     oninput: (this: HTMLInputElement, ev: Event) => void,
     parent?: Element,
-    placeholder: string,
+    placeholder: string | Promise<string>,
     prefilled?: string,
     regex?: RegExp,
     required?: boolean,
@@ -28,13 +28,12 @@ export class TextField {
             spellcheck: options.spellcheck === true,
             required: options.required === true
         });
-        const helper = createElement({
-            tag: "span",
-            classes: ["helper"]
-        })
-        helper.textContent = options.placeholder;
         wrapped.addEventListener('input', options.oninput!!)
-        this.element.append(wrapped, helper);
+        this.element.append(wrapped, createElement({
+            tag: "span",
+            classes: ["helper"],
+            text: options.placeholder
+        }));
         options?.parent?.appendChild(this.element)
     }
 }

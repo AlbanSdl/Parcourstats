@@ -7,7 +7,7 @@ interface SwitchOptions {
         target: HTMLInputElement;
     }) => void,
     parent?: Element,
-    label: string,
+    label: string | Promise<string>,
     value?: boolean,
     required?: boolean
 }
@@ -39,9 +39,9 @@ export class Switch {
         wrapper.append(wrapped, track)
         const helper = createElement({
             tag: "span",
-            classes: ["helper"]
+            classes: ["helper"],
+            text: options.label
         })
-        helper.textContent = options.label;
         wrapped.addEventListener('input', options.oninput!!)
         this.element.append(wrapper, helper);
         options?.parent?.appendChild(this.element)

@@ -6,7 +6,7 @@ interface DropdownOptions<T> {
     id?: string,
     onSelect: (value: T) => void,
     parent?: Element,
-    label: string,
+    label: string | Promise<string>,
     tabIndex?: number,
     values: {
         [key: string]: T;
@@ -17,9 +17,7 @@ const expandedAttribute = "expanded";
 const disabledAttribute = "disabled";
 
 export class Dropdown<T> {
-    private readonly element: HTMLDivElement = createElement({
-        classes: ["wrapper", "dropdown"]
-    });
+    private readonly element!: HTMLDivElement;
     readonly #values!: {
         [key: string]: T;
     };
@@ -30,7 +28,10 @@ export class Dropdown<T> {
     constructor(options: DropdownOptions<T>) {
         this.#values = {};
         this.#onSelect = options.onSelect;
-        this.element.textContent = options.label;
+        this.element = createElement({
+            classes: ["wrapper", "dropdown"],
+            text: options.label
+        });
         const wrapper = createElement({
             classes: ["list", "wrapper"],
             tabindex: options.tabIndex ?? 0

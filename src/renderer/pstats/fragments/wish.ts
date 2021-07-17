@@ -33,7 +33,7 @@ export class WishFragment extends Page<Home, LoadedData> {
         title.textContent = this.wishName;
         const complement = createElement({
             classes: ["complement", "update"],
-            text: await this.getLocale("wish.update.last")
+            text: this.getLocale("wish.update.last")
         })
         const cpValue = createElement({
             classes: ["value"]
@@ -49,19 +49,19 @@ export class WishFragment extends Page<Home, LoadedData> {
             text: "-"
         }), createElement({
             classes: ["rank", "user"],
-            text: await this.getLocale("wish.rank.user"),
+            text: this.getLocale("wish.rank.user"),
             position: "-"
         }), createElement({
             classes: ["rank", "abs"],
-            text: await this.getLocale("wish.rank.initial"),
+            text: this.getLocale("wish.rank.initial"),
             position: "-"
         }), createElement({
             classes: ["rank", "all"],
-            text: await this.getLocale("wish.rank.all"),
+            text: this.getLocale("wish.rank.all"),
             position: "-"
         }), createElement({
             classes: ["rank", "last"],
-            text: await this.getLocale("wish.rank.last"),
+            text: this.getLocale("wish.rank.last"),
             position: "-"
         }))
         wrapper.append(overview);
@@ -78,11 +78,11 @@ export class WishFragment extends Page<Home, LoadedData> {
         this.graph.attach(wrapper);
         const speedHeader = createElement({
             classes: ["header", "speed"],
-            text: await this.getLocale("wish.graph.speed.header")
+            text: this.getLocale("wish.graph.speed.header")
         })
         speedHeader.append(createElement({
             classes: ["attachment"],
-            text: await this.getLocale("wish.graph.speed.attachment")
+            text: this.getLocale("wish.graph.speed.attachment")
         }))
         wrapper.append(speedHeader)
         this.speedGraph.attach(wrapper);
@@ -93,13 +93,13 @@ export class WishFragment extends Page<Home, LoadedData> {
             classes: ["row", "header"]
         });
         header.append(createElement({
-            text: await this.getLocale("wish.updates.header.time")
+            text: this.getLocale("wish.updates.header.time")
         }), createElement({
-            text: await this.getLocale("wish.updates.header.rank")
+            text: this.getLocale("wish.updates.header.rank")
         }), createElement({
-            text: await this.getLocale("wish.updates.header.last")
+            text: this.getLocale("wish.updates.header.last")
         }), createElement({
-            text: await this.getLocale("wish.updates.header.all")
+            text: this.getLocale("wish.updates.header.all")
         }))
         updateTable.append(header);
         wrapper.append(updateTable);

@@ -24,7 +24,7 @@ export class Overview extends Page<Home, LoadedData> {
         root.prepend(wrapper);
         const absTitle = createElement({
             classes: ["title"],
-            text: await this.getLocale("wishes.overview.abstract.title")
+            text: this.getLocale("wishes.overview.abstract.title")
         })
         wrapper.append(absTitle)
         const abs = createElement({
@@ -32,21 +32,21 @@ export class Overview extends Page<Home, LoadedData> {
         })
         const accepted = createElement({
             classes: ["entry", "accepted"],
-            text: await this.getLocale("wishes.overview.abstract.accepted")
+            text: this.getLocale("wishes.overview.abstract.accepted")
         });
         accepted.prepend(createElement({
             classes: ["value"]
         }))
         const pending = createElement({
             classes: ["entry", "pending"],
-            text: await this.getLocale("wishes.overview.abstract.pending")
+            text: this.getLocale("wishes.overview.abstract.pending")
         });
         pending.prepend(createElement({
             classes: ["value"]
         }))
         const refused = createElement({
             classes: ["entry", "refused"],
-            text: await this.getLocale("wishes.overview.abstract.refused")
+            text: this.getLocale("wishes.overview.abstract.refused")
         });
         refused.prepend(createElement({
             classes: ["value"]
@@ -54,18 +54,18 @@ export class Overview extends Page<Home, LoadedData> {
         abs.append(accepted, pending, refused)
         const today = createElement({
             classes: ["today"],
-            text: await this.getLocale("wishes.overview.today.tip")
+            text: this.getLocale("wishes.overview.today.tip")
         })
         const todayGo = createElement({
             classes: ["go"],
             ripple: true,
-            text: await this.getLocale("wishes.overview.today.letsgo")
+            text: this.getLocale("wishes.overview.today.letsgo")
         })
         today.append(todayGo);
         wrapper.append(abs, today);
         const graphTitle = createElement({
             classes: ["title"],
-            text: await this.getLocale("wishes.overview.title")
+            text: this.getLocale("wishes.overview.title")
         })
         wrapper.append(graphTitle);
         this.graph = new Graph({

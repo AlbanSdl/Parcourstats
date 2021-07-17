@@ -95,11 +95,11 @@ export class Home extends Activity {
         })
         const sideAddHeader = createElement({
             classes: ["header"],
-            text: await this.getLocale("wishes.add.header")
+            text: this.getLocale("wishes.add.header")
         })
         sideAdd.append(sideAddHeader);
         new TextField({
-            placeholder: await this.getLocale("wishes.add.name"),
+            placeholder: this.getLocale("wishes.add.name"),
             oninput: () => activateButton(),
             parent: sideAdd,
             required: true,
@@ -109,7 +109,7 @@ export class Home extends Activity {
             classes: ["numeric"]
         });
         new TextField({
-            placeholder: await this.getLocale("wishes.add.session"),
+            placeholder: this.getLocale("wishes.add.session"),
             oninput: () => activateButton(),
             parent: numeric,
             required: true,
@@ -118,7 +118,7 @@ export class Home extends Activity {
             id: "wish-add-session"
         });
         new TextField({
-            placeholder: await this.getLocale("wishes.add.available"),
+            placeholder: this.getLocale("wishes.add.available"),
             oninput: () => activateButton(),
             parent: numeric,
             required: true,
@@ -131,7 +131,7 @@ export class Home extends Activity {
             year: (root.querySelector('* #wish-add-session') as HTMLInputElement),
             available: (root.querySelector('* #wish-add-available') as HTMLInputElement)
         })
-        const button = new Button(await this.getLocale("wishes.add.op"), () => {
+        const button = new Button(this.getLocale("wishes.add.op"), () => {
             button.enabled = false;
             const stdy = <Study><unknown>Object.fromEntries(Object.entries(getWishAddFields())
                 .map(e => [e[0], e[0] === "name" ? e[1].value : parseInt(e[1].value)]));
@@ -146,7 +146,7 @@ export class Home extends Activity {
                 })
                 .catch(async err => {
                     new AppNotification({
-                        content: await this.getLocale("wishes.add.error"),
+                        content: this.getLocale("wishes.add.error"),
                         duration: 15e3,
                         flags: AppNotification.Type.ERROR
                     });
@@ -167,12 +167,12 @@ export class Home extends Activity {
             classes: ["settings"]
         })
         const themeSetting = new Switch({
-            label: await this.getLocale("app.settings.theme"),
+            label: this.getLocale("app.settings.theme"),
             oninput: e => {
                 window.messenger.send(Query.SETTINGS_SET, "theme", !e.target.checked).catch(async err => {
                     console.error(err);
                     new AppNotification({
-                        content: await this.getLocale("wishes.settings.error"),
+                        content: this.getLocale("wishes.settings.error"),
                         duration: 1e4,
                         flags: AppNotification.Type.ERROR
                     })
@@ -181,7 +181,7 @@ export class Home extends Activity {
             parent: sideSettings
         });
         const localeSetting = new Dropdown<Locale>({
-            label: await this.getLocale("app.settings.lang"),
+            label: this.getLocale("app.settings.lang"),
             onSelect: locale => {
                 if (locale !== this.lang) window.messenger.send(Query.SETTINGS_SET, "lang", locale).then(() => {
                     this.clearCachedLocale();
@@ -190,7 +190,7 @@ export class Home extends Activity {
                 }).catch(async err => {
                     console.error(err);
                     new AppNotification({
-                        content: await this.getLocale("wishes.settings.error"),
+                        content: this.getLocale("wishes.settings.error"),
                         duration: 1e4,
                         flags: AppNotification.Type.ERROR
                     })
@@ -203,12 +203,12 @@ export class Home extends Activity {
             parent: sideSettings
         })
         const filterSetting = new Switch({
-            label: await this.getLocale("app.settings.filter"),
+            label: this.getLocale("app.settings.filter"),
             oninput: e => {
                 window.messenger.send(Query.SETTINGS_SET, "filter", e.target.checked).catch(async err => {
                     console.error(err);
                     new AppNotification({
-                        content: await this.getLocale("wishes.settings.error"),
+                        content: this.getLocale("wishes.settings.error"),
                         duration: 1e4,
                         flags: AppNotification.Type.ERROR
                     })
@@ -220,19 +220,20 @@ export class Home extends Activity {
         })
         const recordOption = createElement({
             classes: ["record"],
-            text: await this.getLocale("app.settings.record")
+            text: this.getLocale("app.settings.record")
         })
         recordOption.append(createElement({
             classes: ["description"],
-            text: await this.getLocale("app.settings.record.detail")
+            text: this.getLocale("app.settings.record.detail")
         }))
-        const recordButton = new Button(await this.getLocale("app.settings.record.button"), () => {
+        const recordButton = new Button(this.getLocale("app.settings.record.button"), () => {
             this.changeFragment(new TodayFragment())
         }, recordOption);
         recordButton.enabled = true;
         const aboutProperty = createElement({
             classes: ["about"],
-            text: (await Promise.all([this.getLocale("app.settings.about"), this.getLocale("app.name")])).join(" "),
+            text: Promise.all([this.getLocale("app.settings.about"), 
+                this.getLocale("app.name")]).then(values => values.join(" ")),
             ripple: true
         })
         aboutProperty.addEventListener('click', () => {
@@ -264,7 +265,7 @@ export class Home extends Activity {
                         this.sideList.childrenElements.item(0).remove();
                     const errorPlaceholder = createElement({
                         classes: ["empty"],
-                        text: await this.getLocale("wishes.list.error")
+                        text: this.getLocale("wishes.list.error")
                     });
                     this.side.querySelector('.list')?.append(errorPlaceholder)
                     console.error(err);
@@ -317,21 +318,21 @@ export class Home extends Activity {
             classes: ["header"],
             ripple: true,
             action: "wish-list",
-            text: await this.getLocale("wishes.list")
+            text: this.getLocale("wishes.list")
         });
         this.sideHeader.append(wishListHeader);
         const wishAddHeader = createElement({
             classes: ["header"],
             ripple: true,
             action: "wish-add",
-            text: await this.getLocale("wishes.add")
+            text: this.getLocale("wishes.add")
         });
         this.sideHeader.append(wishAddHeader);
         const settingsHeader = createElement({
             classes: ["header"],
             ripple: true,
             action: "stat-settings",
-            text: await this.getLocale("wishes.settings")
+            text: this.getLocale("wishes.settings")
         });
         this.sideHeader.append(settingsHeader);
         super.onCreated();
@@ -393,7 +394,7 @@ export class Home extends Activity {
         if (list.children.length === 0 && !updateResult) {
             this.side.querySelector('.list')?.append?.(createElement({
                 classes: ["empty"],
-                text: await this.getLocale("wishes.list.empty")
+                text: this.getLocale("wishes.list.empty")
             }));
         } else if (updateResult) {
             for (const wish in this.data) {
@@ -404,13 +405,11 @@ export class Home extends Activity {
                     ripple: true,
                     name: wish
                 });
-                const wishSession = createElement({
-                    classes: ["session"]
-                });
-                wishSession.textContent = `${
-                    await this.getLocale(`wish.session.${sessions.length > 1 ? 'plural' : 'singular'}`)
-                }: ${sessions.map(s => s.year).join(", ")}`;
-                wishContainer.append(wishSession);
+                wishContainer.append(createElement({
+                    classes: ["session"],
+                    text: this.getLocale(`wish.session.${sessions.length > 1 ? 'plural' : 'singular'}`).then(
+                        localized => `${localized}: ${sessions.map(s => s.year).join(", ")}`)
+                }));
                 this.sideList.append(wishContainer)
             }
         }

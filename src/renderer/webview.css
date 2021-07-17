@@ -539,6 +539,39 @@ svg {
 }
 
 /*
+ * Text lazy loading
+ */
+.text {
+    display: inline-block !important;
+    position: relative;
+}
+.text.lazy:empty {
+    max-height: 100%;
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    flex-basis: 0;
+    min-height: 1em;
+    min-width: 10ch;
+    border-radius: 2px;
+    background-position: left top;
+    background-size: 115% 1em;
+    background-repeat: repeat space;
+    background-image: linear-gradient(to right, currentColor 92%, transparent);
+    animation: lazy-text infinite cubic-bezier(0.5, 0, 0, 1) 1.8s;
+    opacity: .15;
+    transform: translateY(.1em);
+}
+@keyframes lazy-text {
+    from {
+        background-position-x: 0px;
+    }
+    to {
+        background-position-x: calc(-23% * 32);
+    }
+}
+
+/*
  * Activity and fragments transitions
  */
 .activity {
@@ -745,6 +778,11 @@ svg {
     font-size: 16px;
     text-align: justify;
     padding-bottom: 15px;
+    min-height: calc(3em + 2ex);
+    width: 100%;
+}
+.activity.home > .side > .wrapper > .add > .header > .text {
+    height: 100%;
 }
 .activity.home > .side > .wrapper > .add > .numeric {
     display: flex;
@@ -872,9 +910,13 @@ svg {
     display: block;
     position: relative;
     max-width: 600px;
+    min-width: 50%;
     flex-basis: 0;
     transition: all .35s ease-in-out;
     overflow: hidden;
+}
+.activity.home > .container > .fragment.overview > .container > .today > .text {
+    min-height: calc(2em + 1ex);
 }
 .activity.home > .container > .fragment.overview > .container > .today[present] {
     padding: 10px;
@@ -1110,15 +1152,18 @@ svg {
     flex-flow: column nowrap;
     justify-content: center;
     gap: 10px;
-    font-size: 50px;
-    font-weight: lighter;
-    text-align: center;
-    line-height: 50px;
 }
 .activity.home > .container > .fragment.today > .container > .header > * {
     font-size: 18px;
     font-weight: normal;
     line-height: normal;
+}
+.activity.home > .container > .fragment.today > .container > .header,
+.activity.home > .container > .fragment.today > .container > .header > :first-child.text {
+    font-size: 50px;
+    font-weight: lighter;
+    text-align: center;
+    line-height: 50px;
 }
 .activity.home > .container > .fragment.today > .container > .wrapper {
     flex: 1 1 auto;
@@ -1287,9 +1332,6 @@ svg {
 .activity.home > .container > .fragment.today > .container > .wrapper > .fragment.record > .summary > [save=error]:not(.head)::before {
     background-color: var(--color-red-invert);
 }
-.activity.home > .container > .fragment.about > .container {
-    font-size: 30px;
-}
 .activity.home > .container > .fragment.about > .container[version]::before {
     content: attr(version);
     color: var(--color-primary-detail);
@@ -1297,7 +1339,10 @@ svg {
     position: absolute;
     align-self: flex-end;
 }
-.activity.home > .container > .fragment.about > .container > :first-child {
+.activity.home > .container > .fragment.about > .container > :first-child.lazy {
+    font-size: 30px;
+}
+.activity.home > .container > .fragment.about > .container > :nth-child(2) {
     text-align: justify;
     font-size: 18px;
     font-style: italic;

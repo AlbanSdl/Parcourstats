@@ -10,16 +10,15 @@ export enum ButtonStyle {
 export class Button {
     public readonly element: HTMLElement;
 
-    constructor(content: string, private onclick: (this: Button, ev: MouseEvent) => any, 
+    constructor(content: string | Promise<string>, private onclick: (this: Button, ev: MouseEvent) => any, 
         parent: Element = null, buttonStyle: ButtonStyle = ButtonStyle.RAISED) {
         const classes = ['button', 'disabled'];
         if (buttonStyle & ButtonStyle.FLAT) classes.push('flat');
         if (buttonStyle & ButtonStyle.COMPACT) classes.push('compact');
-        this.element = createElement({
-            classes
-        });
-        this.element.innerText = content;
-        parent?.appendChild(this.element);
+        parent?.appendChild(this.element = createElement({
+            classes,
+            text: content
+        }));
     }
 
     public get enabled(): boolean {
@@ -47,11 +46,11 @@ export class Button {
     }
 
     public get text(): string {
-        return this.element.innerText
+        return this.element.textContent
     }
 
     public set text(text: string) {
-        this.element.innerText = text;
+        this.element.textContent = text;
     }
 
 }

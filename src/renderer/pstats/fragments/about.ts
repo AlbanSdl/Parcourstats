@@ -15,15 +15,16 @@ export class AboutFragment extends Page<Home, LoadedData> {
         
         const container = createElement({
             classes: ["container"],
-            text: (await Promise.all([this.getLocale("app.settings.about"), this.getLocale("app.name")])).join(" ")
+            text: Promise.all([this.getLocale("app.settings.about"),
+                this.getLocale("app.name")]).then(txt => txt.join(" "))
         });
 
         const thisApp = createElement({
-            text: await this.getLocale("app.settings.about.this")
+            text: this.getLocale("app.settings.about.this")
         })
         const coreDeps = createElement({
             classes: ["deps", "core"],
-            text: await this.getLocale("app.settings.about.libs.core")
+            text: this.getLocale("app.settings.about.libs.core")
         })
         coreDeps.append(createElement({
             classes: ["separator"]
@@ -33,8 +34,8 @@ export class AboutFragment extends Page<Home, LoadedData> {
         })
         container.append(thisApp, coreDeps, createElement({
             classes: ["libhead"],
-            title: await this.getLocale("app.settings.about.libs"),
-            text: await this.getLocale("app.settings.about.libs.expl")
+            title: this.getLocale("app.settings.about.libs"),
+            text: this.getLocale("app.settings.about.libs.expl")
         }), depsList);
         root.append(container);
         return root;
@@ -76,7 +77,7 @@ export class AboutFragment extends Page<Home, LoadedData> {
             if (!context.dependencies) {
                 this.root.querySelector(".container > .deps:not(.core)").append(createElement({
                     classes: ["error"],
-                    text: await this.getLocale("app.settings.about.libs.error")
+                    text: this.getLocale("app.settings.about.libs.error")
                 }))
             } else {
                 for (const name in context.dependencies) {

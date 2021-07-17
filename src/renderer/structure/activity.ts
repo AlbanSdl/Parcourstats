@@ -2,7 +2,7 @@ import { Query } from "../../common/window";
 import { createElement } from "element";
 import { Layout } from "layout";
 
-export abstract class Activity extends Layout {
+export abstract class Activity extends Layout implements Localizer {
     private readonly cachedLocales: Map<string, string> = new Map();
     private readonly creationLock: {
         created: boolean
@@ -46,7 +46,7 @@ export abstract class Activity extends Layout {
         this.cachedLocales.clear();
     }
 
-    protected async getLocale(stringId: string) {
+    public async getLocale(stringId: string) {
         return this.cachedLocales.get(stringId) ?? window.messenger.send(Query.LOCALIZE, stringId).then(localized => {
             this.cachedLocales.set(stringId, localized);
             return localized;

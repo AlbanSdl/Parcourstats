@@ -65,12 +65,18 @@ export class AppNotification {
         return this.#element.querySelector('.content')?.textContent;
     }
 
-    public set content(content: string) {
-        (this.#element.querySelector('.content') ?? this.#element.appendChild(createElement({
-            classes: [
-                'content'
-            ]
-        }))).textContent = content;
+    public set content(content: string | Promise<string>) {
+        const contentElement = this.#element.querySelector('.content');
+        if (!contentElement) {
+            this.#element.appendChild(createElement({
+                classes: [
+                    'content'
+                ],
+                text: content
+            }))
+        } else if (content instanceof Promise)
+            content.then(txt => contentElement.textContent = txt);
+        else contentElement.textContent = content;
     }
 
     public get prefix() {
@@ -108,7 +114,7 @@ export namespace AppNotification {
         /**
          * The text content of the notification
          */
-        readonly content: string,
+        readonly content: string | Promise<string>,
         /**
          * A text prefix to display at the top of the notification.
          * This is not a title and will not be displayed with a bigger

@@ -27,10 +27,10 @@ export class TodayFragment extends Page<Home, LoadedData> {
         });
         const header = createElement({
             classes: ["header"],
-            text: await this.getLocale("wishes.today.header")
+            text: this.getLocale("wishes.today.header")
         })
         header.append(createElement({
-            text: await this.getLocale("wishes.today.subtitle")
+            text: this.getLocale("wishes.today.subtitle")
         }));
         const fragmentWrapper = createElement({
             classes: ["wrapper"]
@@ -87,21 +87,21 @@ class WishTodayEntryFragment extends Fragment {
                 classes: ["form"]
             })
             const userRank = new TextField({
-                placeholder: await this.todayFrag.getLocale("wishes.today.user.rank"),
+                placeholder: this.todayFrag.getLocale("wishes.today.user.rank"),
                 oninput: () => buttonUpdate(userRank, this.user?.application_queued),
                 parent: form,
                 regex: /\d+/,
                 required: true
             }) as TextField;
             const globalAll = new TextField({
-                placeholder: await this.todayFrag.getLocale("wishes.today.global.all"),
+                placeholder: this.todayFrag.getLocale("wishes.today.global.all"),
                 oninput: () => buttonUpdate(globalAll, this.global?.application_all),
                 parent: form,
                 regex: /\d+/,
                 required: true
             }) as TextField;
             const globalLast = new TextField({
-                placeholder: await this.todayFrag.getLocale("wishes.today.global.last"),
+                placeholder: this.todayFrag.getLocale("wishes.today.global.last"),
                 oninput: () => buttonUpdate(globalLast, this.global?.application_last),
                 parent: form,
                 regex: /\d+/,
@@ -110,7 +110,7 @@ class WishTodayEntryFragment extends Fragment {
             let userAbs: TextField | undefined;
             if (!this.user) {
                 userAbs = new TextField({
-                    placeholder: await this.todayFrag.getLocale("wishes.today.user.abs"),
+                    placeholder: this.todayFrag.getLocale("wishes.today.user.abs"),
                     oninput: () => buttonUpdate(userAbs),
                     parent: form,
                     regex: /\d+/,
@@ -120,7 +120,7 @@ class WishTodayEntryFragment extends Fragment {
             const quickActions = createElement({
                 classes: ["actions", "quick"]
             })
-            const button = new Button(await this.todayFrag.getLocale("wishes.today.next"), () => this.validate());
+            const button = new Button(this.todayFrag.getLocale("wishes.today.next"), () => this.validate());
             const help = createElement({
                 classes: ["tip"],
                 ripple: true,
@@ -131,9 +131,9 @@ class WishTodayEntryFragment extends Fragment {
             const actions = createElement({
                 classes: ["actions"]
             });
-            new Button(await this.todayFrag.getLocale("wishes.today.discarded"), () => this.validate(-2), actions).enabled = true;
-            new Button(await this.todayFrag.getLocale(!this.user ? "wishes.today.refused" : "wishes.today.closed"), () => this.validate(-1), actions).enabled = true;
-            new Button(await this.todayFrag.getLocale("wishes.today.accepted"), () => this.validate(0), actions).enabled = true;
+            new Button(this.todayFrag.getLocale("wishes.today.discarded"), () => this.validate(-2), actions).enabled = true;
+            new Button(this.todayFrag.getLocale(!this.user ? "wishes.today.refused" : "wishes.today.closed"), () => this.validate(-1), actions).enabled = true;
+            new Button(this.todayFrag.getLocale("wishes.today.accepted"), () => this.validate(0), actions).enabled = true;
             const buttonUpdate = async (field: TextField, refValue?: number) => {
                 const value = (field.element.firstElementChild as HTMLInputElement).value;
                 if (value === "" || !refValue) field.element.removeAttribute("trend");
@@ -155,10 +155,10 @@ class WishTodayEntryFragment extends Fragment {
             })
             summary.append(createElement({
                 classes: ["head"],
-                text: await this.todayFrag.getLocale("wishes.today.summary.header.name")
+                text: this.todayFrag.getLocale("wishes.today.summary.header.name")
             }), createElement({
                 classes: ["head"],
-                text: await this.todayFrag.getLocale("wishes.today.summary.header.status")
+                text: this.todayFrag.getLocale("wishes.today.summary.header.status")
             }))
             for (const wish of this.todayFrag.query) {
                 let details: HTMLDivElement;
@@ -166,21 +166,21 @@ class WishTodayEntryFragment extends Fragment {
                     case -2:
                         details = createElement({
                             classes: ["update", "state"],
-                            text: await this.todayFrag.getLocale("wishes.today.summary.discarded"),
+                            text: this.todayFrag.getLocale("wishes.today.summary.discarded"),
                             state: "discarded"
                         });
                         break;
                     case -1:
                         details = createElement({
                             classes: ["update", "state"],
-                            text: await this.todayFrag.getLocale("wishes.today.summary.refused"),
+                            text: this.todayFrag.getLocale("wishes.today.summary.refused"),
                             state: "refused"
                         })
                         break;
                     case 0:
                         details = createElement({
                             classes: ["update", "state"],
-                            text: await this.todayFrag.getLocale("wishes.today.summary.accepted"),
+                            text: this.todayFrag.getLocale("wishes.today.summary.accepted"),
                             state: "accepted"
                         });
                         break;
@@ -193,14 +193,14 @@ class WishTodayEntryFragment extends Fragment {
                                 classes: ["update"],
                                 text: wish.todayUser?.application_queued?.toString(),
                                 from: wish.user.application_queued,
-                                type: await this.todayFrag.getLocale("wishes.today.user.rank")
+                                type: this.todayFrag.getLocale("wishes.today.user.rank")
                             }))
                         }
                         if (!wish.user) {
                             details.append(createElement({
                                 classes: ["update"],
                                 text: wish.todayUser?.application_absolute?.toString(),
-                                type: await this.todayFrag.getLocale("wishes.today.user.abs")
+                                type: this.todayFrag.getLocale("wishes.today.user.abs")
                             }))
                         }
                         if (wish.global.application_all !== wish.todayGlobal.application_all) {
@@ -208,7 +208,7 @@ class WishTodayEntryFragment extends Fragment {
                                 classes: ["update"],
                                 text: wish.todayGlobal?.application_all?.toString(),
                                 from: wish.global.application_all,
-                                type: await this.todayFrag.getLocale("wishes.today.global.all")
+                                type: this.todayFrag.getLocale("wishes.today.global.all")
                             }))
                         }
                         if (wish.global.application_last !== wish.todayGlobal.application_last) {
@@ -216,7 +216,7 @@ class WishTodayEntryFragment extends Fragment {
                                 classes: ["update"],
                                 text: wish.todayGlobal?.application_last?.toString(),
                                 from: wish.global.application_last,
-                                type: await this.todayFrag.getLocale("wishes.today.global.last")
+                                type: this.todayFrag.getLocale("wishes.today.global.last")
                             }))
                         }
                         break;
@@ -227,7 +227,7 @@ class WishTodayEntryFragment extends Fragment {
                 }), details);
             }
             root.append(summary);
-            const button = new Button(await this.todayFrag.getLocale("wishes.today.summary.save"), async () => {
+            const button = new Button(this.todayFrag.getLocale("wishes.today.summary.save"), async () => {
                 const activity = this.context as Home;
                 button.enabled = false;
                 button.element.setIcon(Icon.LOADING);
