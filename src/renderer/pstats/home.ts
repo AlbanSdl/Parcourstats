@@ -267,7 +267,7 @@ export class Home extends Activity {
         });
         root.append(this.side, container);
         this.fragment = new Overview(this, container, () => new Promise<Adapter<Formation>>(res => {
-            if (!!this.formations) res(this.formations);
+            if (!!this.formations?.values?.length) res(this.formations);
             else this.providers.push(new WeakRef(res));
         }), async key => this.getLocale(key));
         return root;
