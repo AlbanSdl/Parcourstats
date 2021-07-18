@@ -4,8 +4,10 @@ import { Icon } from "components/icon";
 import { createElement } from "structure/element";
 import { TodayFragment } from "record";
 import { Page } from "pstats/page";
+import { Adapter } from "components/adapter";
+import type { Formation } from "pstats/formation";
 
-export class Overview extends Page<Home, LoadedData> {
+export class Overview extends Page<Home, Adapter<Formation>> {
     private readonly timeFormat = new Intl.DateTimeFormat(undefined, {
         month: "long",
         day: "numeric"
@@ -13,7 +15,7 @@ export class Overview extends Page<Home, LoadedData> {
     private graph?: Graph;
     protected readonly forceTransitionDirection = false;
 
-    protected async onCreate(from?: Page<Home, LoadedData>) {
+    protected async onCreate(from?: Page<Home, Adapter<Formation>>) {
         const root = await super.onCreate(from);
         root.classList.add("overview", "loadable");
         root.toggleAttribute("loading", true)
@@ -81,17 +83,17 @@ export class Overview extends Page<Home, LoadedData> {
         this.displayValue("pending", "-");
         this.displayValue("refused", "-");
         this.data.then(d => {
-            const states = Object.values(d).filter(e => (e.user?.length ?? 0) > 0).map(e => e.user!![e.user!.length - 1])
-            this.displayValue("accepted", states.filter(rec => rec.application_queued === 0).length.toString())
-            this.displayValue("pending", states.filter(rec => rec.application_queued > 0).length.toString())
-            this.displayValue("refused", states.filter(rec => rec.application_queued < 0).length.toString())
+            const states = d.values.map(e => e.latestUserRecord).filter(e => !!e);
+            this.displayValue("accepted", states.filter(rec => rec.queued === 0).length.toString())
+            this.displayValue("pending", states.filter(rec => rec.queued > 0).length.toString())
+            this.displayValue("refused", states.filter(rec => rec.queued < 0).length.toString())
             let index = 0;
-            for (const study in d) {
-                if (!d[study].user) continue;
-                const graphEntry = new DatasetGraphEntry(study, `overview-${index}`)
-                const values = new Map(d[study].user
-                    .until(record => record.application_queued < 0)
-                    .map(rec => [rec.record_time, rec.application_queued]));
+            for (const study of d.values) {
+                if (!study.sessions.length || !study.session?.user?.length) continue;
+                const graphEntry = new DatasetGraphEntry(study.name, `overview-${index}`)
+                const values = new Map(study.session!.user
+                    .until(record => record.queued < 0)
+                    .map(rec => [rec.time, rec.queued]));
                 if ([...values.values()].reduce((p, c) => p + c, 0) <= 0) continue;
                 index++;
                 graphEntry.add(values);
@@ -99,11 +101,10 @@ export class Overview extends Page<Home, LoadedData> {
             }
             this.graph?.invalidate();
             this.root.toggleAttribute("loading", false)
-            const lastUpdate = new Date(Object.values(d)
-                .map(entry => [...entry.global, ...entry.user])
-                .reduce((a, b) => [...a, ...b])
-                .filter(record => !!record)
-                .sort((a, b) => b.record_time - a.record_time)[0]?.record_time),
+            const lastUpdate = new Date(d.values
+                .map(entry => [entry.latestGlobalRecord, entry.latestUserRecord])
+                .flat().filter(record => !!record)
+                .sort((a, b) => b.time - a.time)[0]?.time),
                 currentDate = new Date();
             if (currentDate.getTime() - lastUpdate.getTime() > 43200000 &&
                 lastUpdate.getFullYear() === currentDate.getFullYear() && 

@@ -15,10 +15,11 @@ export class Button {
         const classes = ['button', 'disabled'];
         if (buttonStyle & ButtonStyle.FLAT) classes.push('flat');
         if (buttonStyle & ButtonStyle.COMPACT) classes.push('compact');
-        parent?.appendChild(this.element = createElement({
+        this.element = createElement({
             classes,
             text: content
-        }));
+        })
+        parent?.appendChild(this.element);
     }
 
     public get enabled(): boolean {

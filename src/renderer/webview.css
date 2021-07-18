@@ -572,6 +572,19 @@ svg {
 }
 
 /*
+ * Adapter
+ */
+.wrapper > .list.adapter {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+/*
  * Activity and fragments transitions
  */
 .activity {

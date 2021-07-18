@@ -1,13 +1,15 @@
 import type { Home } from "pstats/home";
+import type { Adapter } from "components/adapter";
 import { Icon } from "components/icon";
 import { createElement } from "structure/element";
 import { Query } from "../../../common/window";
 import { Page } from "pstats/page";
+import type { Formation } from "pstats/formation";
 
-export class AboutFragment extends Page<Home, LoadedData> {
+export class AboutFragment extends Page<Home, Adapter<Formation>> {
     protected readonly forceTransitionDirection = true;
 
-    protected async onCreate(from: Page<Home, LoadedData>) {
+    protected async onCreate(from: Page<Home, Adapter<Formation>>) {
         const root = await super.onCreate(from);
         root.classList.add("about", "loadable");
         root.toggleAttribute("loading", true)

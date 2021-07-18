@@ -9,17 +9,17 @@ import { Fragment } from "structure/fragment";
 import { Transition } from "structure/layout";
 import { Overview } from "overview";
 import { Page } from "pstats/page";
+import { Adapter } from "components/adapter";
+import type { Formation } from "pstats/formation";
 
-export class TodayFragment extends Page<Home, LoadedData> {
+export class TodayFragment extends Page<Home, Adapter<Formation>> {
     public query!: {
-        session: LoadedType<Study>,
-        global?: LoadedType<GlobalRankRecord>,
-        user?: LoadedType<UserRankRecord>,
-        todayGlobal?: GlobalRankRecord,
-        todayUser?: UserRankRecord
+        session: Formation,
+        user: UserRankRecord,
+        global: GlobalRankRecord
     }[]
 
-    protected async onCreate(from: Page<Home, LoadedData>) {
+    protected async onCreate(from: Page<Home, Adapter<Formation>>) {
         const root = await super.onCreate(from);
         root.classList.add("today");
         const container = createElement({
@@ -42,11 +42,12 @@ export class TodayFragment extends Page<Home, LoadedData> {
     protected onCreated(): void {
         this.data.then(activityData => {
             const currentYear = new Date().getFullYear();
-            this.query = Object.values(activityData).map(entry => ({
-                session: entry.sessions?.slice(0)?.sort((a, b) => b.year - a.year)?.[0],
-                global: entry.global?.slice(0)?.sort((a, b) => b.record_time - a.record_time)?.[0],
-                user: entry.user?.slice(0)?.sort((a, b) => b.record_time - a.record_time)?.[0],
-            })).filter(entry => (entry.user?.application_queued ?? 1) > 0 && entry.session?.year === currentYear);
+            this.query = activityData.values.map(entry => ({
+                session: entry,
+                user: null,
+                global: null
+            })).filter(entry => (entry.session.latestUserRecord?.queued ?? 1) > 0 
+                && entry.session.year === currentYear);
             new WishTodayEntryFragment(0).create(this, this.context,
                 this.root.querySelector(".container > .wrapper"))
         })
@@ -60,9 +61,11 @@ export class TodayFragment extends Page<Home, LoadedData> {
 class WishTodayEntryFragment extends Fragment {
     private readonly index!: number;
     private todayFrag!: TodayFragment;
-    private session?: Study;
-    private global?: LoadedType<GlobalRankRecord>;
-    private user?: LoadedType<UserRankRecord>;
+    private record?: {
+        session: Formation,
+        user: UserRankRecord,
+        global: GlobalRankRecord
+    };
 
     constructor(index: number) {
         super();
@@ -72,43 +75,40 @@ class WishTodayEntryFragment extends Fragment {
     protected async onCreate(from?: WishTodayEntryFragment) {
         const root = await super.onCreate(from);
         if (!!from) this.todayFrag = from.todayFrag;
-        const lastRecord = this.todayFrag!!.query[this.index];
-        this.session = lastRecord?.session;
-        this.global = lastRecord?.global;
-        this.user = lastRecord?.user;
+        this.record = this.todayFrag!!.query[this.index];
         root.classList.add("record");
 
-        if (!!this.session) {
+        if (!!this.record) {
             const name = createElement({
                 classes: ["name"]
             })
-            name.textContent = this.session.name;
+            name.textContent = this.record.session.name;
             const form = createElement({
                 classes: ["form"]
             })
             const userRank = new TextField({
                 placeholder: this.todayFrag.getLocale("wishes.today.user.rank"),
-                oninput: () => buttonUpdate(userRank, this.user?.application_queued),
+                oninput: () => buttonUpdate(userRank, this.record.session.latestUserRecord?.queued),
                 parent: form,
                 regex: /\d+/,
                 required: true
             }) as TextField;
             const globalAll = new TextField({
                 placeholder: this.todayFrag.getLocale("wishes.today.global.all"),
-                oninput: () => buttonUpdate(globalAll, this.global?.application_all),
+                oninput: () => buttonUpdate(globalAll, this.record.session.latestGlobalRecord?.all),
                 parent: form,
                 regex: /\d+/,
                 required: true
             }) as TextField;
             const globalLast = new TextField({
                 placeholder: this.todayFrag.getLocale("wishes.today.global.last"),
-                oninput: () => buttonUpdate(globalLast, this.global?.application_last),
+                oninput: () => buttonUpdate(globalLast, this.record.session.latestGlobalRecord?.last),
                 parent: form,
                 regex: /\d+/,
                 required: true
             }) as TextField;
             let userAbs: TextField | undefined;
-            if (!this.user) {
+            if (!this.record.session.user) {
                 userAbs = new TextField({
                     placeholder: this.todayFrag.getLocale("wishes.today.user.abs"),
                     oninput: () => buttonUpdate(userAbs),
@@ -132,7 +132,7 @@ class WishTodayEntryFragment extends Fragment {
                 classes: ["actions"]
             });
             new Button(this.todayFrag.getLocale("wishes.today.discarded"), () => this.validate(-2), actions).enabled = true;
-            new Button(this.todayFrag.getLocale(!this.user ? "wishes.today.refused" : "wishes.today.closed"), () => this.validate(-1), actions).enabled = true;
+            new Button(this.todayFrag.getLocale(!this.record.session.user ? "wishes.today.refused" : "wishes.today.closed"), () => this.validate(-1), actions).enabled = true;
             new Button(this.todayFrag.getLocale("wishes.today.accepted"), () => this.validate(0), actions).enabled = true;
             const buttonUpdate = async (field: TextField, refValue?: number) => {
                 const value = (field.element.firstElementChild as HTMLInputElement).value;
@@ -162,7 +162,7 @@ class WishTodayEntryFragment extends Fragment {
             }))
             for (const wish of this.todayFrag.query) {
                 let details: HTMLDivElement;
-                switch (wish.todayUser.application_queued!!) {
+                switch (wish.user.application_queued!!) {
                     case -2:
                         details = createElement({
                             classes: ["update", "state"],
@@ -188,34 +188,34 @@ class WishTodayEntryFragment extends Fragment {
                         details = createElement({
                             classes: ["update", "ranks"]
                         });
-                        if (wish.user.application_queued !== wish.todayUser.application_queued) {
+                        if (wish.session.latestUserRecord?.queued !== wish.user.application_queued) {
                             details.append(createElement({
                                 classes: ["update"],
-                                text: wish.todayUser?.application_queued?.toString(),
-                                from: wish.user.application_queued,
+                                text: wish.user?.application_queued?.toString(),
+                                from: wish.session.latestUserRecord?.queued,
                                 type: this.todayFrag.getLocale("wishes.today.user.rank")
                             }))
                         }
-                        if (!wish.user) {
+                        if (!wish.session.user) {
                             details.append(createElement({
                                 classes: ["update"],
-                                text: wish.todayUser?.application_absolute?.toString(),
+                                text: wish.user?.application_absolute?.toString(),
                                 type: this.todayFrag.getLocale("wishes.today.user.abs")
                             }))
                         }
-                        if (wish.global.application_all !== wish.todayGlobal.application_all) {
+                        if (wish.session.latestGlobalRecord?.all !== wish.global.application_all) {
                             details.append(createElement({
                                 classes: ["update"],
-                                text: wish.todayGlobal?.application_all?.toString(),
-                                from: wish.global.application_all,
+                                text: wish.global?.application_all?.toString(),
+                                from: wish.session.latestGlobalRecord?.all,
                                 type: this.todayFrag.getLocale("wishes.today.global.all")
                             }))
                         }
-                        if (wish.global.application_last !== wish.todayGlobal.application_last) {
+                        if (wish.session.latestGlobalRecord?.last !== wish.global.application_last) {
                             details.append(createElement({
                                 classes: ["update"],
-                                text: wish.todayGlobal?.application_last?.toString(),
-                                from: wish.global.application_last,
+                                text: wish.global?.application_last?.toString(),
+                                from: wish.session.latestGlobalRecord?.all,
                                 type: this.todayFrag.getLocale("wishes.today.global.last")
                             }))
                         }
@@ -236,8 +236,8 @@ class WishTodayEntryFragment extends Fragment {
                 for (const wish of this.todayFrag.query) {
                     let errored = false;
                     try {
-                        if (!!wish.todayUser) await (this.context as Home).insertRecord("user", wish.todayUser);
-                        if (!!wish.todayGlobal) await (this.context as Home).insertRecord("global", wish.todayGlobal);
+                        if (!!wish.user) await (this.context as Home).insert("user", wish.user);
+                        if (!!wish.global) await (this.context as Home).insert("global", wish.global);
                     } catch (error) {
                         errored = true;
                         console.error(error);
@@ -283,24 +283,28 @@ class WishTodayEntryFragment extends Fragment {
         }`;
         const entry = this.todayFrag.query[this.index];
         if (code !== undefined) {
-            entry.todayUser = {
-                ...entry.user,
+            entry.user = {
                 application_queued: code,
-                record_time
+                application_absolute: entry.session.absolute,
+                record_time,
+                name: entry.session.name,
+                year: entry.session.year
             }
         } else {
             const fields = this.root.querySelectorAll<HTMLInputElement>(".form > .wrapper.text-field > input.field");
-            entry.todayUser = {
-                ...entry.user,
+            entry.user = {
                 application_queued: parseInt(fields.item(0).value),
-                application_absolute: parseInt(fields.item(3)?.value) | entry.user.application_absolute,
-                record_time
+                application_absolute: parseInt(fields.item(3)?.value) | entry.session.absolute,
+                record_time,
+                name: entry.session.name,
+                year: entry.session.year
             }
-            entry.todayGlobal = {
-                ...entry.global,
+            entry.global = {
                 application_all: parseInt(fields.item(1).value),
                 application_last: parseInt(fields.item(2).value),
-                record_time
+                record_time,
+                name: entry.session.name,
+                year: entry.session.year
             }
         }
         this.replace(new WishTodayEntryFragment(this.index + 1));

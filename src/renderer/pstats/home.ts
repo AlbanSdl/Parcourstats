@@ -3,9 +3,8 @@ import { Button, ButtonStyle } from "components/button";
 import { Dropdown } from "components/forms/dropdown";
 import { Switch } from "components/forms/switch";
 import { TextField } from "components/forms/textfield";
-import { Icon } from "components/icon";
 import { AppNotification } from "components/notification";
-import { Selector, selectionAttribute } from "components/selector";
+import { Selector } from "components/selector";
 import { Activity } from "structure/activity";
 import { createElement } from "structure/element";
 import { Transition } from "structure/layout";
@@ -14,24 +13,18 @@ import { Overview } from "fragments/overview";
 import { AboutFragment } from "fragments/about";
 import { TodayFragment } from "fragments/record";
 import { WishFragment } from "fragments/wish";
-
-enum LoadingMask {
-    STUDY = 0b001,
-    GLOBAL = 0b010,
-    USER = 0b100
-}
+import { Adapter } from "components/adapter";
+import { Formation } from "formation";
 
 export class Home extends Activity {
     private side: HTMLElement;
     private sideHeader: Selector<string>;
     private sideList: Selector<string>;
 
-    private readonly data: LoadedData = {};
-    private fragment: Page<Home, LoadedData>;
+    private formations?: Adapter<Formation>;
+    private readonly providers: WeakRef<(d: Adapter<Formation>) => void>[] = [];
 
-    private loadingState = 0;
-    private providers: WeakRef<(d: LoadedData) => void>[] = [];
-
+    private fragment: Page<Home, Adapter<Formation>>;
     private lang?: Locale;
 
     public create() {
@@ -73,12 +66,43 @@ export class Home extends Activity {
         const wrapper = createElement({
             classes: ["wrapper"]
         });
-        const sideList = createElement({
-            classes: ["list", "loadable"],
-            loading: true
-        })
+        const activity = this;
+        this.formations = new Adapter({
+            bind(formation) {
+                const wishContainer = createElement({
+                    classes: ["wish"],
+                    ripple: true,
+                    name: formation.name
+                });
+                wishContainer.append(createElement({
+                    classes: ["session"],
+                    text: activity.getLocale(`wish.session.${formation.sessions.length > 1 ? 'plural' : 'singular'}`).then(
+                        localized => `${localized}: ${formation.sessions.map(s => s.year).sort((a, b) => b - a).join(", ")}`)
+                }));
+                return wishContainer;
+            },
+            idify(item) {
+                return item.name
+            },
+            update(item, element, property, initial) {
+                console.log(item, element, property, initial);
+            },
+            onEmpty() {
+                return createElement({
+                    classes: ["empty"],
+                    text: activity.getLocale("wishes.list.empty")
+                })
+            },
+            onError(error) {
+                console.error(error);
+                return createElement({
+                    classes: ["empty"],
+                    text: activity.getLocale("wishes.list.error")
+                })
+            }
+        }, wrapper);
         this.sideList = new Selector({
-            container: sideList,
+            container: this.formations.element,
             extractor: e => e?.getAttribute?.("name"),
             isUnique: true,
             listener: (_, name) => {
@@ -87,9 +111,7 @@ export class Home extends Activity {
                 this.fragment = frag;
             }
         })
-        wrapper.append(sideList)
         this.side.append(sideHeaders, wrapper);
-        sideList.setIcon(Icon.LOADING).then(ic => ic.classList.add("loader"));
         const sideAdd = createElement({
             classes: ["add"]
         })
@@ -135,14 +157,13 @@ export class Home extends Activity {
             button.enabled = false;
             const stdy = <Study><unknown>Object.fromEntries(Object.entries(getWishAddFields())
                 .map(e => [e[0], e[0] === "name" ? e[1].value : parseInt(e[1].value)]));
-            window.messenger.send(Query.DATA, "insert", "study", stdy)
-                .then(() => this.updateStudies([stdy]))
+            this.insert("study", stdy)
                 .then(() => {
                     for (const entry of Object.entries(getWishAddFields()))
                         entry[1].value = entry[0] === "year" ? new Date().getFullYear().toString() : "";
                     if (this.fragment instanceof Overview)
                         this.fragment.replace(this.fragment = new Overview(), Transition.NONE);
-                    this.side.querySelector("[action=wish-list]").toggleAttribute(selectionAttribute, true);
+                    this.sideHeader.select("wish-list");
                 })
                 .catch(async err => {
                     new AppNotification({
@@ -245,43 +266,37 @@ export class Home extends Activity {
             classes: ["container"]
         });
         root.append(this.side, container);
-        const fragProvider = () => new Promise<LoadedData>(res => {
-            if (this.loadingState >= 7) res(this.data);
+        this.fragment = new Overview(this, container, () => new Promise<Adapter<Formation>>(res => {
+            if (!!this.formations) res(this.formations);
             else this.providers.push(new WeakRef(res));
-        });
-        this.fragment = new Overview(this, container, fragProvider, async key => this.getLocale(key));
+        }), async key => this.getLocale(key));
         return root;
     }
 
     private async initDataLoading() {
         await window.messenger.send(Query.READY);
-        await Promise.all([
+        const values = (await Promise.all([
             window.messenger.send(Query.DATA, "select", "study")
-                .then((values: Study[]) => this.waitCreation(values))
-                .then(values => this.updateStudies(values))
                 .catch(async err => {
-                    this.side.querySelector('.list')?.toggleAttribute("loading", false)
-                    while (!!this.sideList.childrenElements.length) 
-                        this.sideList.childrenElements.item(0).remove();
-                    const errorPlaceholder = createElement({
-                        classes: ["empty"],
-                        text: this.getLocale("wishes.list.error")
-                    });
-                    this.side.querySelector('.list')?.append(errorPlaceholder)
+                    this.formations.raise(this.getLocale("wishes.list.error"));
                     console.error(err);
                 }),
             window.messenger.send(Query.DATA, "select", "global")
-                .then(v => this.waitCreation(v))
-                .catch(console.error)
-                .then(values => this.update(values || [], "global"))
-                .then(() => this.runProviders(LoadingMask.GLOBAL)),
+                .catch(console.error),
             window.messenger.send(Query.DATA, "select", "user")
-                .then(v => this.waitCreation(v))
                 .catch(console.error)
-                .then(values => this.update(values || [], "user"))
-                .then(() => this.runProviders(LoadingMask.USER))
-        ]);
+        ]))?.flat();
+        const asList: Formation[] = [];
+        for (const value of values) {
+            if (!value) continue;
+            let current = asList.find(list => list.name === value.name);
+            if (!current) asList.push(current = new Formation(value.name));
+            current.update(value);
+        }
+        await this.formations?.push(this.sideList, ...asList);
         await this.waitCreation();
+        for (const ref of this.providers) ref.deref()?.(this.formations!!);
+        this.providers.splice(0, this.providers.length);
         const splash = this.container?.querySelector(".splash");
         if (!!splash) for (const child of splash.children) {
             child.querySelectorAll("animate, animateTransform").forEach(
@@ -291,24 +306,6 @@ export class Home extends Activity {
                 else if (anim.parentElement?.parentElement?.id !== "splash-clip") (<any>anim).beginElement();
                 else setTimeout(() => (<any>anim).beginElement(), 500);
             });
-        }
-    }
-
-    private runProviders(mask: LoadingMask) {
-        if (this.loadingState < 7) {
-            this.loadingState |= mask;
-            if (this.loadingState >= 7) {
-                for (const wishContainer of this.side.querySelectorAll(".list > .wish")) {
-                    const wishData = this.data[wishContainer.getAttribute("name")];
-                    if (!wishData?.user || !wishData?.sessions) continue;
-                    wishContainer.toggleAttribute("active", wishData.sessions.length > 0 
-                        && wishData.sessions[0].year === new Date().getFullYear() 
-                        && (wishData.user.map(ur => ur.application_queued).sort()[0] ?? -1) > 0)
-                }
-                for (const ref of this.providers) 
-                    ref.deref()?.(this.data);
-                this.providers.splice(0, this.providers.length)
-            }
         }
     }
 
@@ -346,74 +343,24 @@ export class Home extends Activity {
         delete this.side;
     }
 
-    private update(values: Study[], key: "sessions"): boolean;
-    private update(values: GlobalRankRecord[], key: "global"): boolean;
-    private update(values: UserRankRecord[], key: "user"): boolean;
-    private update(values: Study[] | GlobalRankRecord[] | UserRankRecord[], key: "sessions" | "global" | "user") {
-        const vals: LoadedType[] = values.map((entry: RemoteData) => "record_time" in entry ? Object.assign(entry, {
-            record_time: Date.parse(entry.record_time)
-        }) : entry);
-        for (const wish of vals) {
-            if (wish.name in this.data) {
-                const entries = this.data[wish.name]!![key];
-                if (!entries)
-                    this.data[wish.name][key] = [wish];
-                else if (
-                    (key === "sessions" && !(<Study[]>entries).find(s => s.year === wish.year))
-                    || ((key === "global" || key === "user") && !(<(LoadedType<GlobalRankRecord | UserRankRecord>)[]>entries)
-                        .find(s => s.record_time === (<LoadedType<GlobalRankRecord | UserRankRecord>>wish).record_time))
-                ) entries.push(wish);
-            } else this.data[wish.name] = {
-                [key]: [wish]
-            };
-        }
-        return vals.length > 0;
-    }
-
-    public async insertRecord(type: "global", rec: GlobalRankRecord): Promise<void>;
-    public async insertRecord(type: "user", rec: UserRankRecord): Promise<void>;
-    public async insertRecord(type: "global" | "user", rec: GlobalRankRecord | UserRankRecord) {
+    public async insert(
+        type: keyof FormationDataMapping,
+        rec: FormationDataMapping[typeof type]
+    ) {
         return window.messenger.send(
-            Query.DATA,
-            "insert",
-            type as (typeof rec) extends GlobalRankRecord ? "global" : "user",
-            rec as (typeof type) extends "global" ? GlobalRankRecord : UserRankRecord
-        ).then(() => {
-            this.update([rec], type as (typeof rec) extends GlobalRankRecord ? "global" : "user")
-        })
+            Query.DATA, "insert", type, rec
+        ).then(() => this.update(type, rec))
     }
 
-    private async updateStudies(additions: Study[]) {
-        const list = this.side.querySelector('.list');
-        if (!list) return;
-        list.toggleAttribute("loading", false)
-        for (const element of list.children)
-            if (!element.classList.contains("wish"))
-                element.remove();
-        const updateResult = this.update(additions, "sessions");
-        if (list.children.length === 0 && !updateResult) {
-            this.side.querySelector('.list')?.append?.(createElement({
-                classes: ["empty"],
-                text: this.getLocale("wishes.list.empty")
-            }));
-        } else if (updateResult) {
-            for (const wish in this.data) {
-                if (!this.data[wish].sessions || !additions.find(a => a.name === wish)) continue;
-                const sessions = this.data[wish].sessions.sort((a, b) => b.year - a.year);
-                const wishContainer = createElement({
-                    classes: ["wish"],
-                    ripple: true,
-                    name: wish
-                });
-                wishContainer.append(createElement({
-                    classes: ["session"],
-                    text: this.getLocale(`wish.session.${sessions.length > 1 ? 'plural' : 'singular'}`).then(
-                        localized => `${localized}: ${sessions.map(s => s.year).join(", ")}`)
-                }));
-                this.sideList.append(wishContainer)
-            }
-        }
-        this.runProviders(LoadingMask.STUDY);
+    private update(
+        type: keyof FormationDataMapping,
+        ...entries: FormationDataMapping[typeof type][]
+    ) {
+        entries.forEach(rec => {
+            let current = this.formations?.values?.find(formation => formation.name === rec.name);
+            if (!current) this.formations!.push(this.sideList, current = new Formation(rec.name))
+            current.update(rec);
+        });
     }
 
     private updateMenu(action: string) {
@@ -425,7 +372,7 @@ export class Home extends Activity {
     }
 
     /** @internal */
-    changeFragment(fragment: Page<Home, LoadedData>) {
+    changeFragment(fragment: Page<Home, Adapter<Formation>>) {
         this.fragment?.replace(this.fragment = fragment);
     }
 }

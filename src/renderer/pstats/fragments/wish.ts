@@ -3,8 +3,10 @@ import { Graph, DatasetGraphEntry, ComputedGraphEntry, PreviousBasedComputedGrap
 import { Icon } from "components/icon";
 import { createElement } from "structure/element";
 import { Page } from "pstats/page";
+import { Adapter } from "components/adapter";
+import type { Formation } from "pstats/formation";
 
-export class WishFragment extends Page<Home, LoadedData> {
+export class WishFragment extends Page<Home, Adapter<Formation>> {
     readonly wishName!: string;
     private graph?: Graph;
     private speedGraph?: Graph;
@@ -18,7 +20,7 @@ export class WishFragment extends Page<Home, LoadedData> {
         this.wishName = wishName;
     }
 
-    protected async onCreate(from: Page<Home, LoadedData>) {
+    protected async onCreate(from: Page<Home, Adapter<Formation>>) {
         const root = await super.onCreate(from);
         root.classList.add("wish", "loadable");
         root.toggleAttribute("loading", true)
@@ -107,9 +109,12 @@ export class WishFragment extends Page<Home, LoadedData> {
     }
     protected onCreated(): void {
         this.data.then(async data => {
-            const wish = data[this.wishName];
-            const update = (wish.global?.map(g => g.record_time) ?? [])
-                .concat(wish.user?.map(u => u.record_time) ?? [])
+            const currentYear = new Date().getFullYear();
+            const wish = data.values.find(formation => formation.name === this.wishName)
+                .sessions?.find(session => session.year === currentYear);
+
+            const update = (wish?.global?.map(g => g.time) ?? [])
+                .concat(wish?.user?.map(u => u.time) ?? [])
                 .sort()
                 .slice(-1)[0];
             this.root.querySelector(".container .title .complement.update .value").textContent = update === undefined ? 
@@ -121,71 +126,68 @@ export class WishFragment extends Page<Home, LoadedData> {
                 minute: "numeric"
             });
 
-            const currentYear = new Date().getFullYear();
-            const userData = wish.user?.filter(entry => entry.year === currentYear)
-                    ?.sort((a, b) => b.record_time - a.record_time) ?? [],
-                globalData = wish.global?.filter(entry => entry.year === currentYear)
-                    ?.sort((a, b) => b.record_time - a.record_time) ?? []
+            const userData = wish?.user ?? [],
+                globalData = wish?.global ?? []
             let overall: string;
-            let displayedRank: LoadedType<UserRankRecord> | undefined;
-            let displayGlobalData: LoadedType<GlobalRankRecord> | undefined;
-            if (userData[0]?.application_queued > 0) {
+            let displayedRank: Formation["user"] extends Array<infer R> ? R : never | undefined;
+            let displayGlobalData: Formation["global"] extends Array<infer R> ? R : never | undefined;
+            if (userData[userData.length - 1]?.queued > 0) {
                 overall = await this.getLocale("wish.status.pending");
-                displayedRank = userData[0];
-                displayGlobalData = globalData[0];
+                displayedRank = userData[userData.length - 1];
+                displayGlobalData = globalData[globalData.length - 1];
             }
-            else if (userData[0]?.application_queued === 0) {
+            else if (userData[userData.length - 1]?.queued === 0) {
                 overall = await this.getLocale(userData.length === 1 ? "wish.rank.unknown.accepted" : "wish.status.accepted");
-                displayedRank = userData[0];
-                displayGlobalData = globalData[0];
+                displayedRank = userData[userData.length - 1];
+                displayGlobalData = globalData[globalData.length - 1];
             }
-            else if (userData[0]?.application_queued === -1) {
+            else if (userData[userData.length - 1]?.queued === -1) {
                 overall = await this.getLocale(userData.length === 1 ? "wish.rank.unknown.refused" : "wish.status.refused");
-                displayedRank = userData[1];
-                displayGlobalData = globalData[0];
-            } else if (userData[0]?.application_queued === -2) {
+                displayedRank = userData[userData.length - 2];
+                displayGlobalData = globalData[globalData.length - 1];
+            } else if (userData[userData.length - 1]?.queued === -2) {
                 overall = await this.getLocale("wish.status.resigned");
-                displayedRank = userData[1];
-                displayGlobalData = globalData[0];
+                displayedRank = userData[userData.length - 2];
+                displayGlobalData = globalData[globalData.length - 1];
             } else {
                 overall = await this.getLocale("wish.rank.unknown")
-                displayedRank = userData[1];
-                displayGlobalData = globalData[0];
+                displayedRank = userData[userData.length - 2];
+                displayGlobalData = globalData[globalData.length - 1];
             }
             this.root.querySelector(".container > .overview > .overall").textContent = overall;
             if (!!displayedRank && userData.length > 1) {
                 this.root.querySelector(".container > .overview > .rank.user")?.
-                    setAttribute("position", displayedRank.application_queued.toString())
+                    setAttribute("position", displayedRank.queued.toString())
                 this.root.querySelector(".container > .overview > .rank.abs")?.
-                    setAttribute("position", displayedRank.application_absolute.toString())
+                    setAttribute("position", wish.absolute.toString())
             }
             if (!!displayGlobalData) {
-                if (!!displayGlobalData.application_all) this.root.querySelector(".container > .overview > .rank.all")?.
-                    setAttribute("position", displayGlobalData.application_all.toString())
-                if (!!displayGlobalData.application_last) this.root.querySelector(".container > .overview > .rank.last")?.
-                    setAttribute("position", displayGlobalData.application_last.toString())
+                if (!!displayGlobalData.all) this.root.querySelector(".container > .overview > .rank.all")?.
+                    setAttribute("position", displayGlobalData.all.toString())
+                if (!!displayGlobalData.last) this.root.querySelector(".container > .overview > .rank.last")?.
+                    setAttribute("position", displayGlobalData.last.toString())
             }
 
-            if ((displayGlobalData?.application_last ?? 0) < 1)
+            if ((displayGlobalData?.last ?? 0) < 1)
                 this.root.toggleAttribute("no-data", true);
             else {
                 const userRank = new DatasetGraphEntry(await this.getLocale("wish.rank.user"), "user-rank");
-                userRank.add(new Map(userData.slice().reverse()
-                    .until(record => record.application_queued < 0)
+                userRank.add(new Map(userData
+                    .until(record => record.queued < 0)
                     .map(entry => [
-                        Math.trunc(entry.record_time / 864e5),
-                        entry.application_queued
+                        Math.trunc(entry.time / 864e5),
+                        entry.queued
                     ])
                 ));
                 const allApplications = new DatasetGraphEntry(await this.getLocale("wish.rank.all"), "app-all");
                 allApplications.add(new Map(globalData.map(entry => [
-                    Math.trunc(entry.record_time / 864e5),
-                    entry.application_all
+                    Math.trunc(entry.time / 864e5),
+                    entry.all
                 ])));
                 const lastAcceptedRank = new DatasetGraphEntry(await this.getLocale("wish.rank.last"), "app-last");
                 lastAcceptedRank.add(new Map(globalData.map(entry => [
-                    Math.trunc(entry.record_time / 864e5),
-                    entry.application_last
+                    Math.trunc(entry.time / 864e5),
+                    entry.last
                 ])));
                 const renouncingPeopleBehindUser = new ComputedGraphEntry(await this.getLocale("wish.graph.people.after"), "user-after", 
                     (_, all, user) => all - user, allApplications, userRank)
@@ -195,7 +197,7 @@ export class WishFragment extends Page<Home, LoadedData> {
                 this.graph.addEntry(renouncingPeopleBehindUser, false);
                 this.graph.invalidate();
     
-                const size = wish.sessions?.sort((a, b) => b.year - a.year)?.[0]?.available || 1;
+                const size = wish.size || 1;
                 const userRankAdvancementSpeed = new PreviousBasedComputedGraphEntry(await this.getLocale("wish.graph.speed.user"), "speed-user-rank", 
                     (_, pre, current) => pre === undefined ? pre : (pre - current) / size, userRank)
                 const formationAdvancementSpeed = new PreviousBasedComputedGraphEntry(await this.getLocale("wish.graph.speed.last"), "speed-app-last", 
@@ -207,40 +209,40 @@ export class WishFragment extends Page<Home, LoadedData> {
                 this.speedGraph.addEntry(queueShrinkSpeed, false);
                 this.speedGraph.invalidate();
 
-                const recordDates = new Set(userData.map(userRecord => userRecord.record_time)
-                    .concat(globalData.map(globalRecord => globalRecord.record_time))
+                const recordDates = new Set(userData.map(userRecord => userRecord.time)
+                    .concat(globalData.map(globalRecord => globalRecord.time))
                     .map(timestamp => Math.trunc(timestamp / 86400000))
                     .sort((a, b) => b - a));
                 let previous: {
                     row: HTMLElement,
-                    glob?: LoadedType<GlobalRankRecord>,
-                    user?: LoadedType<UserRankRecord>
+                    glob?: Formation["global"] extends Array<infer R> ? R : never,
+                    user?: Formation["user"] extends Array<infer R> ? R : never
                 };
                 const getSignedNumber = (n: number) => n < 0 || !isFinite(n) ? n.toString() : `+${n.toString()}`;
                 const fast = (value: number, diff: number) => isFinite(diff) && !!Math.trunc(20 * Math.abs(diff) / (value || 1))
                 for (const record of recordDates) {
-                    const glob = globalData.find(gl => Math.trunc(new Date(gl.record_time).getTime() / 86400000) === record);
-                    const user = userData.find(us => Math.trunc(new Date(us.record_time).getTime() / 86400000) === record);
-                    if (user.application_queued < 0) continue;
+                    const glob = globalData.find(gl => Math.trunc(new Date(gl.time).getTime() / 86400000) === record);
+                    const user = userData.find(us => Math.trunc(new Date(us.time).getTime() / 86400000) === record);
+                    if (user.queued < 0) continue;
                     const previousRankElement = previous?.row?.children?.item(1) as HTMLElement,
                         previousLastElement = previous?.row?.children?.item(2) as HTMLElement,
                         previousAllElement = previous?.row?.children?.item(3) as HTMLElement;
                     if (!!previousRankElement) {
-                        const diff = previous.user?.application_queued - user?.application_queued;
+                        const diff = previous.user?.queued - user?.queued;
                         previousRankElement.setAttribute("diff", getSignedNumber(diff));
-                        if (fast(user?.application_queued, diff))
+                        if (fast(user?.queued, diff))
                             previousRankElement.setIcon(Icon.TREND);
                     }
                     if (!!previousLastElement) {
-                        const diff = previous.glob?.application_last - glob?.application_last;
+                        const diff = previous.glob?.last - glob?.last;
                         previousLastElement.setAttribute("diff", getSignedNumber(diff));
-                        if (fast(glob?.application_last, diff))
+                        if (fast(glob?.last, diff))
                             previousLastElement.setIcon(Icon.TREND);
                     }
                     if (!!previousAllElement) {
-                        const diff = previous.glob?.application_all - glob?.application_all;
+                        const diff = previous.glob?.all - glob?.all;
                         previousAllElement.setAttribute("diff", getSignedNumber(diff));
-                        if (fast(glob?.application_all, diff))
+                        if (fast(glob?.all, diff))
                             previousAllElement.setIcon(Icon.TREND);
                     }
                     
@@ -248,13 +250,13 @@ export class WishFragment extends Page<Home, LoadedData> {
                         classes: ["row"]
                     });
                     row.append(createElement({
-                        text: this.timeFormat.format(glob?.record_time || user!!.record_time)
+                        text: this.timeFormat.format(glob?.time || user!!.time)
                     }), createElement({
-                        text: user?.application_queued?.toString() ?? "-"
+                        text: user?.queued?.toString() ?? "-"
                     }), createElement({
-                        text: glob?.application_last?.toString() ?? "-"
+                        text: glob?.last?.toString() ?? "-"
                     }), createElement({
-                        text: glob?.application_all?.toString() ?? "-"
+                        text: glob?.all?.toString() ?? "-"
                     }))
                     this.root.querySelector(".container > .updates")?.append(row);
                     previous = {
