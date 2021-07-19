@@ -29,7 +29,7 @@ export class Adapter<T extends object> {
     public async push(on?: Selector<any>, ...items: T[]) {
         return ++this.op && Promise.all(items.map(async item => {
             if (this.visibleList.length <= 0) this.element.querySelectorAll(
-                ":not([adapter-binding])").forEach(child => child.remove())
+                ".context:not([adapter-binding])").forEach(child => child.remove())
             const hold = Proxy.revocable<T>(item, this.proxier);
             this.contents.push(hold);
             const holder = await this.holder.bind(hold.proxy);
@@ -81,11 +81,15 @@ export class Adapter<T extends object> {
 
     public filter(hide: (item: T) => boolean) {
         this.filterInternal = hide;
-        for (const item of this) item.hidden = hide(item);
+        for (const item of this)
+            this.filterItem(item);
     }
 
     public filterItem(item: T & { hidden?: boolean }) {
+        if (this.visibleList.length <= 0) this.element.querySelectorAll(
+            ".context:not([adapter-binding])").forEach(child => child.remove())
         item.hidden = this.filterInternal(item);
+        this.push();
     }
 
     public get asList() {
