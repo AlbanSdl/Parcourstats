@@ -117,7 +117,7 @@ export class ParcourStats {
             if (!this.i18n) {
                 const i18n = new ((await import("./providers/i18n")).i18n)();
                 await i18n.setLocale(this.settings.get<"fr" | "en">("client.lang") ??
-                    app.getLocaleCountryCode()?.toLowerCase() === "fr" ? "fr" : "en");
+                    (app.getLocaleCountryCode()?.toLowerCase() === "fr" ? "fr" : "en"));
                 this.i18n = i18n;
                 this.#waitingI18nRequests.splice(0, this.#waitingI18nRequests.length).forEach(req => req());
             }

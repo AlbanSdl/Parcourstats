@@ -155,7 +155,7 @@ export class WishFragment extends Page<Home, Adapter<Formation>> {
                 displayGlobalData = globalData[globalData.length - 1];
             }
             this.root.querySelector(".container > .overview > .overall").textContent = overall;
-            if (!!displayedRank && userData.length > 1) {
+            if (!!displayedRank && !!displayGlobalData) {
                 this.root.querySelector(".container > .overview > .rank.user")?.
                     setAttribute("position", displayedRank.queued.toString())
                 this.root.querySelector(".container > .overview > .rank.abs")?.

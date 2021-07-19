@@ -106,7 +106,8 @@ export class Overview extends Page<Home, Adapter<Formation>> {
                 .flat().filter(record => !!record)
                 .sort((a, b) => b.time - a.time)[0]?.time),
                 currentDate = new Date();
-            if (currentDate.getTime() - lastUpdate.getTime() > 43200000 &&
+            if (states.filter(rec => rec.queued > 0).length > 0 &&
+                currentDate.getTime() - lastUpdate.getTime() > 43200000 &&
                 lastUpdate.getFullYear() === currentDate.getFullYear() && 
                 (lastUpdate.getMonth() !== currentDate.getMonth() || lastUpdate.getDate() !== currentDate.getDate())) {
                     this.root!!.querySelector(".container > .today")?.toggleAttribute("present", true);

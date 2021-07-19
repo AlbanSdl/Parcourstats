@@ -108,7 +108,7 @@ class WishTodayEntryFragment extends Fragment {
                 required: true
             }) as TextField;
             let userAbs: TextField | undefined;
-            if (!this.record.session.user) {
+            if (!this.record.session.user.length) {
                 userAbs = new TextField({
                     placeholder: this.todayFrag.getLocale("wishes.today.user.abs"),
                     oninput: () => buttonUpdate(userAbs),
@@ -132,7 +132,7 @@ class WishTodayEntryFragment extends Fragment {
                 classes: ["actions"]
             });
             new Button(this.todayFrag.getLocale("wishes.today.discarded"), () => this.validate(-2), actions).enabled = true;
-            new Button(this.todayFrag.getLocale(!this.record.session.user ? "wishes.today.refused" : "wishes.today.closed"), () => this.validate(-1), actions).enabled = true;
+            new Button(this.todayFrag.getLocale(!this.record.session.user.length ? "wishes.today.refused" : "wishes.today.closed"), () => this.validate(-1), actions).enabled = true;
             new Button(this.todayFrag.getLocale("wishes.today.accepted"), () => this.validate(0), actions).enabled = true;
             const buttonUpdate = async (field: TextField, refValue?: number) => {
                 const value = (field.element.firstElementChild as HTMLInputElement).value;

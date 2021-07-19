@@ -765,7 +765,7 @@ svg {
 .activity.home > .side > .wrapper > .list > .wish[selected] > .session {
     color: var(--color-primary-alt);
 }
-.activity.home > .side > .wrapper > .list > .wish + .wish::after {
+.activity.home > .side > .wrapper > .list > .wish:not([filtered]) ~ .wish::after {
     border-top: 1px solid var(--color-secondary-detail);
     content: "";
     position: absolute;

@@ -21,7 +21,7 @@ viewBox="0 0 27 27" fill="none" stroke-linecap="round" stroke-linejoin="round">
     <clipPath id="splash-clip" clipPathUnits="objectBoundingBox">
         <path d="m0 0h27v27h-27z">
             <animate attributeName="d" calcMode="spline" keyTimes="0;1" keySplines="0 0.8 0.5 1" 
-                begin="indefinite" dur="600ms" fill="freeze" to="m0 13.5h27v0h-27z"/>
+                begin="indefinite" dur="600ms" fill="freeze" to="m0 13.5h27v0h-27z" restart="never"/>
         </path>
     </clipPath>
 </svg>
