@@ -22,7 +22,7 @@ export class Home extends Activity {
     private sideList: Selector<string>;
 
     private formations?: Adapter<Formation>;
-    private readonly providers: WeakRef<(d: Adapter<Formation>) => void>[] = [];
+    private readonly providers: WeakRef<(adapter: Adapter<Formation>) => void>[] = [];
 
     private fragment: Page<Home, Adapter<Formation>>;
     private lang?: Locale;
@@ -44,7 +44,8 @@ export class Home extends Activity {
             localeSetting.select(settings.lang, false);
             this.lang = settings.lang;
             filterSetting.status = settings.filter;
-            this.side.querySelector(".list")?.toggleAttribute("filtered", settings.filter);
+            this.formations?.filter(formation => settings.filter && (formation.year !== new Date().getFullYear() || 
+                (formation.latestUserRecord?.queued ?? 1) <= 0));
         })
         root.classList.add("home");
         this.getLocale("app.name")
@@ -71,26 +72,26 @@ export class Home extends Activity {
             bind(formation) {
                 const wishContainer = createElement({
                     classes: ["wish"],
-                    ripple: true,
-                    name: formation.name
+                    ripple: true
                 });
                 wishContainer.append(createElement({
                     classes: ["session"],
                     text: activity.getLocale(`wish.session.${formation.sessions.length > 1 ? 'plural' : 'singular'}`).then(
-                        localized => `${localized}: ${formation.sessions.map(s => s.year).sort((a, b) => b - a).join(", ")}`)
+                        localized => `${localized}: ${formation.sessions.map(s => s.year).join(", ")}`)
                 }));
                 return wishContainer;
             },
             idify(item) {
                 return item.name
             },
-            update(item, element, property, initial) {
-                console.log(item, element, property, initial);
+            update(item, element, property) {
+                if (property === <string>"hidden")
+                    element.toggleAttribute("filtered", item.hidden === true);
             },
             onEmpty() {
                 return createElement({
                     classes: ["empty"],
-                    text: activity.getLocale("wishes.list.empty")
+                    text: activity.getLocale(`wishes.list.empty${activity.formations.asList.length > 0 ? ".filtered" : ""}`)
                 })
             },
             onError(error) {
@@ -103,7 +104,7 @@ export class Home extends Activity {
         }, wrapper);
         this.sideList = new Selector({
             container: this.formations.element,
-            extractor: e => e?.getAttribute?.("name"),
+            extractor: e => e?.getAttribute?.("adapter-binding"),
             isUnique: true,
             listener: (_, name) => {
                 const frag = !!name ? new WishFragment(name) : new Overview;
@@ -234,7 +235,8 @@ export class Home extends Activity {
                         flags: AppNotification.Type.ERROR
                     })
                 }).finally(() => {
-                    this.side.querySelector(".list")?.toggleAttribute("filtered", e.target.checked);
+                    this.formations?.filter(formation => filterSetting.status && (formation.year !== new Date().getFullYear() || 
+                        (formation.latestUserRecord?.queued ?? 1) <= 0))
                 });
             },
             parent: sideSettings
@@ -267,7 +269,7 @@ export class Home extends Activity {
         });
         root.append(this.side, container);
         this.fragment = new Overview(this, container, () => new Promise<Adapter<Formation>>(res => {
-            if (!!this.formations?.values?.length) res(this.formations);
+            if (!!this.formations?.asList?.length) res(this.formations);
             else this.providers.push(new WeakRef(res));
         }), async key => this.getLocale(key));
         return root;
@@ -357,9 +359,10 @@ export class Home extends Activity {
         ...entries: FormationDataMapping[typeof type][]
     ) {
         entries.forEach(rec => {
-            let current = this.formations?.values?.find(formation => formation.name === rec.name);
+            let current = this.formations?.asList?.find(formation => formation.name === rec.name);
             if (!current) this.formations!.push(this.sideList, current = new Formation(rec.name))
             current.update(rec);
+            this.formations.filterItem(current);
         });
     }
 

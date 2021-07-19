@@ -110,7 +110,7 @@ export class WishFragment extends Page<Home, Adapter<Formation>> {
     protected onCreated(): void {
         this.data.then(async data => {
             const currentYear = new Date().getFullYear();
-            const wish = data.values.find(formation => formation.name === this.wishName)
+            const wish = data.asList.find(formation => formation.name === this.wishName)
                 .sessions?.find(session => session.year === currentYear);
 
             const update = (wish?.global?.map(g => g.time) ?? [])

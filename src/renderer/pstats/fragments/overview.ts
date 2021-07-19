@@ -82,13 +82,13 @@ export class Overview extends Page<Home, Adapter<Formation>> {
         this.displayValue("accepted", "-");
         this.displayValue("pending", "-");
         this.displayValue("refused", "-");
-        this.data.then(d => {
-            const states = d.values.map(e => e.latestUserRecord).filter(e => !!e);
+        this.data.then(adapter => {
+            const states = adapter.asList.map(e => e.latestUserRecord).filter(e => !!e);
             this.displayValue("accepted", states.filter(rec => rec.queued === 0).length.toString())
             this.displayValue("pending", states.filter(rec => rec.queued > 0).length.toString())
             this.displayValue("refused", states.filter(rec => rec.queued < 0).length.toString())
             let index = 0;
-            for (const study of d.values) {
+            for (const study of adapter) {
                 if (!study.sessions.length || !study.session?.user?.length) continue;
                 const graphEntry = new DatasetGraphEntry(study.name, `overview-${index}`)
                 const values = new Map(study.session!.user
@@ -101,7 +101,7 @@ export class Overview extends Page<Home, Adapter<Formation>> {
             }
             this.graph?.invalidate();
             this.root.toggleAttribute("loading", false)
-            const lastUpdate = new Date(d.values
+            const lastUpdate = new Date(adapter.asList
                 .map(entry => [entry.latestGlobalRecord, entry.latestUserRecord])
                 .flat().filter(record => !!record)
                 .sort((a, b) => b.time - a.time)[0]?.time),

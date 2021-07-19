@@ -1,6 +1,7 @@
 app.name Parcourstats
 wishes.list Wishes
 wishes.list.empty You haven't saved any wish yet
+wishes.list.empty.filtered None of your wishes matches the current filters. You can edit them in the settings tab.
 wishes.list.error An error occurred while loading your wishes
 wishes.add New
 wishes.add.header Add a new formation to start save your wishes and their progress. The amount of students of each formation is available on Parcoursup (formation details). This number will scale the speed of rank advancement for all your wishes.

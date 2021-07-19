@@ -6,14 +6,19 @@ export class Adapter<T extends object> {
     public readonly element!: HTMLDivElement;
     private readonly proxier!: ProxyHandler<T>;
     private readonly contents!: Array<{
-        proxy: T, revoke: () => void
+        proxy: T & {
+            hidden?: boolean
+        }, revoke: () => void
     }>;
     private op: number = 0;
+    private filterInternal?: (item: T) => boolean;
 
     constructor(private readonly holder: Adapter.Holder<T>, wrapper: Element) {
-        this.proxier = listenChanges((target, key, from) =>
-            this.holder.update(target, this.element.querySelector(
-                `[adapter-binding=${this.holder.idify(target)}]`), key, from));
+        this.proxier = listenChanges(async (target, key, from) => {
+            await this.holder.update(target, this.element.querySelector(
+                `[adapter-binding="${this.holder.idify(target)}"]`), key, from)
+            if (key === "hidden") this.push();
+        });
         wrapper.appendChild(this.element = createElement({
             classes: ["list", "adapter"]
         }));
@@ -21,23 +26,28 @@ export class Adapter<T extends object> {
         wrapper.append(this.element);
     }
 
-    public async push(on: Selector<any>, ...items: T[]) {
+    public async push(on?: Selector<any>, ...items: T[]) {
         return ++this.op && Promise.all(items.map(async item => {
-            if (this.contents.length <= 0) while (this.element.firstElementChild)
-                this.element.firstElementChild.remove();
+            if (this.visibleList.length <= 0) this.element.querySelectorAll(
+                ":not([adapter-binding])").forEach(child => child.remove())
             const hold = Proxy.revocable<T>(item, this.proxier);
             this.contents.push(hold);
             const holder = await this.holder.bind(hold.proxy);
             holder?.setAttribute("adapter-binding", this.holder.idify(item));
             return [holder, hold.proxy] as const;
         })).then(async opt => {
-            if (this.contents.length <= 0) {
-                while (this.element.firstElementChild) this.element.firstElementChild.remove();
+            if (this.visibleList.length <= 0) {
+                this.element.querySelectorAll(".context:not([adapter-binding])").forEach(child => child.remove())
                 const empty = await this.holder.onEmpty()
-                if (this.contents.length <= 0) this.element.append(empty);
+                empty?.classList?.add("context");
+                if (this.visibleList.length <= 0 && !this.element.querySelector(".context:not([adapter-binding])"))
+                    this.element.append(empty);
             }
             opt.filter(element => !!element[0])
-                .forEach(element => on.append(element[0], false));
+                .forEach(element => {
+                    on.append(element[0], false)
+                    element[1]["hidden"] = this.filterInternal?.(element[1]) ?? false;
+                });
             return opt.map(op => op[1]);
         }).catch(async error => {
             this.raise(error);
@@ -46,9 +56,10 @@ export class Adapter<T extends object> {
     }
 
     public async raise(error: any) {
-        if (!this.contents.length) {
+        if (!this.visibleList.length) {
             const opId = this.op;
             const errored = await this.holder.onError(error);
+            errored?.classList?.add("context");
             if (this.op === opId && !!errored) this.element.append(errored);
         } else {
             new AppNotification({
@@ -62,14 +73,31 @@ export class Adapter<T extends object> {
     public async remove(...items: T[]) {
         return ++this.op && Promise.all(items.map(async item => {
             this.holder.onDestroy?.(item);
-            this.element.querySelector( `[adapter-binding=${
-                this.holder.idify(item)}]`)?.remove();
+            this.element.querySelector( `[adapter-binding="${
+                this.holder.idify(item)}"]`)?.remove();
             this.contents.find(prox => prox.proxy === item)?.revoke?.();
         })).then<void>();
     }
 
-    public get values() {
+    public filter(hide: (item: T) => boolean) {
+        this.filterInternal = hide;
+        for (const item of this) item.hidden = hide(item);
+    }
+
+    public filterItem(item: T & { hidden?: boolean }) {
+        item.hidden = this.filterInternal(item);
+    }
+
+    public get asList() {
         return this.contents.map(value => value.proxy);
+    }
+
+    public get visibleList() {
+        return this.asList.filter(item => item.hidden !== true);
+    }
+
+    public *[Symbol.iterator]() {
+        for (const entry of this.contents) yield entry.proxy;
     }
 }
 
@@ -80,7 +108,7 @@ export namespace Adapter {
         onDestroy?(item: T): Promise<void> | void;
         onEmpty(): Promise<HTMLElement> | HTMLElement;
         onError(error: any): Promise<HTMLElement> | HTMLElement;
-        update<K extends keyof T>(item: T, element: HTMLElement, property: K, from: T[K]): Promise<void> | void;
+        update<K extends keyof T>(item: T & { hidden?: boolean; }, element: HTMLElement, property: K, from: T[K]): Promise<void> | void;
     }
 }
 
@@ -90,9 +118,9 @@ function listenChanges<T extends object>(
     const handlerInternal = <K extends keyof T, A extends any[]>(
         target: T, key: K, native: (...args: [T, K, ...A]) => void, ...args: A
     ) => {
-        const previousValue = JSON.stringify(target[key]);
+        const previousValue = JSON.stringify([target[key]]);
         return native.call(null, target, key, ...args) &&
-            !!(`!${handler(target, key as keyof T, JSON.parse(previousValue))}`);
+            !!(`!${handler(target, key as keyof T, JSON.parse(previousValue)[0])}`);
     }
     return {
         defineProperty: (target, key, descriptor) => handlerInternal(

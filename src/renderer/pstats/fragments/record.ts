@@ -40,9 +40,9 @@ export class TodayFragment extends Page<Home, Adapter<Formation>> {
         return root;
     }
     protected onCreated(): void {
-        this.data.then(activityData => {
+        this.data.then(adapter => {
             const currentYear = new Date().getFullYear();
-            this.query = activityData.values.map(entry => ({
+            this.query = adapter.asList.map(entry => ({
                 session: entry,
                 user: null,
                 global: null

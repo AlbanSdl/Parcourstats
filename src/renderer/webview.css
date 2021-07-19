@@ -619,6 +619,7 @@ svg {
     position: relative;
     width: 100vw;
     height: 100%;
+    overflow: hidden;
 }
 .app-container > .splash {
     display: flex;
@@ -744,14 +745,14 @@ svg {
     flex-shrink: 0;
     transition: all .4s ease-in-out;
 }
-.activity.home > .side > .wrapper > .list[filtered] > .wish:not([active]) {
+.activity.home > .side > .wrapper > .list > .wish[filtered]:not([selected]) {
     display: none;
 }
 .activity.home > .side > .wrapper > .list > .wish[selected] {
     background: var(--color-accent);
 }
 .activity.home > .side > .wrapper > .list > .wish::before {
-    content: attr(name);
+    content: attr(adapter-binding);
 }
 .activity.home > .side > .wrapper > .list > .wish > .session {
     font-style: italic;

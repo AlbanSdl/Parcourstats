@@ -1,6 +1,7 @@
 app.name Parcourstats
 wishes.list Vœux
 wishes.list.empty Tu n'as pas (encore) enregistré de vœux
+wishes.list.empty.filtered Aucun de tes vœux ne correspond aux filtres actuels. Tu peux modifier les filtres dans les paramètres.
 wishes.list.error Une erreur est survenue lors du chargement de tes vœux
 wishes.add Nouveau
 wishes.add.header Ajoute une formation pour commencer à enregistrer tes vœux et leur progression. Le nombre de places disponibles apparaît sur Parcoursup (dans les détails de la formation). Ce nombre permet d'utiliser une même échelle pour la vitesse d'avancement des rangs de toutes tes formations.
