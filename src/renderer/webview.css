@@ -774,9 +774,23 @@ svg {
     width: 100%;
 }
 .activity.home > .side > .wrapper > .list > .empty {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 1em;
+    padding: 20px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+    box-sizing: border-box;
+}
+.activity.home > .side > .wrapper > .list > .empty .button > .ripple {
+    background-color: var(--color-secondary-strong);
+}
+.activity.home > .side > .wrapper > .list > .empty > .text {
     font-size: 18px;
     font-style: italic;
-    padding: 20px;
     text-align: center;
 }
 .activity.home > .side > .wrapper > .add,
@@ -953,8 +967,27 @@ svg {
 .activity.home > .container > .fragment.overview > .container > .today[present] > .go > .ripple {
     background-color: var(--color-red-invert);
 }
+.activity.home > .container > .fragment.overview > .container > .discover {
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    gap: 20px;
+    padding: 15px;
+}
+.activity.home > .container > .fragment.overview > .container > .discover > * {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 45%;
+    text-align: justify;
+}
 .activity.home > .container > .fragment.overview > .container > .title:first-child {
     font-size: 50px;
+}
+.activity.home > .container > .fragment.overview > .container > .discover .caption {
+    display: none;
 }
 .activity.home > .container > .fragment.overview > .container > .title {
     font-size: 28px;
@@ -970,6 +1003,9 @@ svg {
     width: 100%;
     padding: 10px 30px;
     box-sizing: border-box;
+}
+.activity.home > .container > .fragment.overview > .container > .graph.container {
+    width: 100%;
 }
 .activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="1"] > :first-child,
 .activity.home > .container > .fragment.overview > .container > .graph.container > .graph + .caption > [id$="7"] > :first-child {
@@ -1001,6 +1037,7 @@ svg {
 .activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="7"] {
     stroke: var(--color-red);
 }
+.activity.home > .container > .fragment.overview > .container > .discover path[id$="dummy-rank"],
 .activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="2"],
 .activity.home > .container > .fragment.overview > .container > .graph.container > .graph > path.graph-data[id$="8"],
 .activity.home > .container > .fragment.wish > .container > .graph.container > .graph > path.graph-data[id$="user-rank"] {

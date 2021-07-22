@@ -83,30 +83,73 @@ export class Overview extends Page<Home, Adapter<Formation>> {
         this.displayValue("pending", "-");
         this.displayValue("refused", "-");
         this.data.then(adapter => {
-            const states = adapter.asList.map(e => e.latestUserRecord).filter(e => !!e);
+            const states = adapter.asList.map(e => e.latestUserRecord ?? {
+                queued: 1,
+                time: -1
+            });
             this.displayValue("accepted", states.filter(rec => rec.queued === 0).length.toString())
             this.displayValue("pending", states.filter(rec => rec.queued > 0).length.toString())
             this.displayValue("refused", states.filter(rec => rec.queued < 0).length.toString())
-            let index = 0;
-            for (const study of adapter) {
-                if (!study.sessions.length || !study.session?.user?.length) continue;
-                const graphEntry = new DatasetGraphEntry(study.name, `overview-${index}`)
-                const values = new Map(study.session!.user
-                    .until(record => record.queued < 0)
-                    .map(rec => [rec.time, rec.queued]));
-                if ([...values.values()].reduce((p, c) => p + c, 0) <= 0) continue;
-                index++;
-                graphEntry.add(values);
-                this.graph?.addEntry(graphEntry, false);
+
+            if (states.length < 1 || !states.filter(rec => rec.time > 0).length) {
+                const title = this.root.querySelector(".container > .today + .title > .text");
+                title.textContent = "";
+                this.getLocale("wishes.discover.title").then(text => title.textContent = text);
+                const discover = createElement({
+                    classes: ["discover"]
+                })
+                if (delete this.graph) this.root.querySelector(".graph").replaceWith(discover);
+                const graphSection = createElement();
+                discover.append(graphSection);
+                graphSection.append(createElement({
+                    text: Promise.all([this.getLocale("app.name"), 
+                        this.getLocale("wishes.discover.graph")]).then(txts => txts.join(' '))
+                }));
+                const dummyGraph = new Graph({
+                    displayLines: false,
+                    getAbscissaName: () => "",
+                    getOrdinateName: () => "",
+                    displayYZero: true
+                })
+                dummyGraph.attach(graphSection);
+                const entry = new DatasetGraphEntry("", "dummy-rank");
+                entry.add(new Map([
+                    [0, 10], [1, 9], [2, 7], [3, 5.3], [4, 4.1], [5, 3.4]
+                ]))
+                dummyGraph.addEntry(entry)
+                graphSection.append(createElement({
+                    text: this.getLocale("wishes.discover.graph.under")
+                }));
+                const processSection = createElement();
+                discover.append(processSection);
+                processSection.append(createElement({
+                    text: this.getLocale("wishes.discover.process")
+                }), createElement({
+                    text: this.getLocale("wishes.discover.process.under")
+                }));
+            } else {
+                let index = 0;
+                for (const study of adapter) {
+                    if (!study.sessions.length || !study.session?.user?.length) continue;
+                    const graphEntry = new DatasetGraphEntry(study.name, `overview-${index}`)
+                    const values = new Map(study.session!.user
+                        .until(record => record.queued < 0)
+                        .map(rec => [rec.time, rec.queued]));
+                    if ([...values.values()].reduce((p, c) => p + c, 0) <= 0) continue;
+                    index++;
+                    graphEntry.add(values);
+                    this.graph?.addEntry(graphEntry, false);
+                }
+                this.graph?.invalidate();
             }
-            this.graph?.invalidate();
+
             this.root.toggleAttribute("loading", false)
             const lastUpdate = new Date(adapter.asList
                 .map(entry => [entry.latestGlobalRecord, entry.latestUserRecord])
                 .flat().filter(record => !!record)
-                .sort((a, b) => b.time - a.time)[0]?.time),
+                .sort((a, b) => b.time - a.time)[0]?.time ?? (Date.now() - 86400000)),
                 currentDate = new Date();
-            if (states.filter(rec => rec.queued > 0).length > 0 &&
+            if (states.filter(rec => (rec.queued ?? 1) > 0).length > 0 &&
                 currentDate.getTime() - lastUpdate.getTime() > 43200000 &&
                 lastUpdate.getFullYear() === currentDate.getFullYear() && 
                 (lastUpdate.getMonth() !== currentDate.getMonth() || lastUpdate.getDate() !== currentDate.getDate())) {

@@ -42,7 +42,6 @@ export class Home extends Activity {
                 this.lang = settings.lang;
                 filterSetting.status = settings.filter;
             })
-        root.classList.add("home");
         this.getLocale("app.name")
             .then(name => this.title = name);
         root.classList.add("home");
@@ -85,10 +84,16 @@ export class Home extends Activity {
                     element.toggleAttribute("filtered", item.hidden === true);
             },
             onEmpty(isFiltered) {
-                return createElement({
+                const placeholder = createElement({
                     classes: ["empty"],
                     text: activity.getLocale(`wishes.list.empty${isFiltered ? ".filtered" : ""}`)
                 })
+                new Button(
+                    activity.getLocale(`wishes.list.empty${isFiltered ? ".filtered" : ""}.action`),
+                    () => activity.sideHeader.select(isFiltered ? "stat-settings" : "wish-add"),
+                    placeholder
+                ).enabled = true;
+                return placeholder;
             },
             onError(error) {
                 console.error(error);
@@ -267,7 +272,7 @@ export class Home extends Activity {
         });
         root.append(this.side, container);
         this.fragment = new Overview(this, container, () => new Promise<Adapter<Formation>>(res => {
-            if (!!this.formations?.asList?.length) res(this.formations);
+            if (this.formations?.clean === false) res(this.formations);
             else this.providers.push(new WeakRef(res));
         }), async key => this.getLocale(key));
         return root;

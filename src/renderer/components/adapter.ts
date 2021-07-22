@@ -11,6 +11,7 @@ export class Adapter<T extends object> {
         }, revoke: () => void
     }> = [];
     private op: number = 0;
+    private invokedPush = false;
     private filterInternal?: (item: T) => boolean;
     private readonly pending: Map<T, () => void> = new Map;
 
@@ -33,7 +34,7 @@ export class Adapter<T extends object> {
         }));
     }
 
-    private async contextualize<K>(opId: number, opLength: number, ...value: K[]) {
+    private async contextualize(opId: number, opLength: number) {
         if (this.visibleList.length <= 0) {
             const empty = await this.holder.onEmpty(this.contents.length !== 0);
             empty?.classList?.add("context");
@@ -46,7 +47,6 @@ export class Adapter<T extends object> {
             this.element.querySelectorAll(`.context:not([${Adapter.bindingAttribute}])`).forEach(ctx => ctx.remove())
         if (this.op === opId && this.visibleList.length !== opLength) await Promise.resolve(
             this.holder.onLengthUpdate?.(opLength, this.visibleList.length)).catch();
-        return value;
     }
 
     public async push(on?: Selector<any>, ...items: T[]) {
@@ -63,7 +63,11 @@ export class Adapter<T extends object> {
             const promise = new Promise<void>(res => this.pending.set(element[1], res));
             element[1]["hidden"] = (this.filterInternal ?? (() => false))(element[1]);
             return promise.then(() => element[1]);
-        }))).then(data => this.contextualize(opId, opLength, ...data))
+        }))).then(data => {
+            this.contextualize(opId, opLength)
+            this.invokedPush = true;
+            return data;
+        })
         .catch(async error => {
             this.raise(error);
             return [] as T[];
@@ -79,7 +83,7 @@ export class Adapter<T extends object> {
         } else {
             new AppNotification({
                 content: Promise.resolve(this.holder.onError(error))
-                    .then(value => value.textContent),
+                    .then(value => value.querySelector(".text")?.textContent ?? value.textContent),
                 flags: AppNotification.Type.ERROR
             });
         }
@@ -127,6 +131,10 @@ export class Adapter<T extends object> {
 
     public *[Symbol.iterator]() {
         for (const entry of this.contents) yield entry.proxy;
+    }
+
+    public get clean() {
+        return !this.op && !this.contents.length && !this.invokedPush;
     }
 }
 

@@ -1,7 +1,9 @@
 app.name Parcourstats
 wishes.list Wishes
 wishes.list.empty You haven't saved any wish yet
-wishes.list.empty.filtered None of your wishes matches the current filters. You can edit them in the settings tab.
+wishes.list.empty.action Add one
+wishes.list.empty.filtered None of your wishes matches the current filters.
+wishes.list.empty.filtered.action Edit them
 wishes.list.error An error occurred while loading your wishes
 wishes.add New
 wishes.add.header Add a new formation to start save your wishes and their progress. The amount of students of each formation is available on Parcoursup (formation details). This number will scale the speed of rank advancement for all your wishes.
@@ -34,6 +36,11 @@ wishes.overview.abstract.refused of your wishes have been rejected
 wishes.overview.title Wish progression
 wishes.overview.today.tip You haven't saved your ranks yet. It is strongly advised to record your ranks every day in order to visualize the most accurate stats.
 wishes.overview.today.letsgo Let's go !
+wishes.discover.title How does it work ?
+wishes.discover.graph affiche display the ranks of your Parcoursup wishes with graphs in order to emphasize their evolution.
+wishes.discover.graph.under If it is not precise enough to you, the values of your ranks are listed in a table under the graphs on the wish page.
+wishes.discover.process The app will invite you to record your ranks 12 hours apart everyday. In order to do so, connect on Parcoursup and copy the values in the proper input fields (this process is not automatic not to cause any damage in the future while the website evolves)
+wishes.discover.process.under For now, the plateform ranks are not live updating. This is the reason why there is a delay before you can record your ranks back in the app: if you save a value which has not been updated on Parcoursup, the stats may become weird... If this behaviour changes in the future, you can still record your ranks in the settings.
 wishes.today.header Ranks update
 wishes.today.subtitle Save the ranks of all your wishes to keep track of their advancement
 wishes.today.user.rank Your rank

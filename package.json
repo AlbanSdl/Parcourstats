@@ -1,6 +1,6 @@
 {
   "name": "parcourstats",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "A Parcoursup watcher",
   "main": "main/index.js",
   "private": true,

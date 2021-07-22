@@ -1,7 +1,9 @@
 app.name Parcourstats
 wishes.list Vœux
 wishes.list.empty Tu n'as pas (encore) enregistré de vœux
-wishes.list.empty.filtered Aucun de tes vœux ne correspond aux filtres actuels. Tu peux modifier les filtres dans les paramètres.
+wishes.list.empty.action Ajoutes-en un
+wishes.list.empty.filtered Aucun de tes vœux ne correspond aux filtres actuels.
+wishes.list.empty.filtered.action Modifie les filtres
 wishes.list.error Une erreur est survenue lors du chargement de tes vœux
 wishes.add Nouveau
 wishes.add.header Ajoute une formation pour commencer à enregistrer tes vœux et leur progression. Le nombre de places disponibles apparaît sur Parcoursup (dans les détails de la formation). Ce nombre permet d'utiliser une même échelle pour la vitesse d'avancement des rangs de toutes tes formations.
@@ -34,6 +36,11 @@ wishes.overview.abstract.refused vœux refusés
 wishes.overview.title Progression des vœux
 wishes.overview.today.tip Tu n'as pas encore enregistré tes rangs aujourd'hui. Pour que les statistiques soient les plus fiables possibles, il est recommandé de le faire une fois par jour.
 wishes.overview.today.letsgo Allons-y !
+wishes.discover.title Comment ça marche ?
+wishes.discover.graph affiche les rangs de tes vœux Parcoursup avec des graphiques pour te montrer comment ils évoluent (et parce que c'est souvent plus parlant)
+wishes.discover.graph.under Si jamais ce n'est pas assez clair ou précis, tu peux retrouver tes rangs exacts tels que tu les as enregistrés. Ils se trouvent en dessous des graphiques dans la page du vœu.
+wishes.discover.process L'application te proposera chaque jour avec au minimum 12 heures d'intervalle de mettre à jour les rangs de tes vœux. C'est à toi de te connecter sur Parcoursup et de reporter les valeurs dans l'application (ce n'est pas automatique afin que l'application soit futur-proof et qu'elle ne fasse pas n'importe quoi dans 5 ans).
+wishes.discover.process.under A l'heure actuelle, la plateforme ne calcule pas les ranks en temps réel mais de façon régulière. C'est pour cela qu'il y a un délai de 12 heures dans l'application: si tu enregistres une valeur qui n'a pas été mise à jour sur Parcoursup, les statistiques risquent de devenir étranges... Si ce comportement venait changer, il est tout de même possible d'enregistrer de nouveau les rangs de tes vœux en attente dans les paramètres.
 wishes.today.header Enregistrement des rangs
 wishes.today.subtitle Enregistre les rangs de chacun de tes vœux afin de suivre leur évolution
 wishes.today.user.rank Ton rang
