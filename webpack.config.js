@@ -2,9 +2,7 @@ const path = require("path");
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {
-    mode: process.env.NODE_ENV ?? "production",
     target: 'electron13.1-renderer',
-    devtool: 'inline-source-map',
     entry: './src/renderer/webview.ts',
     output: {
         filename: 'webview.js',

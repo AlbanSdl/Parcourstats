@@ -1,20 +1,13 @@
 {
   "name": "parcourstats",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "A Parcoursup watcher",
   "main": "main/index.js",
   "private": true,
   "scripts": {
-    "clean": "node -e \"require('fs').rmSync('build/src', {force:true,recursive:true})\"",
-    "gather-resources": "copyfiles -u 1 -e src/**/*.ts -e **/tsconfig.json src/**/* build/src/",
-    "compile-main": "tsc --p src/main/tsconfig.json && npm run gather-resources && webpack",
-    "compile-tests": "tsc --p tests/tsconfig.json",
-    "compile-setup": "tsc --p scripts/tsconfig.json",
-    "start-no-compile": "electron build/src/main/index.js",
-    "test-no-compile": "node build/tests/main.js",
-    "start": "npm run clean && npm run compile-main && npm run start-no-compile",
-    "build": "npm run clean && npm run compile-main && npm run compile-setup && node build/scripts/build.js",
-    "test": "npm run clean && npm run compile-tests && npm run test-no-compile"
+    "start": "node build/scripts/build.js -d",
+    "build": "npm run prestart && node build/scripts/build.js -b",
+    "prestart": "tsc --p scripts/tsconfig.json"
   },
   "repository": {
     "type": "git",
@@ -27,6 +20,7 @@
   },
   "homepage": "https://github.com/AlbanSdl/Parcourstats#readme",
   "devDependencies": {
+    "@types/copyfiles": "^2.4.1",
     "@types/sqlite3": "^3.1.7",
     "copyfiles": "^2.4.1",
     "electron": "^13.1.7",

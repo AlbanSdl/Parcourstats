@@ -6,8 +6,10 @@ import { JsonPackage, ModuleSink } from "./sink";
 import { build, Configuration, Packager } from "app-builder-lib";
 import { normalizeOptions } from "electron-builder/out/builder";
 import { Metadata, SourceRepositoryInfo } from "electron-builder";
+import { prepareResources, typescriptCompile, webpackCompile } from "./compile";
 
-const production = !process.argv.includes("--dev-mode");
+const production = !process.argv.includes("--debug") && !process.argv.includes("-d");
+const shouldBuild = process.argv.includes("--build") || process.argv.includes("-b");
 
 class SinkPackager extends Packager {
     #sink = new ModuleSink({
@@ -61,7 +63,7 @@ class SinkPackager extends Packager {
                 buildResources: this.#sink.outputPath
             },
             beforeBuild: async context => this.#sink.start(context).then(() => true),
-            afterPack: async context => production || rm(join(context.appOutDir, "locales"), {
+            afterPack: async context => production && rm(join(context.appOutDir, "locales"), {
                 recursive: true,
                 force: true
             }),
@@ -70,5 +72,19 @@ class SinkPackager extends Packager {
     }
 }
 
-const options = normalizeOptions({});
-build(options, new SinkPackager(options)).catch(console.error);
+rm("build/src", {
+    force: true,
+    recursive: true
+}).then(async () => Promise.all([
+    typescriptCompile("src/main/tsconfig.json"),
+    webpackCompile(production),
+    prepareResources()
+])).then(() => {
+    if (shouldBuild) {
+        const options = normalizeOptions({});
+        build(options, new SinkPackager(options)).catch(console.error);
+    }
+}).catch(error => {
+    Array.isArray(error) ? error.forEach(err => console.error(err)) : console.error(error);
+    process.exit(1);
+})
