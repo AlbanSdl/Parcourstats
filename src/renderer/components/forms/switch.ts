@@ -54,5 +54,6 @@ export class Switch {
     public set status(activated: boolean) {
         const input = this.element.querySelector("label > input.switch[type=checkbox]") as HTMLInputElement;
         if (!!input) input!.checked = activated;
+        input?.dispatchEvent(new Event("input"));
     }
 }

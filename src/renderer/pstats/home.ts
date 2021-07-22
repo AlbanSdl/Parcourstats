@@ -34,19 +34,14 @@ export class Home extends Activity {
     protected async onCreate() {
         const root = await super.onCreate();
         this.initDataLoading();
-        window.messenger.send(Query.SETTINGS_GET).then(settings => {
-            document.documentElement.setAttribute("theme", !settings.theme ? "dark" : "light");
-            return settings;
-        })
-        .then(settings => this.waitCreation(settings))
-        .then(settings => {
-            themeSetting.status = !settings.theme
-            localeSetting.select(settings.lang, false);
-            this.lang = settings.lang;
-            filterSetting.status = settings.filter;
-            this.formations?.filter(formation => settings.filter && (formation.year !== new Date().getFullYear() || 
-                (formation.latestUserRecord?.queued ?? 1) <= 0));
-        })
+        window.messenger.send(Query.SETTINGS_GET)
+            .then(settings => this.waitCreation(settings))
+            .then(settings => {
+                themeSetting.status = !settings.theme
+                localeSetting.select(settings.lang, false);
+                this.lang = settings.lang;
+                filterSetting.status = settings.filter;
+            })
         root.classList.add("home");
         this.getLocale("app.name")
             .then(name => this.title = name);
@@ -62,7 +57,8 @@ export class Home extends Activity {
             extractor: e => e?.getAttribute?.("action"),
             isUnique: true,
             neverEmpty: true,
-            listener: (_, action) => this.updateMenu(action)
+            listener: (_, action) => this.side.querySelectorAll(".wrapper > *").forEach(item => 
+                item.toggleAttribute("current", item.classList.contains(action.slice(5))))
         })
         const wrapper = createElement({
             classes: ["wrapper"]
@@ -88,10 +84,10 @@ export class Home extends Activity {
                 if (property === <string>"hidden")
                     element.toggleAttribute("filtered", item.hidden === true);
             },
-            onEmpty() {
+            onEmpty(isFiltered) {
                 return createElement({
                     classes: ["empty"],
-                    text: activity.getLocale(`wishes.list.empty${activity.formations.asList.length > 0 ? ".filtered" : ""}`)
+                    text: activity.getLocale(`wishes.list.empty${isFiltered ? ".filtered" : ""}`)
                 })
             },
             onError(error) {
@@ -100,6 +96,10 @@ export class Home extends Activity {
                     classes: ["empty"],
                     text: activity.getLocale("wishes.list.error")
                 })
+            },
+            onLengthUpdate() {
+                recordButton.enabled = !!activity.formations.asList.find(formation => 
+                    (formation.latestUserRecord?.queued ?? 1) > 0);
             }
         }, wrapper);
         this.sideList = new Selector({
@@ -249,10 +249,8 @@ export class Home extends Activity {
             classes: ["description"],
             text: this.getLocale("app.settings.record.detail")
         }))
-        const recordButton = new Button(this.getLocale("app.settings.record.button"), () => {
-            this.changeFragment(new TodayFragment())
-        }, recordOption);
-        recordButton.enabled = true;
+        const recordButton = new Button(this.getLocale("app.settings.record.button"),
+            () => this.changeFragment(new TodayFragment()), recordOption);
         const aboutProperty = createElement({
             classes: ["about"],
             text: Promise.all([this.getLocale("app.settings.about"), 
@@ -349,29 +347,13 @@ export class Home extends Activity {
         type: keyof FormationDataMapping,
         rec: FormationDataMapping[typeof type]
     ) {
-        return window.messenger.send(
+        await window.messenger.send(
             Query.DATA, "insert", type, rec
-        ).then(() => this.update(type, rec))
-    }
-
-    private update(
-        type: keyof FormationDataMapping,
-        ...entries: FormationDataMapping[typeof type][]
-    ) {
-        entries.forEach(rec => {
-            let current = this.formations?.asList?.find(formation => formation.name === rec.name);
-            if (!current) this.formations!.push(this.sideList, current = new Formation(rec.name))
-            current.update(rec);
-            this.formations.filterItem(current);
-        });
-    }
-
-    private updateMenu(action: string) {
-        const items = this.side.querySelectorAll(".wrapper > *");
-        for (let i = 0; i < items.length; i++) {
-            const item = items.item(i);
-            item.toggleAttribute("current", item.classList.contains(action.slice(5)));
-        }
+        );
+        let current = this.formations?.asList?.find(formation => formation.name === rec.name);
+        if (!current) await this.formations!.push(this.sideList, current = new Formation(rec.name))
+        current.update(rec);
+        return this.formations.filterItem(current);
     }
 
     /** @internal */
