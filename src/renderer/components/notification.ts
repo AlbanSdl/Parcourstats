@@ -48,8 +48,7 @@ export class AppNotification {
         if (this.#options.flags & AppNotification.Flags.STICK_TOP) AppNotification.container.prepend(this.#element)
         else AppNotification.container.append(this.#element);
         Ripple.apply(elementClose);
-        this.#element.getBoundingClientRect();
-        this.#element.classList.remove(initClass);
+        requestAnimationFrame(() => this.#element.classList.remove(initClass))
         this.#timer = options.duration > 0 ? window.setTimeout(
             () => this.hide(), options.duration) : -1;
         this.#element.addEventListener('click', async event => {
@@ -92,18 +91,20 @@ export class AppNotification {
 
     public async hide() {
         if (!!this.#element?.parentElement) {
-            const duration = parseInt((window.getComputedStyle(this.#element).transitionDuration ?? "0s")
-                .replace(/^([+-]?)(?:(\d+)((?:\.\d*)?)|()(\.\d+))\s*(m?)s$/, 
-                (...[, sign, int, decimal, unitPrefix]: string[]) => sign + int +
-                (unitPrefix === "m" ? decimal : `${decimal.slice(1, 4).padEnd(3, "0")}.${decimal.slice(4)}`)));
-            Promise.resolve(() => this.#options.onDismiss?.())
-                .then(func => func()).catch(console.error);
             return new Promise<void>(res => {
-                if (this.#timer !== undefined) clearTimeout(this.#timer);
-                this.#element.classList.add(AppNotification.notificationCollapsedClass);
-                setTimeout(() => {
-                    res();
-                }, duration);
+                requestAnimationFrame(() => {
+                    const duration = parseInt((window.getComputedStyle(this.#element).transitionDuration ?? "0s")
+                        .replace(/^([+-]?)(?:(\d+)((?:\.\d*)?)|()(\.\d+))\s*(m?)s$/, 
+                        (...[, sign, int, decimal, unitPrefix]: string[]) => sign + int +
+                        (unitPrefix === "m" ? decimal : `${decimal.slice(1, 4).padEnd(3, "0")}.${decimal.slice(4)}`)));
+                    Promise.resolve(() => this.#options.onDismiss?.())
+                        .then(func => func()).catch(console.error);
+                    if (this.#timer !== undefined) clearTimeout(this.#timer);
+                    this.#element.classList.add(AppNotification.notificationCollapsedClass);
+                    setTimeout(() => {
+                        res();
+                    }, duration);
+                });
             }).then(() => this.#element.remove())
         }
     }

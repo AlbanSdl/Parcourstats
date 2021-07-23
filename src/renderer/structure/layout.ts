@@ -93,10 +93,8 @@ async function applyTransitionStyles(root: HTMLDivElement, transition: Transitio
     const regularDirection = invert ? !isOpening : isOpening;
     const direction = regularDirection ? "in" : "out";
     applied.forEach(attr => root.setAttribute(attr, direction))
-    if (isOpening) {
-        root.getBoundingClientRect();
-        applied.forEach(attr => root.removeAttribute(attr))
-    } else if (applied.length > 0) {
+    if (isOpening) requestAnimationFrame(() => applied.forEach(attr => root.removeAttribute(attr)))
+    else if (applied.length > 0) {
         return new Promise(res => {
             setTimeout(() => {
                 applied.forEach(attr => root.getAttribute(attr) === direction ? root.removeAttribute(attr) : 0)

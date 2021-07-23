@@ -5,7 +5,10 @@ import type { i18n } from "./providers/i18n";
 import type { Settings } from "./providers/settings";
 import type { DataProvider } from "./providers/data";
 import { Locale, Query, Recipient } from "../common/window";
-import { readdir, readFile } from "fs/promises";
+
+const dynamicImports: {
+    "fs/promises"?: typeof import("fs/promises")
+} = {};
 
 app.setAppUserModelId("fr.asdl.parcourstats");
 
@@ -54,9 +57,10 @@ export class ParcourStats {
             }
         })
         this.ipc.on(Query.CONTEXT, async () => {
-            const dirs = await readdir(join(__dirname, "..", "node_modules"), "utf8");
+            const fs = dynamicImports["fs/promises"] ??= await import("fs/promises");
+            const dirs = await fs.readdir(join(__dirname, "..", "node_modules"), "utf8");
             const deps = await Promise.all(dirs.map(dir => 
-                readFile(join(__dirname, "..", "node_modules", dir, "package.json"), "utf8")
+                fs.readFile(join(__dirname, "..", "node_modules", dir, "package.json"), "utf8")
                 .then(JSON.parse)
                 .then(async pkg => [dir, {
                     version: pkg["version"] ?? await this.getLocale("app.settings.about.libs.unknown"),

@@ -4,20 +4,23 @@ export namespace Ripple {
     const componentTag = 'has-ripple'
     function listener(this: HTMLElement | SVGElement, e: MouseEvent) {
         this.classList.toggle("ripple-container", true);
-        const bcr = this.getBoundingClientRect()
-        const r = createElement({
-            classes: ['ripple'],
-            style: {
-                left: `${e.x - bcr.x - window.scrollX}px`,
-                top: `${e.y - bcr.y - window.scrollY}px`
-            }
-        })
-        this.append(r)
-        r.getBoundingClientRect()
-        const rSize = Math.max(bcr.height, bcr.width, 600)
-        r.style.opacity='0'
-        r.style.width=r.style.height=`${rSize}px`
-        setTimeout(() => r.remove(), 550)
+        requestAnimationFrame(() => {
+            const bcr = this.getBoundingClientRect()
+            const r = createElement({
+                classes: ['ripple'],
+                style: {
+                    left: `${e.x - bcr.x - window.scrollX}px`,
+                    top: `${e.y - bcr.y - window.scrollY}px`
+                }
+            })
+            this.append(r);
+            requestAnimationFrame(() => {
+                const rSize = Math.max(bcr.height, bcr.width, 600);
+                r.style.opacity = '0';
+                r.style.width = r.style.height = `${rSize}px`;
+                setTimeout(() => r.remove(), 550);
+            })
+        });
     }
     export function apply(target: HTMLElement | SVGElement) {
         if (!target.hasAttribute(componentTag)) {

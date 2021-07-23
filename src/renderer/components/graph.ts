@@ -115,10 +115,9 @@ abstract class GraphEntry {
     protected readonly dependantEntries: string[] = [];
     protected reference?: GraphReference;
     #name!: string;
-    #color!: string;
 
-    constructor(name: string, id: string) {
-        this.#name = name
+    constructor(name: string | Promise<string>, id: string) {
+        this.name = name
         this.id = id;
     }
 
@@ -133,9 +132,14 @@ abstract class GraphEntry {
         }
     }
 
-    public set name(value: string) {
-        this.#name = value;
-        this.updateDisplay(GraphEntryUpdate.NAME)
+    public set name(value: string | Promise<string>) {
+        if (value instanceof Promise) {
+            this.name = "";
+            value.then(name => this.name = name);
+        } else {
+            this.#name = value;
+            this.updateDisplay(GraphEntryUpdate.NAME)
+        }
     }
 
     public get name() {
@@ -146,13 +150,13 @@ abstract class GraphEntry {
         this.reference?.detach();
         this.reference = ref;
         this.reference?.attachReady({
-            updateBounds: () => this.updateDisplay(GraphEntryUpdate.VALUES),
+            updateBounds: () => this.updateDisplay(GraphEntryUpdate.VALUES | GraphEntryUpdate.NAME),
             getId: () => {
                 return this.id;
             }
         });
         this.reference?.updateScale(this.values, invalidateLayout);
-        this.updateDisplay(GraphEntryUpdate.NAME | GraphEntryUpdate.VALUES);
+        if (invalidateLayout) this.updateDisplay(GraphEntryUpdate.NAME | GraphEntryUpdate.VALUES);
     }
 
     protected updateDisplay(code: GraphEntryUpdate) {
@@ -200,7 +204,7 @@ export class DatasetGraphEntry extends GraphEntry {
 export class ComputedGraphEntry<T extends number> extends GraphEntry {
     #dependencies: EntryDependency[];
     #operator: (abscissa: number, ...sources: number[] & { length: T; }) => number;
-    constructor(name: string, id: string, 
+    constructor(name: string | Promise<string>, id: string, 
         operation: (abscissa: number, ...sources: number[] & { length: T; }) => number,
         ...sources: readonly GraphEntry[] & { length: T; }
     ) {
@@ -233,7 +237,7 @@ export class ComputedGraphEntry<T extends number> extends GraphEntry {
 }
 
 export class PreviousBasedComputedGraphEntry<T extends number> extends ComputedGraphEntry<T> {
-    constructor(name: string, id: string, operation: (abscissa: number, ...sources: [
+    constructor(name: string | Promise<string>, id: string, operation: (abscissa: number, ...sources: [
         ...previous: number[] & { length: T; },
         ...target: number[] & { length: T; }
     ]) => number, ...sources: readonly GraphEntry[] & { length: T; }) {
@@ -388,8 +392,8 @@ export class Graph {
         if (!!this.wrapper.parentElement) this.updateAxisSteps();
     }
 
-    private computeLocationComponent(value: number, ratio: number, outerPaddingMultiplier: number = 1) {
-        return ratio * (value * (1 - 2 * this.padding) + outerPaddingMultiplier * this.padding)
+    private computeLocationComponent(value: number, ratio: number) {
+        return ratio * (value - value * 2 * this.padding + this.padding)
     }
 
     private updateAxisSteps() {
@@ -406,22 +410,20 @@ export class Graph {
             const marker = createElement({
                 svg: true,
                 tag: "text",
-                classes: ["marker"],
-                x: this.computeLocationComponent(scaled.x, this.xRatio, isX ? 1 : .9),
-                y: this.computeLocationComponent(1 - scaled.y, this.yRatio, isX ? 1.5 : 1),
+                classes: ["marker", isX ? "x" : "y"],
+                x: this.computeLocationComponent(scaled.x, this.xRatio),
+                y: this.computeLocationComponent(1 - scaled.y, this.yRatio),
                 style: {
                     [isX ? "max-height" : "max-width"]: `${this.padding * 90}%`
                 }
             })
             marker.textContent = isX ? this.getAbscissaName(step) : this.getOrdinateName(step);
             this.graph.append(marker);
-            const bcr = marker.getBBox();
-            marker.setAttribute("x", Math.round(bcr.x - bcr.width / (isX ? 2 : 1)).toString());
-            if (!isX) marker.setAttribute("y", Math.round(bcr.y + bcr.height).toString());
             if (this.displayMarkers) {
                 const x = this.computeLocationComponent(scaled.x, this.xRatio),
                     y = this.computeLocationComponent(1 - scaled.y, this.yRatio),
-                    to = isX ? this.padding * this.yRatio : (1 - this.padding) * this.xRatio;
+                    to = isX ? this.computeLocationComponent(0, this.yRatio) :
+                        this.computeLocationComponent(1, this.xRatio);
                 this.graph.prepend(createElement({
                     svg: true,
                     tag: "path",
@@ -466,19 +468,11 @@ export class Graph {
 
     private computeAxisPath() {
         const arrowSize = Math.min(this.xRatio, this.yRatio) * this.padding / 4;
-        return `m${this.xRatio * this.padding} ${this.yRatio * this.padding}
-                    l${arrowSize * .3} ${arrowSize}
-                    h${-arrowSize * .3}
-                    v${this.yRatio * (1 - this.padding * 2) - arrowSize}
-                    h${this.xRatio * (1 - this.padding * 2) - arrowSize}
-                    v${-arrowSize * .3}
-                    l${arrowSize} ${arrowSize * .3}
-                    ${-arrowSize} ${arrowSize * .3}
-                    v${-arrowSize * .3}
-                    h${-this.xRatio * (1 - this.padding * 2) + arrowSize}
-                    v${-this.yRatio * (1 - this.padding * 2) + arrowSize}
-                    h${-arrowSize * .3}
-                    z`;
+        return `m${this.xRatio * this.padding} ${this.yRatio * this.padding}l${arrowSize * .3} ${arrowSize}h${-arrowSize * .3
+            }v${this.yRatio * (1 - this.padding * 2) - arrowSize}h${this.xRatio * (1 - this.padding * 2) - arrowSize
+            }v${-arrowSize * .3}l${arrowSize} ${arrowSize * .3}${-arrowSize} ${arrowSize * .3}v${-arrowSize * .3
+            }h${-this.xRatio * (1 - this.padding * 2) + arrowSize}v${-this.yRatio * (1 - this.padding * 2) + arrowSize
+            }h${-arrowSize * .3}z`;
     }
 
     private *stepBetween(min: number, max: number) {

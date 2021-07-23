@@ -490,6 +490,13 @@ svg {
 .graph.container > .graph > text.marker {
     fill: var(--color-primary);
     font-size: 3px;
+    transform-box: fill-box;
+}
+.graph.container > .graph > text.marker.y {
+    transform: translateX(calc(-100% - 1.5ch)) translateY(25%);
+}
+.graph.container > .graph > text.marker.x {
+    transform: translateX(-50%) translateY(100%);
 }
 .graph.container > .graph > path.marker {
     fill: none;

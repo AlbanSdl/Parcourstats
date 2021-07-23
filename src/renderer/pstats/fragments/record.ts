@@ -192,7 +192,7 @@ class WishTodayEntryFragment extends Fragment {
                             details.append(createElement({
                                 classes: ["update"],
                                 text: wish.user?.application_queued?.toString(),
-                                from: wish.session.latestUserRecord?.queued,
+                                from: wish.session.latestUserRecord?.queued ?? "",
                                 type: this.todayFrag.getLocale("wishes.today.user.rank")
                             }))
                         }
@@ -207,7 +207,7 @@ class WishTodayEntryFragment extends Fragment {
                             details.append(createElement({
                                 classes: ["update"],
                                 text: wish.global?.application_all?.toString(),
-                                from: wish.session.latestGlobalRecord?.all,
+                                from: wish.session.latestGlobalRecord?.all ?? "",
                                 type: this.todayFrag.getLocale("wishes.today.global.all")
                             }))
                         }
@@ -215,7 +215,7 @@ class WishTodayEntryFragment extends Fragment {
                             details.append(createElement({
                                 classes: ["update"],
                                 text: wish.global?.application_last?.toString(),
-                                from: wish.session.latestGlobalRecord?.all,
+                                from: wish.session.latestGlobalRecord?.all ?? "",
                                 type: this.todayFrag.getLocale("wishes.today.global.last")
                             }))
                         }
