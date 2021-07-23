@@ -50,8 +50,8 @@ export async function webpackCompile(production: boolean) {
         configuration.mode = production ? "production" : "development";
         let compiler = webpack(configuration);
         new webpack.ProgressPlugin().apply(compiler);
-        compiler.run(err => {
-            if (!!err) rej([err])
+        compiler.run((err, result) => {
+            if (!!err || result.hasErrors()) rej(err ?? result.compilation?.errors)
             else res();
         });
     })

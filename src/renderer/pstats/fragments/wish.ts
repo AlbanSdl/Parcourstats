@@ -262,16 +262,14 @@ export class WishFragment extends Page<Home, Adapter<Formation>> {
                 let elapsedTime = 0;
                 let latestResult: PreviousRecord;
                 const loadNext = () => {
-                    if (promises.length > 0) {
-                        requestIdleCallback(async timer => {
-                            while (promises.length > 0 && !timer.didTimeout && timer.timeRemaining() > elapsedTime * 1.2) {
-                                const startup = Date.now();
-                                latestResult = await promises.shift()(latestResult);
-                                elapsedTime = (elapsedTime * pastPromises++ + Date.now() - startup) / pastPromises
-                            }
-                            return loadNext();
-                        })
-                    }
+                    if (promises.length > 0) requestIdleCallback(async timer => {
+                        while (promises.length > 0 && !timer.didTimeout && timer.timeRemaining() > elapsedTime * 1.2) {
+                            const startup = Date.now();
+                            latestResult = await promises.shift()(latestResult);
+                            elapsedTime = (elapsedTime * pastPromises++ + Date.now() - startup) / pastPromises
+                        }
+                        return loadNext();
+                    })
                 }
                 loadNext();
             }

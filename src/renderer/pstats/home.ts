@@ -307,9 +307,9 @@ export class Home extends Activity {
             child.querySelectorAll("animate, animateTransform").forEach(
             (anim: SVGAnimateElement | SVGAnimateTransformElement) => {
                 const started = anim.getAttribute("begin") !== "indefinite";
-                if (started) (<any>anim).endElementAt(anim.getCurrentTime());
-                else if (anim.parentElement?.parentElement?.id !== "splash-clip") (<any>anim).beginElement();
-                else setTimeout(() => (<any>anim).beginElement(), 500);
+                if (started) anim.endElementAt(anim.getCurrentTime());
+                else if (anim.parentElement?.parentElement?.id !== "splash-clip") anim.beginElement();
+                else setTimeout(() => anim.beginElement(), 500);
             });
         }
     }
