@@ -18,6 +18,7 @@
     --color-red-invert: var(--color-red-dark);
     --color-orange: var(--color-orange-light);
     --color-orange-invert: var(--color-orange-dark);
+    --color-psup-logo: #3d56b4;
     /* App Constants */
     --color-green-light: #28cd00;
     --color-green-dark: #208a05;
@@ -52,6 +53,7 @@
     --color-orange-invert: var(--color-orange-light);
     --color-red: var(--color-red-dark);
     --color-red-invert: var(--color-red-light);
+    --color-psup-logo: #3d566e;
 }
 
 body,
@@ -629,7 +631,7 @@ svg {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: var(--color-secondary-detail);
+    background-color: var(--color-secondary);
     z-index: 1;
     overflow: hidden;
     clip-path: url(#splash-clip);
@@ -637,6 +639,9 @@ svg {
 .app-container > .splash > svg {
     height: 20vmin;
     overflow: visible;
+}
+.app-container > .splash > svg > path:nth-child(2) {
+    stroke: var(--color-psup-logo);
 }
 .app-container > .splash > svg > clipPath {
     transform: scale(calc(1/27));

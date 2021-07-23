@@ -1,7 +1,6 @@
 // @ts-ignore
 import { name, author } from "../../package.json";
 import { rm } from "fs/promises";
-import { join } from "path";
 import { JsonPackage, ModuleSink } from "./sink";
 import { build, Configuration, Packager } from "app-builder-lib";
 import { normalizeOptions } from "electron-builder/out/builder";
@@ -63,10 +62,10 @@ class SinkPackager extends Packager {
                 buildResources: this.#sink.outputPath
             },
             beforeBuild: async context => this.#sink.start(context).then(() => true),
-            afterPack: async context => production && rm(join(context.appOutDir, "locales"), {
+            /*afterPack: async context => production && rm(join(context.appOutDir, "locales"), {
                 recursive: true,
                 force: true
-            }),
+            }),*/
             files: this.#sink.paths
         }, metadata, devMetadata, repositoryInfo)
     }
