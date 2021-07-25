@@ -1,5 +1,6 @@
 import { createElement } from "structure/element";
 import { selectionAttribute, selectionPresentAttribute, Selector } from "selector";
+import { scheduleRepeating, waitIdleFrame } from "scheduler";
 
 interface PointData<T> {
     readonly x: T,
@@ -338,46 +339,63 @@ export class Graph {
         this.updateAxisSteps();
     }
 
-    public addEntry(entry: GraphEntry, invalidateLayout = true) {
-        let chart = this, id = entry.id, attached = false;
-        const assertAttached = () => {
-            if (!attached) throw new Error("Graph entry has no parent")
-        }
-        entry.attachToGraph({
-            get element() {
-                assertAttached();
-                return chart.getEntryPath(id)
-            },
-            get caption() {
-                assertAttached();
-                return chart.getEntryCaption(id)
-            },
-            detach: () => {
-                assertAttached();
-                this.getEntryPath(id).remove();
-                this.getEntryCaption(id).remove();
-                this.entries.splice(this.entries.findIndex(e => e.getId() === id), 1)
-                id = undefined;
-                chart = undefined;
-                attached = false;
-            },
-            updateScale: (changes: Map<number, number>, invalidateLayout = true) => {
-                assertAttached();
-                this.updateScale(changes, invalidateLayout)
-            },
-            computeAbsCoordinates: (x: number, y: number) => {
-                assertAttached();
-                const scaled = this.#boundingBox.scale(x, y);
-                return {
-                    x: this.computeLocationComponent(scaled.x, this.xRatio),
-                    y: this.computeLocationComponent(1 - scaled.y, this.yRatio)
-                }
-            },
-            attachReady: (ref: EntryReference) => {
-                this.entries.push(ref);
-                attached = true;
+    public async add(entry: GraphEntry, invalidateLayout?: boolean): Promise<void>;
+    public async add(...entries: GraphEntry[]): Promise<void>;
+    public async add(entry: GraphEntry, entryOrInvalidate: GraphEntry | boolean = true, ...entries: GraphEntry[]) {
+        const invalidate = typeof entryOrInvalidate !== "boolean" || entryOrInvalidate;
+        const lines = [entry]
+            .concat(entryOrInvalidate instanceof GraphEntry ? [entryOrInvalidate] : [])
+            .concat(entries);
+        await scheduleRepeating(...lines.map(entry => () => {
+            let chart = this, id = entry.id, attached = false;
+            const assertAttached = () => {
+                if (!attached) throw new Error("Graph entry has no parent")
             }
-        }, invalidateLayout);
+            entry.attachToGraph({
+                get element() {
+                    assertAttached();
+                    return chart.getEntryPath(id)
+                },
+                get caption() {
+                    assertAttached();
+                    return chart.getEntryCaption(id)
+                },
+                detach: () => {
+                    assertAttached();
+                    this.getEntryPath(id).remove();
+                    this.getEntryCaption(id).remove();
+                    this.entries.splice(this.entries.findIndex(e => e.getId() === id), 1)
+                    id = undefined;
+                    chart = undefined;
+                    attached = false;
+                },
+                updateScale: (changes: Map<number, number>, invalidateLayout = true) => {
+                    assertAttached();
+                    this.updateScale(changes, invalidateLayout)
+                },
+                computeAbsCoordinates: (x: number, y: number) => {
+                    assertAttached();
+                    const scaled = this.#boundingBox.scale(x, y);
+                    return {
+                        x: this.computeLocationComponent(scaled.x, this.xRatio),
+                        y: this.computeLocationComponent(1 - scaled.y, this.yRatio)
+                    }
+                },
+                attachReady: (ref: EntryReference) => {
+                    this.entries.push(ref);
+                    attached = true;
+                }
+            }, false);
+        }));
+        if (invalidate) {
+            await waitIdleFrame();
+            this.invalidate();
+        }
+    }
+
+    /** @deprecated */
+    public addEntry(entry: GraphEntry, invalidateLayout = true) {
+        this.add(entry, invalidateLayout);
     }
 
     private updateScale(changes: Map<number, number>, invalidateLayout = true) {

@@ -5,6 +5,7 @@ import { createElement } from "structure/element";
 import { Page } from "pstats/page";
 import { Adapter } from "components/adapter";
 import type { Formation } from "pstats/formation";
+import { scheduleRepeating } from "scheduler";
 
 export class WishFragment extends Page<Home, Adapter<Formation>> {
     readonly wishName!: string;
@@ -186,11 +187,7 @@ export class WishFragment extends Page<Home, Adapter<Formation>> {
                 ])));
                 const renouncingPeopleBehindUser = new ComputedGraphEntry(this.getLocale("wish.graph.people.after"), "user-after", 
                     (_, all, user) => all - user, allApplications, userRank)
-                this.graph.addEntry(userRank, false);
-                this.graph.addEntry(allApplications, false);
-                this.graph.addEntry(lastAcceptedRank, false);
-                this.graph.addEntry(renouncingPeopleBehindUser, false);
-                this.graph.invalidate();
+                this.graph.add(userRank, allApplications, lastAcceptedRank, renouncingPeopleBehindUser);
     
                 const size = wish.size || 1;
                 const userRankAdvancementSpeed = new PreviousBasedComputedGraphEntry(this.getLocale("wish.graph.speed.user"), "speed-user-rank", 
@@ -199,23 +196,19 @@ export class WishFragment extends Page<Home, Adapter<Formation>> {
                     (_, pre, current) => pre === undefined ? 0 : (current - pre) / size, lastAcceptedRank)
                 const queueShrinkSpeed = new PreviousBasedComputedGraphEntry(this.getLocale("wish.graph.speed.all"), "speed-app-all", 
                     (_, pre, current) => pre === undefined ? 0 : (pre - current) / size, allApplications)
-                this.speedGraph.addEntry(userRankAdvancementSpeed, false);
-                this.speedGraph.addEntry(formationAdvancementSpeed, false);
-                this.speedGraph.addEntry(queueShrinkSpeed, false);
-                this.speedGraph.invalidate();
+                this.speedGraph.add(userRankAdvancementSpeed, formationAdvancementSpeed, queueShrinkSpeed);
 
                 const recordDates = new Set(userData.map(userRecord => userRecord.time)
                     .concat(globalData.map(globalRecord => globalRecord.time))
                     .map(timestamp => Math.trunc(timestamp / 86400000))
                     .sort((a, b) => b - a));
                 const getSignedNumber = (n: number) => n < 0 || !isFinite(n) ? n.toString() : `+${n.toString()}`;
-                const fast = (value: number, diff: number) => isFinite(diff) && !!Math.trunc(20 * Math.abs(diff) / (value || 1))
-                const promises: ((previous: PreviousRecord) => Promise<PreviousRecord>)[] = [];
-                for (const record of recordDates) {
+                const fast = (value: number, diff: number) => isFinite(diff) && !!Math.trunc(20 * Math.abs(diff) / (value || 1));
+                scheduleRepeating<PreviousRecord>(...[...recordDates].map(record => {
                     const glob = globalData.find(gl => Math.trunc(new Date(gl.time).getTime() / 86400000) === record);
                     const user = userData.find(us => Math.trunc(new Date(us.time).getTime() / 86400000) === record);
-                    if (user.queued < 0) continue;
-                    promises.push(async previous => {
+                    if (user.queued < 0) return null;
+                    return (previous: PreviousRecord) => {
                         const previousRankElement = previous?.row?.children?.item(1) as HTMLElement,
                             previousLastElement = previous?.row?.children?.item(2) as HTMLElement,
                             previousAllElement = previous?.row?.children?.item(3) as HTMLElement;
@@ -256,22 +249,8 @@ export class WishFragment extends Page<Home, Adapter<Formation>> {
                             glob,
                             user
                         }
-                    })
-                }
-                let pastPromises = 0;
-                let elapsedTime = 0;
-                let latestResult: PreviousRecord;
-                const loadNext = () => {
-                    if (promises.length > 0) requestIdleCallback(async timer => {
-                        while (promises.length > 0 && !timer.didTimeout && timer.timeRemaining() > elapsedTime * 1.2) {
-                            const startup = Date.now();
-                            latestResult = await promises.shift()(latestResult);
-                            elapsedTime = (elapsedTime * pastPromises++ + Date.now() - startup) / pastPromises
-                        }
-                        return loadNext();
-                    })
-                }
-                loadNext();
+                    }
+                }));
             }
             this.root.toggleAttribute("loading", false)
         })

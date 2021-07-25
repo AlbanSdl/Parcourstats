@@ -21,3 +21,6 @@ interface SVGAnimationElement {
     getSimpleDuration(): number;
     getStartTime(): number;
 }
+interface AddEventListenerOptions {
+    signal?: AbortSignal;
+}

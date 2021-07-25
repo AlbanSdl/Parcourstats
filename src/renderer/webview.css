@@ -183,13 +183,23 @@ svg {
 .ripple {
     position: absolute;
     transform: translateX(-50%) translateY(-50%);
-    border-radius: 50%;
-    width: 0;
-    height: 0;
+    border-radius: 100%;
     opacity: .5;
-    transition: all .5s ease-in-out;
+    padding: 0;
+    transition: all .3s ease-in-out,
+        opacity .3s ease-out,
+        border-radius .3s cubic-bezier(.5, 0, 1, .5);
     background: var(--color-ripple);
     pointer-events: none;
+}
+.ripple.fill {
+    padding: 50% !important;
+    border-radius: 0 !important;
+    left: 50% !important;
+    top: 50% !important;
+}
+.ripple.out {
+    opacity: 0 !important;
 }
 .ripple-container {
     overflow: hidden;
@@ -614,6 +624,18 @@ svg {
 .fragment[fade=in],
 .fragment[fade=out] {
     opacity: 0;
+}
+.activity[prepare~="fade"],
+.fragment[prepare~="fade"] {
+    will-change: opacity;
+}
+.activity[prepare~="slide"],
+.fragment[prepare~="slide"] {
+    will-change: transform;
+}
+.activity[prepare~="slide"][prepare~="fade"],
+.fragment[prepare~="slide"][prepare~="fade"] {
+    will-change: transform, opacity;
 }
 .activity, .fragment {
     transition: all .25s var(--in-out-circular)

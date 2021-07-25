@@ -116,7 +116,7 @@ export class Overview extends Page<Home, Adapter<Formation>> {
                 entry.add(new Map([
                     [0, 10], [1, 9], [2, 7], [3, 5.3], [4, 4.1], [5, 3.4]
                 ]))
-                dummyGraph.addEntry(entry)
+                dummyGraph.add(entry)
                 graphSection.append(createElement({
                     text: this.getLocale("wishes.discover.graph.under")
                 }));
@@ -129,18 +129,17 @@ export class Overview extends Page<Home, Adapter<Formation>> {
                 }));
             } else {
                 let index = 0;
-                for (const study of adapter) {
-                    if (!study.sessions.length || !study.session?.user?.length) continue;
+                this.graph?.add(...adapter.asList.map(study => {
+                    if (!study.sessions.length || !study.session?.user?.length) return null;
                     const graphEntry = new DatasetGraphEntry(study.name, `overview-${index}`)
                     const values = new Map(study.session!.user
                         .until(record => record.queued < 0)
                         .map(rec => [rec.time, rec.queued]));
-                    if ([...values.values()].reduce((p, c) => p + c, 0) <= 0) continue;
+                    if ([...values.values()].reduce((p, c) => p + c, 0) <= 0) return null;
                     index++;
                     graphEntry.add(values);
-                    this.graph?.addEntry(graphEntry, false);
-                }
-                this.graph?.invalidate();
+                    return graphEntry;
+                }).filter(entry => !!entry));
             }
 
             this.root.toggleAttribute("loading", false)

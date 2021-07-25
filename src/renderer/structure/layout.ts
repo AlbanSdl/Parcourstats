@@ -1,3 +1,5 @@
+import { waitAnimationFrame } from "scheduler";
+
 export enum Transition {
     NONE = 0b00,
     SLIDE = 0b01,
@@ -90,19 +92,18 @@ async function applyTransitionStyles(root: HTMLDivElement, transition: Transitio
 async function applyTransitionStyles(root: HTMLDivElement, transition: Transition, isOpening: true, invert: boolean): Promise<void>;
 async function applyTransitionStyles(root: HTMLDivElement, transition: Transition, isOpening: boolean, invert: boolean): Promise<void> {
     const applied = [Transition.SLIDE, Transition.FADE].filter(tr => tr & transition).map(tr => Transition[tr].toLowerCase());
-    const regularDirection = invert ? !isOpening : isOpening;
-    const direction = regularDirection ? "in" : "out";
+    root.setAttribute("prepare", applied.join(' '));
+    const direction = (invert ? !isOpening : isOpening) ? "in" : "out";
     applied.forEach(attr => root.setAttribute(attr, direction))
-    if (isOpening) requestAnimationFrame(() => applied.forEach(attr => root.removeAttribute(attr)))
-    else if (applied.length > 0) {
-        return new Promise(res => {
-            setTimeout(() => {
-                applied.forEach(attr => root.getAttribute(attr) === direction ? root.removeAttribute(attr) : 0)
-                res();
-            }, 260);
-        })
-    } else {
-        applied.forEach(attr => root.getAttribute(attr) === direction ? root.removeAttribute(attr) : 0)
-        return;
-    }
+    if (isOpening) return waitAnimationFrame().then(() => {
+        root.removeAttribute("prepare");
+        applied.forEach(attr => root.removeAttribute(attr));
+    });
+    if (applied.length > 0) return new Promise(res => root.addEventListener("transitionend", transition => waitAnimationFrame().then(() => {
+        if (!transition.pseudoElement) {
+            root.removeAttribute("prepare");
+            applied.forEach(attr => root.getAttribute(attr) === direction ? root.removeAttribute(attr) : 0);
+            res();
+        }
+    })))
 }
