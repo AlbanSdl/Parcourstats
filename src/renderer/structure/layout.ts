@@ -1,4 +1,4 @@
-import { waitAnimationFrame } from "scheduler";
+import { scheduler } from "scheduler";
 
 export enum Transition {
     NONE = 0b00,
@@ -73,6 +73,7 @@ export abstract class Layout {
         transition: Transition = Transition.NONE,
         invertTransition: boolean = false
     ) {
+        await scheduler.schedule();
         this.root = await this.onCreate(using);
         if (!!using) {
             await using.onDestroy();
@@ -82,8 +83,10 @@ export abstract class Layout {
                 using.onDestroyed();
             });
         }
+        const timer = await scheduler.schedule();
         this.container.appendChild(this.root);
         applyTransitionStyles(this.root, transition, true, invertTransition);
+        if (timer.didTimeout) await scheduler.schedule();
         return this.onCreated();
     }
 }
@@ -92,16 +95,12 @@ async function applyTransitionStyles(root: HTMLDivElement, transition: Transitio
 async function applyTransitionStyles(root: HTMLDivElement, transition: Transition, isOpening: true, invert: boolean): Promise<void>;
 async function applyTransitionStyles(root: HTMLDivElement, transition: Transition, isOpening: boolean, invert: boolean): Promise<void> {
     const applied = [Transition.SLIDE, Transition.FADE].filter(tr => tr & transition).map(tr => Transition[tr].toLowerCase());
-    root.setAttribute("prepare", applied.join(' '));
     const direction = (invert ? !isOpening : isOpening) ? "in" : "out";
     applied.forEach(attr => root.setAttribute(attr, direction))
-    if (isOpening) return waitAnimationFrame().then(() => {
-        root.removeAttribute("prepare");
-        applied.forEach(attr => root.removeAttribute(attr));
-    });
-    if (applied.length > 0) return new Promise(res => root.addEventListener("transitionend", transition => waitAnimationFrame().then(() => {
+    if (isOpening) return scheduler.schedule().then(() =>
+        applied.forEach(attr => root.removeAttribute(attr)));
+    if (applied.length > 0) return new Promise(res => root.addEventListener("transitionend", transition => scheduler.schedule().then(() => {
         if (!transition.pseudoElement) {
-            root.removeAttribute("prepare");
             applied.forEach(attr => root.getAttribute(attr) === direction ? root.removeAttribute(attr) : 0);
             res();
         }

@@ -1,6 +1,6 @@
 import { createElement } from "structure/element";
 import { selectionAttribute, selectionPresentAttribute, Selector } from "selector";
-import { scheduleRepeating, waitIdleFrame } from "scheduler";
+import { scheduler, scheduleRepeating } from "scheduler";
 
 interface PointData<T> {
     readonly x: T,
@@ -388,7 +388,7 @@ export class Graph {
             }, false);
         }));
         if (invalidate) {
-            await waitIdleFrame();
+            await scheduler.schedule();
             this.invalidate();
         }
     }

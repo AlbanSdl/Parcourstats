@@ -1,5 +1,6 @@
 import { Ripple } from "components/ripple";
 import { Link } from "components/link";
+import { scheduler } from "scheduler";
 
 export interface ElementProperties {
     /** The tag name of the element to create. Default is `div` */
@@ -53,7 +54,10 @@ export function createElement(options: ElementProperties = {}): Element {
             })
             if (options.text instanceof Promise) {
                 textElement.classList.add("lazy");
-                options.text.then(text => textElement.textContent = text);
+                options.text.then(async text => {
+                    await scheduler.schedule();
+                    textElement.textContent = text;
+                });
             }
             else textElement.textContent = options.text;
         }

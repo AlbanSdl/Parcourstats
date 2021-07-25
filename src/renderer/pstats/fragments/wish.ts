@@ -187,7 +187,7 @@ export class WishFragment extends Page<Home, Adapter<Formation>> {
                 ])));
                 const renouncingPeopleBehindUser = new ComputedGraphEntry(this.getLocale("wish.graph.people.after"), "user-after", 
                     (_, all, user) => all - user, allApplications, userRank)
-                this.graph.add(userRank, allApplications, lastAcceptedRank, renouncingPeopleBehindUser);
+                await this.graph.add(userRank, allApplications, lastAcceptedRank, renouncingPeopleBehindUser);
     
                 const size = wish.size || 1;
                 const userRankAdvancementSpeed = new PreviousBasedComputedGraphEntry(this.getLocale("wish.graph.speed.user"), "speed-user-rank", 

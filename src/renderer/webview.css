@@ -625,18 +625,6 @@ svg {
 .fragment[fade=out] {
     opacity: 0;
 }
-.activity[prepare~="fade"],
-.fragment[prepare~="fade"] {
-    will-change: opacity;
-}
-.activity[prepare~="slide"],
-.fragment[prepare~="slide"] {
-    will-change: transform;
-}
-.activity[prepare~="slide"][prepare~="fade"],
-.fragment[prepare~="slide"][prepare~="fade"] {
-    will-change: transform, opacity;
-}
 .activity, .fragment {
     transition: all .25s var(--in-out-circular)
 }

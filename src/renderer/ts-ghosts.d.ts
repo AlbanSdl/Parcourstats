@@ -1,16 +1,4 @@
 /*! Provides types from lib.dom.d.ts (typescript dev) */
-declare function requestIdleCallback(callback: IdleRequestCallback, options?: IdleRequestOptions): number;
-declare function cancelIdleCallback(handle: number): void;
-interface IdleRequestOptions {
-    timeout?: number;
-}
-interface IdleRequestCallback {
-    (deadline: IdleDeadline): void;
-}
-interface IdleDeadline {
-    readonly didTimeout: boolean;
-    timeRemaining(): DOMHighResTimeStamp;
-}
 interface SVGAnimationElement {
     readonly targetElement: SVGElement | null;
     beginElement(): void;

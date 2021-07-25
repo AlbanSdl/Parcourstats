@@ -1,3 +1,4 @@
+import { scheduler } from "scheduler";
 import { createElement } from "structure/element";
 
 declare global {
@@ -54,6 +55,7 @@ export enum Icon {
 export async function enableIcons() {
     HTMLElement.prototype.setIcon = async function(icon, clear = false) {
         const iconElement = await getIcon(icon);
+        await scheduler.schedule();
         if (clear) this.dispatchEvent(new Event(iconSinkEvent));
         this.appendChild(iconElement);
         this.addEventListener(iconSinkEvent, () => iconElement.remove(), {

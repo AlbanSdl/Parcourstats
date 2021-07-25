@@ -15,6 +15,7 @@ import { TodayFragment } from "fragments/record";
 import { WishFragment } from "fragments/wish";
 import { Adapter } from "components/adapter";
 import { Formation } from "formation";
+import { scheduler } from "scheduler";
 
 export class Home extends Activity {
     private side: HTMLElement;
@@ -300,8 +301,9 @@ export class Home extends Activity {
         }
         await this.formations?.push(this.sideList, ...asList);
         await this.waitCreation();
-        for (const ref of this.providers) ref.deref()?.(this.formations!!);
+        for (const ref of this.providers) scheduler.schedule(() => ref.deref()?.(this.formations!!));
         this.providers.splice(0, this.providers.length);
+        await scheduler.schedule();
         const splash = this.container?.querySelector(".splash");
         if (!!splash) for (const child of splash.children) {
             child.querySelectorAll("animate, animateTransform").forEach(
