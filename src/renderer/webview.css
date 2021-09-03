@@ -613,11 +613,11 @@ svg {
 }
 .activity[slide=in],
 .fragment[slide=in] {
-    transform: translateX(100vw);
+    transform: translateX(100%);
 }
 .activity[slide=out],
 .fragment[slide=out] {
-    transform: translateX(-100vw);
+    transform: translateX(-100%);
 }
 .activity[fade=in],
 .activity[fade=out],
