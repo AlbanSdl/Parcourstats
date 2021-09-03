@@ -22,10 +22,10 @@ app.settings.record.detail Parcourstats will prompt you to record your ranks eve
 app.settings.record.button Record again
 app.settings.about About
 app.settings.about.libs.unknown Unknown version
-app.settings.about.this An app for your Parcoursup wishes... that ACTUALLY shows you how your wishes evolve. The app has no access to your account, you will have to report values from the website.
+app.settings.about.this An app for your Parcoursup wishes. The app is opensource, check https://github.com/AlbanSdl/Parcourstats for more information !
 app.settings.about.libs.core Framework version
 app.settings.about.libs Third-party libraries
-app.settings.about.libs.expl Parcourstats loads third-party scripts called "libraries". They improve the app and add features.
+app.settings.about.libs.expl Parcourstats loads third-party content called "libraries". Any library distributed along with the app is listed below:
 app.settings.about.libs.error An error occurred and the library list could not be loaded !
 wish.session.singular Session
 wish.session.plural Sessions
@@ -37,7 +37,7 @@ wishes.overview.title Wish progression
 wishes.overview.today.tip You haven't saved your ranks yet. It is strongly advised to record your ranks every day in order to visualize the most accurate stats.
 wishes.overview.today.letsgo Let's go !
 wishes.discover.title How does it work ?
-wishes.discover.graph affiche display the ranks of your Parcoursup wishes with graphs in order to emphasize their evolution.
+wishes.discover.graph displays the ranks of your Parcoursup wishes with graphs in order to emphasize their evolution.
 wishes.discover.graph.under If it is not precise enough to you, the values of your ranks are listed in a table under the graphs on the wish page.
 wishes.discover.process The app will invite you to record your ranks 12 hours apart everyday. In order to do so, connect on Parcoursup and copy the values in the proper input fields (this process is not automatic not to cause any damage in the future while the website evolves)
 wishes.discover.process.under For now, the plateform ranks are not live updating. This is the reason why there is a delay before you can record your ranks back in the app: if you save a value which has not been updated on Parcoursup, the stats may become weird... If this behaviour changes in the future, you can still record your ranks in the settings.

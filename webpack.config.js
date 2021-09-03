@@ -2,7 +2,7 @@ const path = require("path");
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {
-    target: 'electron13.1-renderer',
+    target: 'electron14.0-renderer',
     entry: './src/renderer/webview.ts',
     output: {
         filename: 'webview.js',

@@ -22,10 +22,10 @@ app.settings.record.detail Parcourstats te propose d'enregistrer tes rangs tous 
 app.settings.record.button Enregistrer de nouveau
 app.settings.about A propos de
 app.settings.about.libs.unknown Version inconnue
-app.settings.about.this Une application pour tes vœux Parcoursup... qui t'indique VRAIMENT comment ils évoluent. L'application n'accède pas toute seule à ton dossier, c'est toi qui rentre les valeurs que Parcoursup t'indique.
+app.settings.about.this Une application pour tes vœux Parcoursup. L'appli est open-source, visite https://github.com/AlbanSdl/Parcourstats pour plus d'infos !
 app.settings.about.libs.core Version des composants principaux
 app.settings.about.libs Bibliothèques tierces
-app.settings.about.libs.expl Parcourstats utilise des scripts tiers appelés "bibliothèques". Ils permettent d'ajouter certaines fonctionnalités à l'application.
+app.settings.about.libs.expl Parcourstats utilise des composants tiers appelés "bibliothèques". Voici la liste de ceux qui sont distribués dans l'appli:
 app.settings.about.libs.error Une erreur est survenue et la liste des bibliothèques n'a pas pû être chargée !
 wish.session.singular Session
 wish.session.plural Sessions
@@ -37,10 +37,10 @@ wishes.overview.title Progression des vœux
 wishes.overview.today.tip Tu n'as pas encore enregistré tes rangs aujourd'hui. Pour que les statistiques soient les plus fiables possibles, il est recommandé de le faire une fois par jour.
 wishes.overview.today.letsgo Allons-y !
 wishes.discover.title Comment ça marche ?
-wishes.discover.graph affiche les rangs de tes vœux Parcoursup avec des graphiques pour te montrer comment ils évoluent (et parce que c'est souvent plus parlant)
+wishes.discover.graph affiche les rangs de tes vœux Parcoursup avec des graphiques pour te montrer comment ils évoluent (parce que c'est souvent plus parlant de visualiser ces données)
 wishes.discover.graph.under Si jamais ce n'est pas assez clair ou précis, tu peux retrouver tes rangs exacts tels que tu les as enregistrés. Ils se trouvent en dessous des graphiques dans la page du vœu.
 wishes.discover.process L'application te proposera chaque jour avec au minimum 12 heures d'intervalle de mettre à jour les rangs de tes vœux. C'est à toi de te connecter sur Parcoursup et de reporter les valeurs dans l'application (ce n'est pas automatique afin que l'application soit futur-proof et qu'elle ne fasse pas n'importe quoi dans 5 ans).
-wishes.discover.process.under A l'heure actuelle, la plateforme ne calcule pas les ranks en temps réel mais de façon régulière. C'est pour cela qu'il y a un délai de 12 heures dans l'application: si tu enregistres une valeur qui n'a pas été mise à jour sur Parcoursup, les statistiques risquent de devenir étranges... Si ce comportement venait changer, il est tout de même possible d'enregistrer de nouveau les rangs de tes vœux en attente dans les paramètres.
+wishes.discover.process.under A l'heure actuelle, la plateforme ne calcule pas les rangs en temps réel mais de façon régulière. C'est pour cela qu'il y a un délai de 12 heures dans l'application: si tu enregistres une valeur qui n'a pas été mise à jour sur Parcoursup, les statistiques risquent de devenir étranges... Si ce comportement venait changer, il est tout de même possible d'enregistrer de nouveau les rangs de tes vœux en attente dans les paramètres.
 wishes.today.header Enregistrement des rangs
 wishes.today.subtitle Enregistre les rangs de chacun de tes vœux afin de suivre leur évolution
 wishes.today.user.rank Ton rang
