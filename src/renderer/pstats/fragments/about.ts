@@ -24,19 +24,12 @@ export class AboutFragment extends Page<Home, Adapter<Formation>> {
         const thisApp = createElement({
             text: this.getLocale("app.settings.about.this")
         })
-        const coreDeps = createElement({
-            classes: ["deps", "core"],
-            text: this.getLocale("app.settings.about.libs.core")
-        })
-        coreDeps.append(createElement({
-            classes: ["separator"]
-        }))
         const depsList = createElement({
             classes: ["deps"]
         })
-        container.append(thisApp, coreDeps, createElement({
+        container.append(thisApp, createElement({
             classes: ["libhead"],
-            title: this.getLocale("app.settings.about.libs"),
+            cat: this.getLocale("app.settings.about.libs"),
             text: this.getLocale("app.settings.about.libs.expl")
         }), depsList);
         root.append(container);
@@ -48,36 +41,21 @@ export class AboutFragment extends Page<Home, Adapter<Formation>> {
             console.error(err);
             const erroredVersion = await this.getLocale("app.settings.about.libs.unknown")
             return {
-                appVersion: erroredVersion,
-                electronVersion: erroredVersion,
-                nodeJsVersion: erroredVersion,
-                chromiumVersion: erroredVersion,
+                app: erroredVersion,
                 dependencies: undefined as {
                     [name: string]: {
                         version: string;
                         description?: string;
                         author?: string;
                         license?: string;
+                        homepage?: string;
                     };
                 }
             }
         }).then(async context => {
-            this.root.querySelector(".container").setAttribute("version", context.appVersion);
-            this.root.querySelector(".container > .deps.core")?.append(createElement({
-                tag: "div",
-                name: "Electron",
-                version: context.electronVersion
-            }), createElement({
-                tag: "div",
-                name: "Chromium",
-                version: context.chromiumVersion
-            }), createElement({
-                tag: "div",
-                name: "NodeJS",
-                version: context.nodeJsVersion
-            }))
+            this.root.querySelector(".container").setAttribute("version", context.app);
             if (!context.dependencies) {
-                this.root.querySelector(".container > .deps:not(.core)").append(createElement({
+                this.root.querySelector(".container > .deps").append(createElement({
                     classes: ["error"],
                     text: this.getLocale("app.settings.about.libs.error")
                 }))
@@ -85,7 +63,11 @@ export class AboutFragment extends Page<Home, Adapter<Formation>> {
                 for (const name in context.dependencies) {
                     const lib = context.dependencies[name];
                     const wrapper = createElement({
-                        classes: ["dep", "wrapper"]
+                        classes: ["dep", "wrapper"],
+                        ripple: true,
+                        link: {
+                            target: lib.homepage
+                        }
                     });
                     wrapper.append(createElement({
                         classes: ["version"],
@@ -103,7 +85,7 @@ export class AboutFragment extends Page<Home, Adapter<Formation>> {
                         classes: ["licence"],
                         text: lib.license
                     }));
-                    this.root.querySelector(".container > .deps:not(.core)").append(wrapper);
+                    this.root.querySelector(".container > .deps").append(wrapper);
                 }
             }
         });

@@ -22,8 +22,7 @@ app.settings.record.detail Parcourstats will prompt you to record your ranks eve
 app.settings.record.button Record again
 app.settings.about About
 app.settings.about.libs.unknown Unknown version
-app.settings.about.this An app for your Parcoursup wishes. The app is opensource, check https://github.com/AlbanSdl/Parcourstats for more information !
-app.settings.about.libs.core Framework version
+app.settings.about.this An app for your Parcoursup wishes. The app is opensource, check [the github page](https://github.com/AlbanSdl/Parcourstats) for more information !
 app.settings.about.libs Third-party libraries
 app.settings.about.libs.expl Parcourstats loads third-party content called "libraries". Any library distributed along with the app is listed below:
 app.settings.about.libs.error An error occurred and the library list could not be loaded !

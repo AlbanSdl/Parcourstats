@@ -1,0 +1,36 @@
+{
+    "Source Sans": {
+        "author": "Adobe Systems Incorporated",
+        "license": "OFL 1.1",
+        "description": "The Adobe Originals program started in 1989 as an in-house type foundry at Adobe, brought together to create original typefaces of exemplary design quality, technical fidelity, and aesthetic longevity.",
+        "homepage": "https://fonts.adobe.com/fonts/source-sans"
+    },
+    "Electron": {
+        "author": "Github Inc",
+        "license": "MIT",
+        "description": "The Electron framework lets you write cross-platform desktop applications using JavaScript, HTML and CSS. It is based on Node.js and Chromium and is used by the Atom editor and many other apps.",
+        "homepage": "https://www.electronjs.org/",
+        "id": "electron"
+    },
+    "NodeJS": {
+        "author": "The NodeJS contributors",
+        "license": "MIT",
+        "description": "Node.js® is a JavaScript runtime built on Chrome's V8 JavaScript engine.",
+        "homepage": "https://nodejs.org/",
+        "id": "node"
+    },
+    "Chromium": {
+        "author": "Google Inc",
+        "license": "BSD",
+        "description": "Chromium is an open-source browser project that aims to build a safer, faster, and more stable way for all Internet users to experience the web.",
+        "homepage": "https://www.chromium.org/Home",
+        "id": "chrome"
+    },
+    "v8": {
+        "author": "Google Inc",
+        "license": "BSD",
+        "description": "V8 is Google’s open source high-performance JavaScript and WebAssembly engine, written in C++.",
+        "homepage": "https://v8.dev/",
+        "id": "v8"
+    }
+}

@@ -1,14 +1,23 @@
-import { createElement } from "structure/element"
+import { Query } from "../../common/window"
+
+export declare type URI = `${string}://${string}`;
+
+export declare interface LinkHandler<T> {
+    handle(uri: URI, ext: boolean): Promise<T>
+}
+
+export const LINK: LinkHandler<void> = {
+    async handle(uri) {
+        return window.messenger.send(Query.OPEN_EXTERNAL, uri)
+    }
+}
 
 export namespace Link {
     const linkClickedAttribute: string = 'data-being-clicked'
     const linkAttachementAttribute: string = 'data-link'
-    export function bind(link: HTMLElement, action: (location: string, newTab: boolean) => void = (location, nTab) => {
-        const helper = createElement({tag: 'a'});
-        helper.href = location
-        helper.target = nTab ? '_blank' : ''
-        helper.click()
-    }) {
+    export function bind(link: HTMLElement, action: LinkHandler<unknown> = LINK, target?: string) {
+        if (!!target?.includes("://")) link.setAttribute(linkAttachementAttribute, target)
+        else if (!!target) link.classList.add("disabled")
         link.addEventListener('mousedown', function(e) {
             link.setAttribute(linkClickedAttribute, '')
             if (e.button === 1 && e.buttons === 4 && e.which === 2)
@@ -18,8 +27,8 @@ export namespace Link {
             if (!this.hasAttribute(linkClickedAttribute)) return
             this.removeAttribute(linkClickedAttribute)
             e.stopImmediatePropagation()
-            const location = this.getAttribute(linkAttachementAttribute)
-            if (!!location) action?.(location, e.button === 1 && e.which === 2);
+            const location = this.getAttribute(linkAttachementAttribute) as URI
+            if (!!location) action.handle(location, e.button === 1 && e.which === 2);
         })
         link.setAttribute('draggable', 'true')
         link.addEventListener('dragstart', function(e) {

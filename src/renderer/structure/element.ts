@@ -1,5 +1,5 @@
 import { Ripple } from "components/ripple";
-import { Link } from "components/link";
+import { LINK, Link, LinkHandler, URI } from "components/link";
 import { scheduler } from "scheduler";
 
 export interface ElementProperties {
@@ -14,7 +14,10 @@ export interface ElementProperties {
     /** Whether a ripple should be added on the element. Default is `false` */
     ripple?: boolean;
     /** A link that should be bound on the element. Default is `null` */
-    link?: string;
+    link?: {
+        target: string,
+        handler?: LinkHandler<unknown>
+    };
     /** Inserts text in a new child node. The text is not parsed */
     text?: string | Promise<string>;
     /** Attribute to set on the created element */
@@ -34,19 +37,39 @@ export function createElement(options: ElementProperties = {}): Element {
     if (!!options?.id) element.id = options.id;
     if (!!options?.classes?.length) element.classList.add(...(options.classes!!));
     if (options?.ripple) Ripple.apply(element);
-    if (!!options?.link && element instanceof HTMLElement) Link.bind(element);
+    if (!!options?.link?.target && element instanceof HTMLElement) Link.bind(element, options.link.handler ?? LINK, options.link.target);
     for (const key in options) {
         if (["tag", "svg", "id", "classes", "ripple", "link"].includes(key)) continue;
         if (key === 'text') {
             const textElement = createElement({
                 classes: ["text"]
             });
+            const setter = (content: string) => {
+                if (content === null || content === undefined) content = "";
+                else if (typeof content !== "string") content = `${content}`;
+                const matches = content.matchAll(/\[(.*?)(?<!\\)\]\((https?:\/\/\S*?)\)/ugi);
+                const elements: Array<Element | string> = [];
+                let startIndex = 0;
+                let match: RegExpMatchArray;
+                while (match = matches.next().value) {
+                    elements.push(content.substring(startIndex, match.index))
+                    elements.push(createElement({
+                        link: {
+                            target: match[2]
+                        },
+                        text: match[1],
+                        ripple: true
+                    }))
+                    startIndex = match.index + match[0].length
+                }
+                elements.push(content.substring(startIndex))
+                textElement.append(...elements);
+            }
             element.appendChild(textElement);
             Object.defineProperty(element, "textContent", {
                 set: function (this: HTMLElement, content: string) {
-                    const textElement = this.querySelector('.text');
-                    if (!!textElement) textElement.textContent = content;
-                    else this.innerText = content;
+                    this.innerHTML = "";
+                    setter(content);
                 },
                 get: function (this: HTMLElement) {
                     return this.querySelector('.text')?.textContent ?? this.innerText;
@@ -56,10 +79,10 @@ export function createElement(options: ElementProperties = {}): Element {
                 textElement.classList.add("lazy");
                 options.text.then(async text => {
                     await scheduler.schedule();
-                    textElement.textContent = text;
+                    setter(text);
                 });
             }
-            else textElement.textContent = options.text;
+            else setter(options.text)
         }
         else if (key === 'style')
             Object.assign(element.style, options[key])

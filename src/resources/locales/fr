@@ -22,8 +22,7 @@ app.settings.record.detail Parcourstats te propose d'enregistrer tes rangs tous 
 app.settings.record.button Enregistrer de nouveau
 app.settings.about A propos de
 app.settings.about.libs.unknown Version inconnue
-app.settings.about.this Une application pour tes vœux Parcoursup. L'appli est open-source, visite https://github.com/AlbanSdl/Parcourstats pour plus d'infos !
-app.settings.about.libs.core Version des composants principaux
+app.settings.about.this Une application pour tes vœux Parcoursup. L'appli est open-source, visite [la page github](https://github.com/AlbanSdl/Parcourstats) pour plus d'infos !
 app.settings.about.libs Bibliothèques tierces
 app.settings.about.libs.expl Parcourstats utilise des composants tiers appelés "bibliothèques". Voici la liste de ceux qui sont distribués dans l'appli:
 app.settings.about.libs.error Une erreur est survenue et la liste des bibliothèques n'a pas pû être chargée !

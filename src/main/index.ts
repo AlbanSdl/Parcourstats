@@ -67,16 +67,31 @@ export class ParcourStats {
                     description: pkg["description"],
                     author: typeof pkg["author"] === "object" ? pkg["author"]["name"] : 
                         (pkg["author"] as string).replace(/^([^<>]+?)\s?(<.*?>)?\s?(\(.*?\))?$/u, "$1"),
-                    license: pkg["license"]
+                    license: pkg["license"],
+                    homepage: pkg["homepage"]
                 }] as const)
                 .catch(() => [])
             ));
             return {
-                appVersion: app.getVersion(),
-                electronVersion: process.versions.electron,
-                chromiumVersion: process.versions.chrome,
-                nodeJsVersion: process.versions.node,
-                dependencies: Object.fromEntries(deps.filter(v => !!v.length))
+                app: app.getVersion(),
+                dependencies: Object.fromEntries(deps.concat(
+                    await fs.readFile(join(__dirname, "..", "resources", "licenses.json"), "utf8")
+                    .then(cnt => Object.entries(JSON.parse(cnt)).map((entry: [string, {
+                        author: string,
+                        description: string,
+                        homepage: string,
+                        license: string,
+                        id?: string,
+                        version?: string
+                    }]) => {
+                        return entry[1]?.id !== null && !entry[1]!.version ? [entry[0], {
+                            author: entry[1].author,
+                            description: entry[1].description,
+                            homepage: entry[1].homepage,
+                            license: entry[1].license,
+                            version: process.versions[entry[1]!.id]
+                        }] : entry
+                    }))).filter(v => !!v.length))
             };
         });
     }
@@ -107,7 +122,8 @@ export class ParcourStats {
             webPreferences: {
                 preload: join(__dirname, 'preload.js'),
                 defaultEncoding: 'utf-8',
-                disableDialogs: true
+                disableDialogs: true,
+                nativeWindowOpen: true
             },
             show: false,
             frame: false

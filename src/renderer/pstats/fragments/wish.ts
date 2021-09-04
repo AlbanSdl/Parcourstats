@@ -15,6 +15,7 @@ export class WishFragment extends Page<Home, Adapter<Formation>> {
         month: "long",
         day: "numeric"
     })
+    private wishStatusPromiseResolver: (status: string) => void;
 
     constructor(wishName: string) {
         super();
@@ -49,7 +50,9 @@ export class WishFragment extends Page<Home, Adapter<Formation>> {
         });
         overview.append(createElement({
             classes: ["overall"],
-            text: "-"
+            text: new Promise<string>(res => {
+                this.wishStatusPromiseResolver = res;
+            })
         }), createElement({
             classes: ["rank", "user"],
             text: this.getLocale("wish.rank.user"),
@@ -150,7 +153,7 @@ export class WishFragment extends Page<Home, Adapter<Formation>> {
                 displayedRank = userData[userData.length - 2];
                 displayGlobalData = globalData[globalData.length - 1];
             }
-            overall.then(header => this.root.querySelector(".container > .overview > .overall").textContent = header)
+            overall.then(header => this.wishStatusPromiseResolver(header))
             if (!!displayedRank && !!displayGlobalData) {
                 this.root.querySelector(".container > .overview > .rank.user")?.
                     setAttribute("position", displayedRank.queued.toString())

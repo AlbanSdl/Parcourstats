@@ -156,16 +156,14 @@ export enum Query {
 interface Args {
     [Query.CONTEXT]: {
         front: [res: {
-            appVersion: string,
-            electronVersion: string,
-            nodeJsVersion: string,
-            chromiumVersion: string,
+            app: string,
             dependencies: {
                 [name: string]: {
                     version: string,
                     description?: string,
                     author?: string,
-                    license?: string
+                    license?: string,
+                    homepage?: string
                 }
             }
         }]
