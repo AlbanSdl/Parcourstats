@@ -134,7 +134,7 @@ export class Adapter<T extends object> {
     }
 
     public get clean() {
-        return !this.op && !this.contents.length && !this.invokedPush;
+        return !this.contents.length && !this.invokedPush;
     }
 }
 

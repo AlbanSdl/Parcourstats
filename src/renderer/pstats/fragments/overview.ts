@@ -14,6 +14,7 @@ export class Overview extends Page<Home, Adapter<Formation>> {
     })
     private graph?: Graph;
     protected readonly forceTransitionDirection = false;
+    private titleResolver: (title: string | Promise<string>) => void;
 
     protected async onCreate(from?: Page<Home, Adapter<Formation>>) {
         const root = await super.onCreate(from);
@@ -67,7 +68,7 @@ export class Overview extends Page<Home, Adapter<Formation>> {
         wrapper.append(abs, today);
         const graphTitle = createElement({
             classes: ["title"],
-            text: this.getLocale("wishes.overview.title")
+            text: new Promise<string>(res => this.titleResolver = res)
         })
         wrapper.append(graphTitle);
         this.graph = new Graph({
@@ -92,9 +93,7 @@ export class Overview extends Page<Home, Adapter<Formation>> {
             this.displayValue("refused", states.filter(rec => rec.queued < 0).length.toString())
 
             if (states.length < 1 || !states.filter(rec => rec.time > 0).length) {
-                const title = this.root.querySelector(".container > .today + .title > .text");
-                title.textContent = "";
-                this.getLocale("wishes.discover.title").then(text => title.textContent = text);
+                this.titleResolver(this.getLocale("wishes.discover.title"));
                 const discover = createElement({
                     classes: ["discover"]
                 })
@@ -128,6 +127,7 @@ export class Overview extends Page<Home, Adapter<Formation>> {
                     text: this.getLocale("wishes.discover.process.under")
                 }));
             } else {
+                this.titleResolver(this.getLocale("wishes.overview.title"));
                 let index = 0;
                 this.graph?.add(...adapter.asList.map(study => {
                     if (!study.sessions.length || !study.session?.user?.length) return null;
