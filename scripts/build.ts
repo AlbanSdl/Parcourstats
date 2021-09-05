@@ -55,7 +55,12 @@ class SinkPackager extends Packager {
                 uninstallerIcon: ".icon-ico/icon.ico"
             },
             mac: {
-                category: "public.app-category.education"
+                category: "public.app-category.education",
+                icon: "src/resources/icons/app-icon.png",
+                forceCodeSigning: false
+            },
+            linux: {
+                icon: "src/resources/icons/app-icon.png"
             },
             directories: {
                 output: this.#sink.outputPath,

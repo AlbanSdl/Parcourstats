@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  check:
+    name: Checking versions
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.versioning.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - id: versioning
+        uses: actions/github-script@v4.1.0
+        name: Collecting package versions
+        env:
+          ref: ${{ github.ref }}
+        with:
+          script: |
+            const tagVersion = process.env.ref.match(/^refs\/tags\/v(.*)$/iu)[1]
+            if (!!tagVersion) core.setOutput('version', tagVersion)
+            const packageVersion = require('./package.json').version
+            if (tagVersion !== packageVersion) throw new Error(
+              'Invalid configuration: release version must the same as version in package.json')
+
+  build:
+    needs: check
+    name: ${{ format('Upload {0} {1}-{2} artifact', github.repository, needs.check.outputs.version, matrix.os) }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+
+      - name: Upload artifact
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/Parcourstats*.*
