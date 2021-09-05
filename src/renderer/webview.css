@@ -449,6 +449,40 @@ svg {
     opacity: .1;
 }
 
+.list.adapter > .wrapper.text-field {
+    order: 0;
+    flex: 0 0 auto;
+    padding-top: 5px;
+    position: sticky;
+    top: 0px;
+    z-index: 1;
+    background-color: var(--color-secondary-strong);
+}
+
+.list.adapter > .wrapper.text-field > input.field,
+.list.adapter > .wrapper.text-field > input.field + span.helper {
+    padding-left: 35px;
+}
+
+.list.adapter > .wrapper.text-field > input.field + span.helper {
+    padding-top: 26px;
+}
+
+.list.adapter > .wrapper.text-field > input.field:not(:placeholder-shown) + span.helper,
+.list.adapter > .wrapper.text-field > input.field:focus + span.helper {
+    padding: 5px 12px 20px 5px;
+}
+
+.list.adapter > .wrapper.text-field > svg {
+    fill: var(--color-primary-detail);
+    width: 1em;
+    height: 1em;
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    display: inline-block;
+}
+
 /*
  * Buttons
  */
@@ -676,7 +710,7 @@ svg {
     width: 100%;
     height: 100%;
     background-color: var(--color-secondary);
-    z-index: 1;
+    z-index: 10;
     overflow: hidden;
     clip-path: url(#splash-clip);
 }

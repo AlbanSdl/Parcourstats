@@ -47,6 +47,7 @@ export enum Icon {
     CLOSE = 'close',
     LOADING = 'load',
     PSTATS = 'ic-pstats',
+    SEARCH = 'search',
     TREND = 'trend',
     WINDOW_EXFS = 'fullscreen_exit',
     WINDOW_ENFS = 'fullscreen'

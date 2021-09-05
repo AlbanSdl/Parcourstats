@@ -80,6 +80,12 @@ export class Home extends Activity {
             idify(item) {
                 return item.name
             },
+            getSearchString() {
+                return activity.getLocale("wishes.list.search");
+            },
+            matches(item, value) {
+                return item.name.toLowerCase().includes(value.toLowerCase())
+            },
             update(item, element, property) {
                 if (property === <string>"hidden")
                     element.toggleAttribute("filtered", item.hidden === true);

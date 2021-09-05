@@ -34,6 +34,10 @@ export namespace Ripple {
             passive: true,
             signal: controller.signal
         });
+        this.addEventListener('dragend', mouseLock, {
+            passive: true,
+            signal: controller.signal
+        });
         this.append(element);
         requestAnimationFrame(() => {
             element.classList.add("fill");

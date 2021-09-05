@@ -25,9 +25,9 @@ export class TextField {
             value: options.prefilled ?? "",
             placeholder: " ",
             pattern: `${options?.regex ?? /.*/}`.slice(1, -1),
-            spellcheck: options.spellcheck === true,
-            required: options.required === true
+            spellcheck: options.spellcheck === true
         });
+        wrapped.required = options.required === true;
         wrapped.addEventListener('input', options.oninput!!)
         this.element.append(wrapped, createElement({
             tag: "span",

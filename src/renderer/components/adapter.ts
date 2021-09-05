@@ -1,6 +1,8 @@
 import { createElement } from "structure/element";
 import { AppNotification } from "notification";
 import type { Selector } from "selector";
+import { TextField } from "./forms/textfield";
+import { Icon } from "./icon";
 
 export class Adapter<T extends object> {
     public readonly element!: HTMLDivElement;
@@ -13,6 +15,7 @@ export class Adapter<T extends object> {
     private op: number = 0;
     private invokedPush = false;
     private filterInternal?: (item: T) => boolean;
+    private search?: string;
     private readonly pending: Map<T, () => void> = new Map;
 
     constructor(private readonly holder: Adapter.Holder<T>, wrapper: Element) {
@@ -32,6 +35,16 @@ export class Adapter<T extends object> {
         wrapper.appendChild(this.element = createElement({
             classes: ["list", "adapter"]
         }));
+        const filter = new TextField({
+            placeholder: holder.getSearchString(),
+            oninput: event => {
+                const value = (event.target as HTMLInputElement).value;
+                this.search = value;
+                this.iFilter();
+            },
+            parent: this.element
+        });
+        filter.element.setIcon(Icon.SEARCH);
     }
 
     private async contextualize(opId: number, opLength: number) {
@@ -105,8 +118,12 @@ export class Adapter<T extends object> {
     }
 
     public async filter(hide: (item: T) => boolean) {
-        const opId = ++this.op;
         this.filterInternal = hide;
+        return this.iFilter();
+    }
+
+    private async iFilter() {
+        const opId = ++this.op;
         const length = this.visibleList.length;
         const pending = this.contents.map(it => 
             new Promise<void>(res => this.pending.set(it.proxy, res)));
@@ -118,7 +135,8 @@ export class Adapter<T extends object> {
     public async filterItem(item: T & { hidden?: boolean }) {
         if (this.visibleList.length <= 0) this.element.querySelectorAll(
             `.context:not([${Adapter.bindingAttribute}])`).forEach(child => child.remove())
-        item.hidden = this.filterInternal?.call(undefined, item);
+        item.hidden = this.filterInternal?.call(undefined, item) ||
+            !!this.search && !this.holder.matches(item, this.search);
     }
 
     public get asList() {
@@ -141,12 +159,14 @@ export class Adapter<T extends object> {
 export namespace Adapter {
     export const bindingAttribute = "adapter-binding";
     export interface Holder<T> {
+        matches(item: T, value: string): boolean;
         bind(item: T): Promise<HTMLElement> | HTMLElement;
         idify(item: T): Promise<string> | string;
         onDestroy?(item: T): Promise<void> | void;
         onEmpty(isFiltered: boolean): Promise<HTMLElement> | HTMLElement;
         onError(error: any): Promise<HTMLElement> | HTMLElement;
         onLengthUpdate?(from: number, to: number): Promise<void> | void;
+        getSearchString(): string | Promise<string>;
         update<K extends keyof T>(item: T & { hidden?: boolean; }, element: HTMLElement, property: K, from: T[K]): Promise<void> | void;
     }
 }

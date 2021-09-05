@@ -5,6 +5,7 @@ wishes.list.empty.action Add one
 wishes.list.empty.filtered None of your wishes matches the current filters.
 wishes.list.empty.filtered.action Edit them
 wishes.list.error An error occurred while loading your wishes
+wishes.list.search Search in the list
 wishes.add New
 wishes.add.header Add a new formation to start save your wishes and their progress. The amount of students of each formation is available on Parcoursup (formation details). This number will scale the speed of rank advancement for all your wishes.
 wishes.add.name Formation name
