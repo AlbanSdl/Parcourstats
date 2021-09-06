@@ -31,7 +31,7 @@ jobs:
 
   build:
     needs: check
-    name: ${{ format('Upload {0} {1}-{2} artifact', github.repository, needs.check.outputs.version, matrix.os) }}
+    name: ${{ format('Build {0} {1} for {2}', github.repository, needs.check.outputs.version, matrix.os) }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -45,6 +45,14 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 14.x
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Build
+        run: |
+          npm run build
 
       - name: Upload artifact
         uses: softprops/action-gh-release@v1
