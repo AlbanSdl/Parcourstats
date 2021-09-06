@@ -31,7 +31,7 @@ jobs:
 
   build:
     needs: check
-    name: ${{ format('Build {0} {1} for {2}', github.repository, needs.check.outputs.version, matrix.os) }}
+    name: ${{ format('Build v{0} for {1}', needs.check.outputs.version, matrix.os) }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

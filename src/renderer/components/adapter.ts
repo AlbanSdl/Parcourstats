@@ -49,12 +49,14 @@ export class Adapter<T extends object> {
 
     private async contextualize(opId: number, opLength: number) {
         if (this.visibleList.length <= 0) {
-            const empty = await this.holder.onEmpty(this.contents.length !== 0);
-            empty?.classList?.add("context");
+            const empty = await this.holder.onEmpty(this.contents.length !== 0)
+            empty?.classList?.add("context")
+            empty?.setAttribute("data-empty-reason", this.contents.length ? "filter" : "empty")
             if (this.visibleList.length <= 0) {
                 const current = this.element.querySelector(`.context:not([${Adapter.bindingAttribute}])`);
                 if (!current) this.element.append(empty);
-                else current.replaceWith(empty);
+                else if (current.getAttribute("data-empty-reason") !== empty.getAttribute("data-empty-reason"))
+                    current.replaceWith(empty);
             }
         } else if (opLength <= 0)
             this.element.querySelectorAll(`.context:not([${Adapter.bindingAttribute}])`).forEach(ctx => ctx.remove())
@@ -133,8 +135,6 @@ export class Adapter<T extends object> {
     }
 
     public async filterItem(item: T & { hidden?: boolean }) {
-        if (this.visibleList.length <= 0) this.element.querySelectorAll(
-            `.context:not([${Adapter.bindingAttribute}])`).forEach(child => child.remove())
         item.hidden = this.filterInternal?.call(undefined, item) ||
             !!this.search && !this.holder.matches(item, this.search);
     }
