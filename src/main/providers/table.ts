@@ -132,7 +132,7 @@ class TableImpl<Entry> implements Table<Entry> {
             if (!!where) {
                 statementParts.push("WHERE");
                 statementParts.push(`${where.field} ${where.operator} $${where.field}`);
-                filters[`$${where.field}` as `$${string & keyof Entry}`] = where.value
+                filters[`$${where.field}` as keyof typeof filters] = where.value
             }
             this.db.all(statementParts.join(" "), filters, (err, row) => {
                 if (!!err) rej(err)
@@ -173,7 +173,7 @@ class TableImpl<Entry> implements Table<Entry> {
             if (!!where) {
                 statementParts.push("WHERE");
                 statementParts.push(`"${where.field}" ${where.operator} $w${where.field}`);
-                filters[`w${where.field}` as `w${string & keyof Entry}`] = where.value
+                filters[`w${where.field}` as keyof typeof filters] = where.value
             }
             this.db.run(statementParts.join(" "), {
                 ...Object.fromEntries(Object.entries(updates).map(e => [`$${e[0]}`, e[1]])),

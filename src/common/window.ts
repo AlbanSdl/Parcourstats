@@ -85,9 +85,9 @@ export abstract class Recipient<S extends RecipientSide> {
                     else channel.onError(args[0] as string)
                 }
                 else if (!action) throw new Error(`No event handler has been registered for event ${query}`);
-                else if (this.canReceive(query, ...args as SendableQueryArguments<RemoteRecipientSide<S>, Q>)) {
-                    const result = await (action as ((...args: SendableQueryArguments<RemoteRecipientSide<S>, Q>) => Promise<RemoteQueryResponse<S, Q>>))
-                        (...args as SendableQueryArguments<RemoteRecipientSide<S>, Q>) as RemoteQueryResponse<S, Q>;
+                else if (this.canReceive(query, ...args as unknown as SendableQueryArguments<RemoteRecipientSide<S>, Q>)) { // TODO: fix the 3 following casts
+                    const result = await (action as unknown as ((...args: SendableQueryArguments<RemoteRecipientSide<S>, Q>) => Promise<RemoteQueryResponse<S, Q>>))
+                        (...args as unknown as SendableQueryArguments<RemoteRecipientSide<S>, Q>) as RemoteQueryResponse<S, Q>;
                     if (healthy) reply(query, id, true, result);
                 }
                 else if (healthy) throw new Error("Invalid event");
