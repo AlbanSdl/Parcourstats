@@ -1177,6 +1177,13 @@ svg {
     gap: 10px;
     line-height: normal;
 }
+.activity.home > .container > .fragment.wish > .container > .title > .complement.session-set > .wrapper {
+    justify-content: center;
+    gap: 2ch;
+}
+.activity.home > .container > .fragment.wish > .container > .title > .complement.session-set .list.wrapper {
+    max-width: 10ch;
+}
 .activity.home > .container > .fragment.wish > .container > .overview {
     display: flex;
     flex-flow: row wrap;

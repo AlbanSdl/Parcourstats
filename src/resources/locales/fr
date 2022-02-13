@@ -29,6 +29,7 @@ app.settings.about.libs.expl Parcourstats utilise des composants tiers appelés 
 app.settings.about.libs.error Une erreur est survenue et la liste des bibliothèques n'a pas pû être chargée !
 wish.session.singular Session
 wish.session.plural Sessions
+wish.session.set Session Parcoursup:
 wishes.overview.abstract.title Vue d'ensemble
 wishes.overview.abstract.accepted vœux acceptés
 wishes.overview.abstract.pending vœux en attente
