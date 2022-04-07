@@ -122,8 +122,7 @@ export class ParcourStats {
             webPreferences: {
                 preload: join(__dirname, 'preload.js'),
                 defaultEncoding: 'utf-8',
-                disableDialogs: true,
-                nativeWindowOpen: true
+                disableDialogs: true
             },
             show: false,
             frame: false
